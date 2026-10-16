@@ -1,0 +1,46 @@
+.card-indicador {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  text-align: left;
+}
+
+.card-indicador__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.card-indicador__label {
+  font-size: var(--font-size-sm);
+  color: var(--text);
+}
+
+.card-indicador__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-md);
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.card-indicador__value {
+  font-family: var(--heading);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--text-h);
+}
+
+.card-indicador__hint {
+  font-size: var(--font-size-sm);
+  color: var(--text);
+}

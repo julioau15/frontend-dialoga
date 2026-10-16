@@ -1,0 +1,65 @@
+.modal-confirmacao {
+  width: min(420px, calc(100% - var(--space-8)));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.modal-confirmacao::backdrop {
+  background: var(--overlay);
+}
+
+.modal-confirmacao__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+}
+
+.modal-confirmacao__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.modal-confirmacao__body {
+  font-size: var(--font-size-md);
+}
+
+.modal-confirmacao__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.modal-confirmacao__btn {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: var(--font-size-md);
+  cursor: pointer;
+}
+
+.modal-confirmacao__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-confirmacao__btn--primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.modal-confirmacao__btn--danger {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--on-accent);
+}

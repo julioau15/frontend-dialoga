@@ -1,0 +1,47 @@
+.barra-progresso {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.barra-progresso__header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.barra-progresso__value {
+  color: var(--text-h);
+  font-weight: var(--font-weight-medium);
+}
+
+.barra-progresso__track {
+  height: var(--space-2);
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+}
+
+.barra-progresso__fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width var(--transition-base) ease;
+}
+
+.barra-progresso__fill--accent {
+  background: var(--accent);
+}
+
+.barra-progresso__fill--success {
+  background: var(--success);
+}
+
+.barra-progresso__fill--warning {
+  background: var(--warning);
+}
+
+.barra-progresso__fill--danger {
+  background: var(--danger);
+}

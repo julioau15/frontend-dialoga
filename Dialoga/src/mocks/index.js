@@ -1,0 +1,6 @@
+export * from './usuarios'
+export { aprovacoes } from './aprovacoes'
+export { consultas } from './consultas'
+export { notificacoes } from './notificacoes'
+export { tarefas } from './tarefas'
+export { tratamentos } from './tratamentos'

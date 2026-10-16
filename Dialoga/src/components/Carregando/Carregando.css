@@ -1,0 +1,24 @@
+.carregando {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 100svh;
+  color: var(--text);
+  font-size: var(--font-size-md);
+}
+
+.carregando__spinner {
+  width: var(--space-5);
+  height: var(--space-5);
+  border: 2px solid var(--accent-bg);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: carregando-girar 0.8s linear infinite;
+}
+
+@keyframes carregando-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}

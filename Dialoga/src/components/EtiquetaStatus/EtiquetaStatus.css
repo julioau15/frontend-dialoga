@@ -1,0 +1,44 @@
+.etiqueta-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.etiqueta-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.etiqueta-status--success {
+  color: var(--success);
+  background: var(--success-bg);
+}
+
+.etiqueta-status--warning {
+  color: var(--warning);
+  background: var(--warning-bg);
+}
+
+.etiqueta-status--danger {
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.etiqueta-status--info {
+  color: var(--info);
+  background: var(--info-bg);
+}
+
+.etiqueta-status--neutral {
+  color: var(--text);
+  background: var(--surface);
+}
