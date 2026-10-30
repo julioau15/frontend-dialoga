@@ -12,6 +12,7 @@ import { rotaInicialPorNivel } from '../../../utils/rotasPorNivel'
 import { useCadastroForm } from '../../../hooks/useCadastroForm'
 import TextField from '../../../components/TextField'
 import Button from '../../../components/Button'
+import SelectMultiplo from '../../../components/SelectMultiplo'
 import DefinirSenha from './components/DefinirSenha'
 import iconeEmail from '../../../assets/auth/icon_email.png'
 import iconeNome from '../../../assets/auth/IconNome.png'
@@ -125,13 +126,46 @@ export default function Cadastro() {
                       onChange={(e) => f.alterarCampo('crp', e.target.value)}
                       erro={f.errosCampos.crp}
                     />
-                    {/* Só visual por enquanto: ainda não está ligado ao hook nem à API */}
-                    <TextField
-                      label="Especialidade"
-                      name="especialidade"
-                      placeholder="Área de atuação"
-                      icone={iconeEspecialidade}
-                    />
+
+                    {/* Especialidades: uma ou mais, vindas da API (GET /especialidades) */}
+                    <div className="flex flex-col gap-1.5 text-left">
+                      <span className="flex items-center gap-2 text-[11px] font-bold text-texto" id="rotulo-especialidades">
+                        <img className="w-4 h-4 object-contain" src={iconeEspecialidade} alt="" />
+                        Especialidade
+                      </span>
+                      <span className="text-[10px] text-secundaria">Selecione uma ou mais áreas de atuação</span>
+
+                      {f.carregandoEspecialidades && (
+                        <span className="text-[12px] text-secundaria" role="status">Carregando especialidades...</span>
+                      )}
+
+                      {f.erroEspecialidades && (
+                        <div className="flex items-center gap-2 text-[12px] text-erro" role="alert">
+                          <span>{f.erroEspecialidades}</span>
+                          <button
+                            type="button"
+                            className="p-0 border-0 bg-transparent text-primaria font-bold cursor-pointer hover:underline"
+                            onClick={f.recarregarEspecialidades}
+                          >
+                            Tentar de novo
+                          </button>
+                        </div>
+                      )}
+
+                      <SelectMultiplo
+                        ariaLabelledby="rotulo-especialidades"
+                        placeholder="Selecione as especialidades"
+                        opcoes={f.especialidades.map(({ id, especialidade }) => ({ id, texto: especialidade }))}
+                        selecionados={f.valores.especialidades}
+                        onAlternar={f.alternarEspecialidade}
+                        desabilitado={f.carregandoEspecialidades || !!f.erroEspecialidades}
+                        erro={f.errosCampos.especialidades}
+                      />
+
+                      {f.errosCampos.especialidades && (
+                        <span className="text-[11px] text-erro" role="alert">{f.errosCampos.especialidades}</span>
+                      )}
+                    </div>
                   </>
                 )}
 
@@ -159,7 +193,7 @@ export default function Cadastro() {
                   erro={f.errosCampos.celular}
                 />
 
-                <Button type="submit">Continuar</Button>
+                <Button type="submit" carregando={f.carregando}>Continuar</Button>
               </div>
             </form>
           ) : (

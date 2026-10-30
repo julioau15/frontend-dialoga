@@ -53,7 +53,12 @@ export function useLoginForm() {
       // 3) tudo certo: vai para a área do usuário
       navigate(rota, { replace: true })
     } catch (erro) {
-      setErroGeral(erro.message)
+      // Profissional com cadastro ainda em análise: mostra a tela explicando
+      if (erro.codigo === 'PROFISSIONAL_EM_ANALISE') {
+        navigate('/perfil-em-analise', { replace: true })
+        return
+      }
+      setErroGeral(erro.message) // inclui o aviso de cadastro recusado
     } finally {
       setCarregando(false)
     }

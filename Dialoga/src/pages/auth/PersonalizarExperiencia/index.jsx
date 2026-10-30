@@ -1,9 +1,11 @@
 // ============================================================
 // pages/auth/PersonalizarExperiencia
-// Personalização do paciente em 3 etapas (só o layout, sem API ainda):
+// Primeiro acesso do paciente em 3 etapas (só o layout, sem API ainda):
 //   1) DadosPessoais  -> como quer ser chamado e data de nascimento (opcionais)
-//   2) Profissional   -> (tela ainda não feita)
-//   3) Humor          -> (tela ainda não feita)
+//   2) EquipeSaude    -> tem ou não profissional; busca e vínculo (modal de aviso)
+//   3) HumorDia       -> "Como você está hoje?" (sentimento, energia, sono...)
+// A página guarda a etapa atual e os valores; cada etapa só desenha a tela.
+// Ao terminar (ou pular), marca o primeiro acesso como concluído e vai para o painel.
 // Rota: /personalizar-experiencia
 // ============================================================
 
@@ -15,13 +17,22 @@ import Stepper from '../../../components/Stepper'
 import PontosProgresso from '../../../components/PontosProgresso'
 import DadosPessoais from './components/DadosPessoais'
 import { usePersonalizarExperiencia } from '../../../hooks/usePersonalizarExperiencia'
+import EquipeSaude from './components/EquipeSaude'
+import HumorDia from './components/HumorDia'
+import ModalProfissionalEncontrado from './components/ModalProfissionalEncontrado'
 
 const PASSOS = ['Pessoal', 'Profissional', 'Humor']
+const NOME_COMPLETO = 'Ana Beatriz Ferreira' // TODO: vir do cadastro do paciente
+const PROFISSIONAL_EXEMPLO = { nome: 'Carlos Eduardo Mendes', especialidade: 'Psicologia Clínica' } // TODO: vir da busca na API
+
+// Cria a função (campo, valor) que atualiza um dos objetos de valores
+const alterar = (setValores) => (campo, valor) => setValores((v) => ({ ...v, [campo]: valor }))
 
 export default function PersonalizarExperiencia() {
   const navigate = useNavigate()
   const { auth } = useAuth()
-  const [etapa] = useState(1) // TODO: trocar de etapa quando existirem as telas 2 e 3
+  const [etapa, setEtapa] = useState(1) // TODO: trocar de etapa quando existirem as telas 2 e 3
+
   // Recebe do hook os dados do paciente e as ações do formulário.
   const {
     paciente,
@@ -32,8 +43,15 @@ export default function PersonalizarExperiencia() {
     tentarNovamente,
   } = usePersonalizarExperiencia()
 
-   // Feedback temporário para as etapas que ainda não existem.
+  // Feedback temporário para as etapas que ainda não existem.
   const [aviso, setAviso] = useState('')
+
+  const [modalAberto, setModalAberto] = useState(false)
+
+  const [equipe, setEquipe] = useState({ tem: null, busca: '', selecionado: false })
+  const [humor, setHumor] = useState({
+    sentimentos: [], energia: '', humorDia: '', horasSono: '', relato: '', pensamento: '',
+  })
 
   function continuar(evento) {
     evento.preventDefault()
@@ -44,19 +62,38 @@ export default function PersonalizarExperiencia() {
     )
   }
 
+  // Vai para outra etapa
+  const irParaEtapa = (proxima) => (e) => {
+    e.preventDefault()
+    setEtapa(proxima)
+  }
+
+  // Trocar a escolha ou mudar a busca desfaz o profissional já selecionado
+  const alterarEquipe = (campo, valor) =>
+    setEquipe((v) => ({ ...v, [campo]: valor, ...(campo !== 'selecionado' && { selecionado: false }) }))
+
+  const podeContinuarEquipe = equipe.tem === 'nao' || (equipe.tem === 'sim' && equipe.selecionado)
+
+  // Termina o primeiro acesso e segue para o painel do paciente
+  // TODO: salvar as respostas na API antes de sair
+  function concluir() {
+    concluirPrimeiroAcesso(auth.id)
+    navigate('/paciente/dashboard', { replace: true })
+  }
+
   // Termina o primeiro acesso e segue para o painel do paciente
   // function concluir() {
   //   concluirPrimeiroAcesso(auth.id)
   //   navigate('/paciente/dashboard', { replace: true })
   // }
 
-   function pularEtapa() {
+  function pularEtapa() {
     // Ainda não conclui o primeiro acesso, pois faltam as próximas etapas.
     setAviso(
       'Ainda não é possível avançar: a etapa Profissional está em desenvolvimento.'
     )
   }
-  
+
   return (
     <main className="flex flex-col items-center justify-center gap-6 min-h-svh py-8 px-4 bg-fundo-suave">
       <Stepper passos={PASSOS} atual={etapa} />
@@ -66,14 +103,35 @@ export default function PersonalizarExperiencia() {
           <DadosPessoais
             valores={valores}
             nomeCompleto={NOME_COMPLETO}
-            onAlterarCampo={(campo, valor) => setValores((v) => ({ ...v, [campo]: valor }))}
-            onContinuar={(e) => {
+            onAlterarCampo={alterar(setValores)}
+            onContinuar={irParaEtapa(2)} // TODO: salvar na API antes de avançar
+            onPular={irParaEtapa(2)}
+          />
+        )}
+
+        {etapa === 2 && (
+          <EquipeSaude
+            valores={equipe}
+            profissional={PROFISSIONAL_EXEMPLO}
+            podeContinuar={podeContinuarEquipe}
+            onAlterarCampo={alterarEquipe}
+            onAbrirModal={() => setModalAberto(true)}
+            onContinuar={irParaEtapa(3)} // TODO: salvar o vínculo na API antes de avançar
+            onPular={irParaEtapa(3)}
+            onVoltar={irParaEtapa(1)}
+          />
+        )}
+
+        {etapa === 3 && (
+          <HumorDia
+            valores={humor}
+            onAlterarCampo={alterar(setHumor)}
+            onSalvar={(e) => {
               e.preventDefault()
-              // TODO: salvar na API e ir para a etapa 2 (Profissional).
-              // Por enquanto, como as etapas 2 e 3 não existem, conclui aqui.
-              concluir()
+              concluir() // TODO: salvar o humor na API
             }}
-            onPular={concluir}
+            onAgoraNao={concluir}
+            onVoltar={irParaEtapa(2)}
           />
         )}
       </section> */}
@@ -129,6 +187,16 @@ export default function PersonalizarExperiencia() {
       </section>
 
       <PontosProgresso className="mt-4" total={PASSOS.length} atual={etapa} />
+
+      <ModalProfissionalEncontrado
+        aberto={modalAberto}
+        nome={PROFISSIONAL_EXEMPLO.nome}
+        onFechar={() => setModalAberto(false)}
+        onEntendi={() => {
+          setModalAberto(false)
+          setEquipe((v) => ({ ...v, selecionado: true }))
+        }}
+      />
     </main>
   )
 }
