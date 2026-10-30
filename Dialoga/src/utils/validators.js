@@ -52,8 +52,23 @@ export function mascararCpf(valor) {
 
 export const limparCpf = soNumeros
 
-// Passo 1 do cadastro: tipo, nome, e-mail, celular (+ CPF e CRP se for profissional)
-export function validarCadastroDados({ tipo, nome, email, celular, cpf, crp }) {
+// CPF válido = 11 números (não todos iguais) + 2 dígitos verificadores (mesma regra do back-end)
+export function cpfValido(valor) {
+  const cpf = soNumeros(valor)
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false
+
+  const digito = (base) => {
+    let soma = 0
+    for (let i = 0; i < base.length; i++) soma += Number(base[i]) * (base.length + 1 - i)
+    const resto = (soma * 10) % 11
+    return resto === 10 ? 0 : resto
+  }
+
+  return digito(cpf.slice(0, 9)) === Number(cpf[9]) && digito(cpf.slice(0, 10)) === Number(cpf[10])
+}
+
+// Passo 1 do cadastro: tipo, nome, e-mail, celular (+ CPF, CRP e especialidades se for profissional)
+export function validarCadastroDados({ tipo, nome, email, celular, cpf, crp, especialidades = [] }) {
   const erros = {}
 
   if (nome.trim().split(/\s+/).filter(Boolean).length < 2 || nome.length > MAX_NOME)
@@ -67,7 +82,11 @@ export function validarCadastroDados({ tipo, nome, email, celular, cpf, crp }) {
 
   if (tipo === 'profissional') {
     if (soNumeros(cpf).length !== 11) erros.cpf = 'CPF deve ter 11 números.'
+    else if (!cpfValido(cpf)) erros.cpf = 'CPF inválido.'
+
     if (!crp.trim() || crp.length > 20) erros.crp = 'Informe seu CRP.'
+
+    if (especialidades.length === 0) erros.especialidades = 'Selecione ao menos uma especialidade.'
   }
 
   return erros

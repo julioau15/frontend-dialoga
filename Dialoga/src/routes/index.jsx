@@ -16,7 +16,6 @@ import PrimeiroAcesso from '../pages/auth/PrimeiroAcesso'
 import PerfilEmAnalise from '../pages/auth/PerfilEmAnalise'
 import RecuperarSenha from '../pages/auth/RecuperarSenha'
 import PersonalizarExperiencia from '../pages/auth/PersonalizarExperiencia'
-import BoasVindasProfissional from '../pages/auth/BoasVindasProfissional'
 
 // Admin
 import DashboardAdmin from '../pages/admin/Dashboard'
@@ -26,6 +25,7 @@ import AgendaPaciente from '../pages/paciente/Agenda'
 import DashboardPaciente from '../pages/paciente/Dashboard'
 import NotificacoesPaciente from '../pages/paciente/Notificacoes'
 import PerfilPaciente from '../pages/paciente/Perfil'
+
 import ProfissionaisPaciente from '../pages/paciente/Profissionais'
 import RelatoriosPaciente from '../pages/paciente/Relatorios'
 import TarefasPaciente from '../pages/paciente/Tarefas'
@@ -33,6 +33,7 @@ import TratamentosPaciente from '../pages/paciente/Tratamentos'
 
 // Profissional
 import AgendaProfissional from '../pages/profissional/Agenda'
+import BoasVindasProfissional from '../pages/profissional/BoasVindas'
 import DashboardProfissional from '../pages/profissional/Dashboard'
 import NotificacoesProfissional from '../pages/profissional/Notificacoes'
 import PacientesProfissional from '../pages/profissional/Pacientes'
