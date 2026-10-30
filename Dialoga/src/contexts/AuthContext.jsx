@@ -1,15 +1,46 @@
 // ============================================================
 // contexts/AuthContext.jsx
 // Guarda quem está logado e deixa isso disponível para todo o app.
-// Uso em qualquer componente:  const { auth, login, logout } = useAuth()
+// Uso em qualquer componente:  const { auth, perfil, login, logout } = useAuth()
 //   auth   -> { token, nivel, id, email } ou null (deslogado)
+//   perfil -> { nome, fotoUrl } do usuário logado ou null
 //   login  -> faz o login na API e salva a sessão
 //   logout -> apaga a sessão
 // ============================================================
 import { createContext, useContext, useEffect, useState } from 'react'
 import { loginRequest } from '../services/authService'
+import { API_URL } from '../config/api'
 
 const AuthContext = createContext(null)
+
+// nivel -> rota onde ficam os dados daquele tipo de usuário.
+// AJUSTE: confira qual número é cada nível e o nome real das rotas.
+const ROTA_POR_NIVEL = {
+  0: 'administradores',
+  1: 'profissionais',
+  2: 'pacientes',
+}
+
+const NIVEL = {
+  0: 'administrador',
+  1: 'profissional',
+  2: 'paciente',
+}
+
+// Deixa o perfil sempre no mesmo formato, independente da tabela de origem.
+// AJUSTE: troque pelos nomes reais dos campos que sua API devolve.
+function normalizarPerfil(dados) {
+  if (!dados) return null
+  // se a API devolver uma lista ou um objeto embrulhado, pega o registro
+  const registro = dados[0]
+  console.log(registro)
+  if (!registro) return null
+
+  return {
+    nome: registro.nome_completo ?? '',
+    fotoUrl: registro.foto_avatar ?? null
+  }
+}
 
 // Lê o "exp" (em segundos) de um JWT. Devolve null se não for um JWT válido.
 function lerExpiracao(token) {
@@ -42,6 +73,7 @@ function lerSessaoSalva() {
 
 export function AuthProvider({ children }) {
   const [auth, setAuth] = useState(lerSessaoSalva)
+  const [perfil, setPerfil] = useState(null)
 
   async function login(email, senha) {
     const dados = await loginRequest(email, senha)
@@ -53,6 +85,7 @@ export function AuthProvider({ children }) {
   function logout() {
     localStorage.removeItem('auth')
     setAuth(null)
+    setPerfil(null)
   }
 
   // Desloga automaticamente quando o token expira (mesmo com a aba aberta)
@@ -66,8 +99,41 @@ export function AuthProvider({ children }) {
     return () => clearTimeout(timer)
   }, [auth])
 
+  // Busca nome e foto na rota do nível do usuário (administrador, profissional ou paciente)
+  useEffect(() => {
+    if (!auth) {
+      setPerfil(null)
+      return
+    }
+
+    const rota = ROTA_POR_NIVEL[auth.nivel]
+    const nivel = NIVEL[auth.nivel]
+    if (!rota) {
+      setPerfil(null)
+      return
+    }
+
+    let cancelado = false
+
+    fetch(`${API_URL}/${rota}/${auth.id}`, {
+      headers: { 'x-access-token': auth.token },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((dados) => {
+        if (!cancelado) setPerfil(normalizarPerfil(dados.response[nivel]))
+      })
+      .catch(() => {
+        if (!cancelado) setPerfil(null)
+      })
+
+    // evita atualizar o estado se o usuário deslogar antes da resposta chegar
+    return () => {
+      cancelado = true
+    }
+  }, [auth])
+
   return (
-    <AuthContext.Provider value={{ auth, login, logout }}>
+    <AuthContext.Provider value={{ auth, perfil, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
