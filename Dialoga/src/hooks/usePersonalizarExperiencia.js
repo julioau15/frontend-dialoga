@@ -107,7 +107,7 @@ export function usePersonalizarExperiencia() {
   const [equipe, setEquipe] = useState(EQUIPE_INICIAL)
   const [erroEquipe, setErroEquipe] = useState('')
   const [vinculando, setVinculando] = useState(false)
-  const [idVinculado, setIdVinculado] = useState(null) // evita criar o mesmo vínculo duas vezes
+  const [idsVinculados, setIdsVinculados] = useState([]) // evita criar o mesmo vínculo duas vezes
   const [modalAberto, setModalAberto] = useState(false)
 
   // A busca só roda quando o paciente responde "Sim, tenho"
@@ -150,7 +150,6 @@ export function usePersonalizarExperiencia() {
   // Atualiza um campo (com máscara/limite) e apaga o erro dele
   function alterarDadoPessoal(campo, valor) {
     if (campo === 'dataNascimento') valor = mascararData(valor)
-    if (campo === 'apelido') valor = valor.slice(0, LIMITES_PERSONALIZACAO.APELIDO)
 
     setDadosPessoais((v) => ({ ...v, [campo]: valor }))
     setErrosDados((e) => ({ ...e, [campo]: undefined }))
@@ -212,7 +211,7 @@ export function usePersonalizarExperiencia() {
     }
 
     // Já vinculou este mesmo profissional (ex.: voltou da etapa 3): só avança
-    if (equipe.profissional.id === idVinculado) {
+    if (idsVinculados.includes(equipe.profissional.id)) {
       setEtapa(3)
       return
     }
@@ -221,7 +220,7 @@ export function usePersonalizarExperiencia() {
     setErroEquipe('')
     try {
       await vincularProfissional(token, equipe.profissional.id)
-      setIdVinculado(equipe.profissional.id)
+      setIdsVinculados((ids) => [...ids, equipe.profissional.id])
       setModalAberto(true) // "Profissional encontrado... recebeu uma notificação"
     } catch (erro) {
       setErroEquipe(erro.message)

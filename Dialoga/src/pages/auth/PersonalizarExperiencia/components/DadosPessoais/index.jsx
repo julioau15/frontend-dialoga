@@ -15,7 +15,6 @@ import TextField from '../../../../../components/TextField'
 import Button from '../../../../../components/Button'
 import iconeNome from '../../../../../assets/auth/IconNome.png'
 import ilustracao from '../../../../../assets/auth/ilustracaoPersonalizarExperiencia.png'
-import { LIMITES_PERSONALIZACAO } from '../../../../../utils/validators'
 
 // "(opcional)" pequeno ao lado do rótulo
 const OPCIONAL = <span className="text-[10px] font-normal text-secundaria">(opcional)</span>
@@ -47,7 +46,6 @@ export default function DadosPessoais({ valores, erros = {}, nomeCompleto, onAlt
           autoComplete="nickname"
           placeholder="Digite como prefere ser chamado"
           icone={iconeNome}
-          maxLength={LIMITES_PERSONALIZACAO.APELIDO} // VARCHAR(80) no banco
           value={valores.apelido}
           onChange={(e) => onAlterarCampo('apelido', e.target.value)}
           erro={erros.apelido}
