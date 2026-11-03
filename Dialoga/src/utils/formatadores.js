@@ -13,9 +13,14 @@ export function doisPrimeirosNomes(nome = '') {
     .slice(0, 2)
 }
 
-// "Carlos Eduardo Mendes" -> "CM" (primeira e última palavra)
+// "Carlos Eduardo Mendes" -> "CM" (primeira e última palavra).
+// Ignora títulos: "Dra. Fernanda Alencar" -> "FA"
 export function iniciais(nome = '') {
-  const partes = nome.trim().split(/\s+/).filter(Boolean)
+  const partes = nome
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((parte) => !/^(dr|dra)\.?$/i.test(parte))
   if (partes.length === 0) return ''
   if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase()
   return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
@@ -47,4 +52,24 @@ export function textoAtendimentosHoje(qtd) {
   if (!qtd) return 'Você não tem atendimentos hoje.'
   if (qtd === 1) return 'Você tem 1 atendimento hoje.'
   return `Você tem ${qtd} atendimentos hoje.`
+}
+
+// "2026-09-02T10:00:00.000Z" (ou Date) -> "02/09/2026"
+export function formatarData(valor) {
+  if (!valor) return ''
+  const data = new Date(valor)
+  if (Number.isNaN(data.getTime())) return ''
+  return data.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+}
+
+// "23456789011" -> "234.567.890-11" (se já vier formatado, devolve igual)
+export function formatarCpf(cpf = '') {
+  const numeros = String(cpf).replace(/\D/g, '')
+  if (numeros.length !== 11) return String(cpf)
+  return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+}
+
+// Tira acentos e deixa minúsculo, para a busca ignorar "Á" x "a"
+export function textoParaBusca(texto = '') {
+  return String(texto).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 }

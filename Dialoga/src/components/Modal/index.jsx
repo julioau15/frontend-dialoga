@@ -7,10 +7,13 @@
 //   titulo   -> título (também é o nome do modal para leitores de tela)
 //   onFechar -> chamado ao clicar no X, no fundo escuro ou apertar Esc
 //   children -> conteúdo do modal
+//   largura  -> classe de largura máxima (padrão 'max-w-[375px]')
+//   rodape   -> botões do rodapé (opcional; aparece com uma linha divisória em cima)
+//   comDivisores -> true coloca uma linha divisória embaixo do título (estilo do painel admin)
 // ============================================================
 import { useEffect, useId, useRef } from 'react'
 
-export default function Modal({ aberto, titulo, onFechar, children }) {
+export default function Modal({ aberto, titulo, onFechar, children, largura = 'max-w-[375px]', rodape, comDivisores = false }) {
   const ref = useRef(null)
   const idTitulo = useId()
 
@@ -26,14 +29,14 @@ export default function Modal({ aberto, titulo, onFechar, children }) {
     <dialog
       ref={ref}
       aria-labelledby={idTitulo}
-      className="m-auto w-[calc(100%-2rem)] max-w-[375px] p-0 bg-branco text-texto border border-borda rounded-2xl shadow-[0_8px_24px_var(--color-sombra-media)] backdrop:bg-overlay backdrop:backdrop-blur-[3px]"
+      className={`m-auto w-[calc(100%-2rem)] ${largura} p-0 bg-branco text-texto border border-borda rounded-2xl shadow-[0_8px_24px_var(--color-sombra-media)] backdrop:bg-overlay backdrop:backdrop-blur-[3px]`}
       onClose={onFechar}
       onClick={(e) => {
         if (e.target === e.currentTarget) onFechar() // clique no fundo escuro
       }}
     >
-      <div className="p-6 text-left">
-        <div className="flex items-start justify-between gap-3">
+      <div className={comDivisores ? 'text-left' : 'p-6 text-left'}>
+        <div className={`flex justify-between gap-3 ${comDivisores ? 'items-center px-6 py-4 border-b border-borda' : 'items-start'}`}>
           <h2 className="text-[14px] font-extrabold text-texto" id={idTitulo}>{titulo}</h2>
           <button
             className="grid place-items-center w-6 h-6 -mt-0.5 -mr-1 border-0 bg-transparent rounded-md text-secundaria cursor-pointer hover:bg-fundo-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
@@ -47,7 +50,8 @@ export default function Modal({ aberto, titulo, onFechar, children }) {
             </svg>
           </button>
         </div>
-        {children}
+        {comDivisores ? <div className="p-6">{children}</div> : children}
+        {rodape && <div className="flex justify-end gap-3 px-6 py-4 border-t border-borda">{rodape}</div>}
       </div>
     </dialog>
   )
