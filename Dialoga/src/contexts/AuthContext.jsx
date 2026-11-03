@@ -27,18 +27,15 @@ const NIVEL = {
   2: 'paciente',
 }
 
-// Deixa o perfil sempre no mesmo formato, independente da tabela de origem.
-// AJUSTE: troque pelos nomes reais dos campos que sua API devolve.
+
 function normalizarPerfil(dados) {
   if (!dados) return null
-  // se a API devolver uma lista ou um objeto embrulhado, pega o registro
-  const registro = dados[0]
-  console.log(registro)
+  const registro = Array.isArray(dados) ? dados[0] : dados
   if (!registro) return null
 
   return {
-    nome: registro.nome_completo ?? '',
-    fotoUrl: registro.foto_avatar ?? null
+    nome: registro.nome_completo ?? registro.nome ?? '',
+    fotoUrl: registro.foto_avatar ?? null,
   }
 }
 
