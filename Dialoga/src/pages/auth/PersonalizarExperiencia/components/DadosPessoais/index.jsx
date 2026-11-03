@@ -1,8 +1,11 @@
 // ============================================================
 // DadosPessoais (etapa 1 "Pessoal" de Personalizar experiência)
-// Só layout: ilustração, título, 2 campos opcionais, botão e "Pular".
+// Ilustração, título, 2 campos opcionais, botão e "Pular".
+// A validação e a máscara ficam no hook usePersonalizarExperiencia;
+// aqui só mostramos os valores e os erros recebidos.
 // Props:
 //   valores        -> { apelido, dataNascimento }
+//   erros          -> { apelido?, dataNascimento? } mensagens de erro
 //   nomeCompleto   -> nome completo mostrado abaixo do 1º campo
 //   onAlterarCampo -> (campo, valor) => void
 //   onContinuar    -> chamado ao enviar o formulário
@@ -12,6 +15,7 @@ import TextField from '../../../../../components/TextField'
 import Button from '../../../../../components/Button'
 import iconeNome from '../../../../../assets/auth/IconNome.png'
 import ilustracao from '../../../../../assets/auth/ilustracaoPersonalizarExperiencia.png'
+import { LIMITES_PERSONALIZACAO } from '../../../../../utils/validators'
 
 // "(opcional)" pequeno ao lado do rótulo
 const OPCIONAL = <span className="text-[10px] font-normal text-secundaria">(opcional)</span>
@@ -25,8 +29,9 @@ const IconeCalendario = (
   </svg>
 )
 
-export default function DadosPessoais({ valores, nomeCompleto, onAlterarCampo, onContinuar, onPular }) {
+export default function DadosPessoais({ valores, erros = {}, nomeCompleto, onAlterarCampo, onContinuar, onPular }) {
   return (
+    // noValidate: quem valida é o nosso código (mensagens em português e no padrão do sistema)
     <form className="flex flex-col items-center" onSubmit={onContinuar} noValidate>
       <img className="h-[150px] w-[106px] object-contain" src={ilustracao} width="106" height="150" alt="" />
 
@@ -42,21 +47,25 @@ export default function DadosPessoais({ valores, nomeCompleto, onAlterarCampo, o
           autoComplete="nickname"
           placeholder="Digite como prefere ser chamado"
           icone={iconeNome}
+          maxLength={LIMITES_PERSONALIZACAO.APELIDO} // VARCHAR(80) no banco
           value={valores.apelido}
           onChange={(e) => onAlterarCampo('apelido', e.target.value)}
-          ajuda={<>Seu nome completo é <strong className="font-bold text-texto">{nomeCompleto}</strong>.</>}
+          erro={erros.apelido}
+          // Só mostra a frase se o nome completo chegou da API
+          ajuda={nomeCompleto ? <>Seu nome completo é <strong className="font-bold text-texto">{nomeCompleto}</strong>.</> : undefined}
         />
 
         <TextField
           label={<>Data de nascimento {OPCIONAL}</>}
           name="dataNascimento"
           autoComplete="bday"
-          inputMode="numeric"
-          maxLength={10}
+          inputMode="numeric" // teclado numérico no celular
+          maxLength={10} // "dd/mm/aaaa"
           placeholder="dd/mm/aaaa"
           icone={IconeCalendario}
           value={valores.dataNascimento}
-          onChange={(e) => onAlterarCampo('dataNascimento', e.target.value)}
+          onChange={(e) => onAlterarCampo('dataNascimento', e.target.value)} // a máscara é aplicada no hook
+          erro={erros.dataNascimento}
         />
       </div>
 
