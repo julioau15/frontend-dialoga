@@ -3,9 +3,14 @@
 // Funções pequenas para formatar nomes e datas nas telas.
 // ============================================================
 
-// "Carlos Eduardo Mendes" -> "Carlos"
-export function primeiroNome(nome = '') {
-  return nome.trim().split(/\s+/)[0] ?? ''
+const PARTICULAS = ['de', 'da', 'do', 'das', 'dos', 'e']
+
+export function doisPrimeirosNomes(nome = '') {
+  return nome
+    .trim()
+    .split(/\s+/)
+    .filter((p) => p && !PARTICULAS.includes(p.toLowerCase()))
+    .slice(0, 2)
 }
 
 // "Carlos Eduardo Mendes" -> "CM" (primeira e última palavra)

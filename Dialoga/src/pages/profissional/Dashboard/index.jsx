@@ -8,7 +8,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { useDashboardProfissional } from '../../../hooks/useDashboardProfissional'
 import Button from '../../../components/Button'
 import { Atividade, Calendario, CheckQuadrado, Usuarios } from '../../../components/Icones'
-import { primeiroNome, textoAtendimentosHoje } from '../../../utils/formatadores'
+import { doisPrimeirosNomes, textoAtendimentosHoje } from '../../../utils/formatadores'
 import BannerBoasVindas from './components/BannerBoasVindas'
 import CardIndicador from './components/CardIndicador'
 import CardAtendimentosHoje from './components/CardAtendimentosHoje'
@@ -57,7 +57,7 @@ export default function Dashboard() {
     // -m-6 anula o padding do <main> do layout para o fundo lilás ocupar a área toda
     <div className="-m-6 bg-fundo-suave p-6 md:min-h-screen md:p-10">
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
-        <BannerBoasVindas data={hoje} nome={primeiroNome(perfil?.nome)} mensagem={mensagem} />
+        <BannerBoasVindas data={hoje} nome={doisPrimeirosNomes(perfil?.nome).join(' ')} mensagem={mensagem} />
 
         {carregando && <Carregando />}
         {erro && <Erro mensagem={erro} onTentarNovamente={recarregar} />}

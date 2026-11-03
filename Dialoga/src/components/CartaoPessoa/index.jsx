@@ -9,7 +9,6 @@
 // Aceita as props normais de <button> (onClick, ...).
 // ============================================================
 export default function CartaoPessoa({ nome, detalhe, selecionado = false, ...props }) {
-    // "Carlos Eduardo Mendes" -> "CE"
     const iniciais = nome.split(' ').filter(Boolean).slice(0, 2).map((parte) => parte[0]).join('').toUpperCase()
   
     return (
