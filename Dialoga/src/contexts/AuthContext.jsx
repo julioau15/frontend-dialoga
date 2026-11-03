@@ -13,7 +13,8 @@ import { API_URL } from '../config/api'
 
 const AuthContext = createContext(null)
 
-// nivel -> rota onde ficam os dados daquele tipo de usuário
+// nivel -> rota onde ficam os dados daquele tipo de usuário.
+// AJUSTE: confira qual número é cada nível e o nome real das rotas.
 const ROTA_POR_NIVEL = {
   0: 'administradores/me',
   1: 'profissionais/me',
@@ -26,11 +27,13 @@ const NIVEL = {
   2: 'paciente',
 }
 
-
+// Deixa o perfil sempre no mesmo formato, independente da tabela de origem.
+// AJUSTE: troque pelos nomes reais dos campos que sua API devolve.
 function normalizarPerfil(dados) {
-  console.log(dados)
   if (!dados) return null
+  // se a API devolver uma lista ou um objeto embrulhado, pega o registro
   const registro = Array.isArray(dados) ? dados[0] : dados
+  console.log(registro)
   if (!registro) return null
 
   return {
@@ -85,6 +88,18 @@ export function AuthProvider({ children }) {
     setPerfil(null)
   }
 
+  // Registra na sessão que o paciente concluiu o primeiro acesso.
+  // Parte da sessão salva: é chamada depois de um await, e o usuário pode ter
+  // sido deslogado nesse intervalo (nesse caso, não recria a sessão).
+  function marcarPrimeiroAcessoConcluido() {
+    const sessao = lerSessaoSalva()
+    if (!sessao) return
+
+    const atualizada = { ...sessao, primeiroAcessoConcluido: true }
+    localStorage.setItem('auth', JSON.stringify(atualizada))
+    setAuth(atualizada)
+  }
+
   // Desloga automaticamente quando o token expira (mesmo com a aba aberta)
   useEffect(() => {
     if (!auth) return
@@ -103,13 +118,16 @@ export function AuthProvider({ children }) {
       return
     }
 
+    const rota = ROTA_POR_NIVEL[auth.nivel]
     const nivel = NIVEL[auth.nivel]
+    if (!rota) {
+      setPerfil(null)
+      return
+    }
 
     let cancelado = false
-  
-    console.log("rota", ROTA_POR_NIVEL[auth.nivel])
 
-    fetch(`${API_URL}/${ROTA_POR_NIVEL[auth.nivel]}`, {
+    fetch(`${API_URL}/${rota}`, {
       headers: { 'x-access-token': auth.token },
     })
       .then((r) => (r.ok ? r.json() : null))
@@ -127,7 +145,7 @@ export function AuthProvider({ children }) {
   }, [auth])
 
   return (
-    <AuthContext.Provider value={{ auth, perfil, login, logout }}>
+    <AuthContext.Provider value={{ auth, perfil, login, logout, marcarPrimeiroAcessoConcluido }}>
       {children}
     </AuthContext.Provider>
   )

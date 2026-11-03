@@ -22,7 +22,8 @@ export function rotaInicialPorNivel(nivel) {
 
 // Rota logo após o login: paciente no primeiro acesso vai para as perguntas
 // de personalização; os demais vão direto para a própria área.
-export function rotaAposLogin({ nivel, id }) {
-  if (nivel === NIVEL.PACIENTE && !primeiroAcessoConcluido(id)) return ROTA_PRIMEIRO_ACESSO
+export function rotaAposLogin({ nivel, id, primeiroAcessoConcluido: concluido }) {
+  // sessão antiga não tem o campo: consulta o que ficou salvo no navegador
+  if (nivel === NIVEL.PACIENTE && !(concluido ?? primeiroAcessoConcluido(id))) return ROTA_PRIMEIRO_ACESSO
   return rotaInicialPorNivel(nivel)
 }

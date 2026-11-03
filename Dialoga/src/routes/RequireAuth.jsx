@@ -24,7 +24,8 @@ export default function RequireAuth({ nivel, exigirPrimeiroAcesso = true }) {
   }
 
   // Paciente que ainda não respondeu as perguntas de primeiro acesso
-  if (exigirPrimeiroAcesso && auth.nivel === NIVEL.PACIENTE && !primeiroAcessoConcluido(auth.id)) {
+  // (sessão antiga não tem o campo: consulta o que ficou salvo no navegador)
+  if (exigirPrimeiroAcesso && auth.nivel === NIVEL.PACIENTE && !(auth.primeiroAcessoConcluido ?? primeiroAcessoConcluido(auth.id))) {
     return <Navigate to={ROTA_PRIMEIRO_ACESSO} replace />
   }
 

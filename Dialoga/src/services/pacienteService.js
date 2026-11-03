@@ -87,3 +87,118 @@ export async function buscarMeuPaciente(token, signal) {
     // mantendo o controle do formulário separado das requisições à API.
     return paciente
 }
+
+// ============================================================
+// Requisições usadas nas etapas 2 e 3 do "Personalizar experiência":
+//   buscarProfissionais   -> GET  /profissionais/busca?q=texto
+//   vincularProfissional  -> POST /pacientes/me/profissionais/:id
+//   salvarRegistroHumor   -> POST /pacientes/me/registros-humor
+//   salvarPrimeiroAcesso  -> POST /pacientes/me/primeiro-acesso
+// Em caso de erro, todas lançam um Error com .message pronta para a tela
+// e .status com o código HTTP (quando houver resposta).
+// ============================================================
+
+const ERRO_CONEXAO = 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.'
+const ERRO_SESSAO = 'Sua sessão expirou. Faça login novamente.'
+const ERRO_SERVIDOR = 'Tivemos um problema no servidor. Tente novamente em instantes.'
+
+// Faz a requisição autenticada e devolve o JSON da API quando der certo.
+//   caminho -> ex.: '/profissionais/busca?q=ana'
+//   opcoes  -> { token, method, body, signal, mensagemErro }
+// body (objeto) é enviado como JSON.
+async function requisicao(caminho, { token, method = 'GET', body, signal, mensagemErro }) {
+    // Sem token não adianta chamar a API: ela responderia 401
+    if (!token) {
+        const erro = new Error(ERRO_SESSAO)
+        erro.status = 401
+        throw erro
+    }
+
+    const headers = { 'x-access-token': token }
+
+    // IMPORTANTE: o back compara o Content-Type exatamente com "application/json".
+    // Não acrescente "; charset=utf-8", senão a API responde 415.
+    if (body !== undefined) headers['Content-Type'] = 'application/json'
+
+    let resposta
+    try {
+        resposta = await fetch(`${API_URL}${caminho}`, {
+            method,
+            headers,
+            body: body !== undefined ? JSON.stringify(body) : undefined,
+            signal,
+        })
+    } catch (erro) {
+        // Cancelamento (AbortController) não é falha de conexão: repassa como veio,
+        // para quem chamou reconhecer e ignorar.
+        if (signal?.aborted) throw erro
+        throw new Error(ERRO_CONEXAO, { cause: erro })
+    }
+
+    // Mesmo cuidado do buscarMeuPaciente: o fetch não rejeita em 400/500
+    const dados = await resposta.json().catch(() => null)
+
+    if (!resposta.ok || !dados?.status) {
+        let mensagem = dados?.message || mensagemErro || 'Não foi possível concluir a ação.'
+
+        if (resposta.status === 401) mensagem = ERRO_SESSAO
+        // As mensagens 500 do back são técnicas ("[ERRO NA CONTROLLER]"): trocamos por uma amigável
+        if (resposta.status >= 500) mensagem = mensagemErro || ERRO_SERVIDOR
+
+        const erro = new Error(mensagem)
+        erro.status = resposta.status
+        erro.campo = dados?.field // ex.: "[HORAS_SONO] INVÁLIDO" (útil para depurar)
+        throw erro
+    }
+
+    return dados
+}
+
+// GET /profissionais/busca?q=texto
+// Devolve até 8 profissionais APROVADOS que tenham o texto no nome ou no começo do e-mail:
+//   [{ id, nome_completo, foto_avatar, especialidades: "Psicologia Clínica, ..." }]
+// O back devolve lista vazia se o texto tiver menos de 2 ou mais de 100 caracteres.
+export async function buscarProfissionais(token, termo, signal) {
+    const params = new URLSearchParams({ q: termo })
+
+    const dados = await requisicao(`/profissionais/busca?${params}`, {
+        token,
+        signal,
+        mensagemErro: 'Não foi possível buscar os profissionais.',
+    })
+
+    return dados.response?.profissional ?? []
+}
+
+// POST /pacientes/me/profissionais/:id (sem corpo)
+// Cria o vínculo paciente-profissional; o profissional ainda precisa aceitar.
+export async function vincularProfissional(token, idProfissional) {
+    return requisicao(`/pacientes/me/profissionais/${encodeURIComponent(idProfissional)}`, {
+        token,
+        method: 'POST',
+        mensagemErro: 'Não foi possível enviar a solicitação ao profissional.',
+    })
+}
+
+// POST /pacientes/me/registros-humor
+// registro = { sentimento, energia, humor, padrao_pensamentos, horas_sono, relato }
+export async function salvarRegistroHumor(token, registro) {
+    return requisicao('/pacientes/me/registros-humor', {
+        token,
+        method: 'POST',
+        body: registro,
+        mensagemErro: 'Não foi possível salvar seu registro de humor.',
+    })
+}
+
+// POST /pacientes/me/primeiro-acesso
+// dados = { apelido, data_nascimento } (os dois podem ser null)
+// O back salva os dados e marca primeiro_acesso_concluido = 1.
+export async function salvarPrimeiroAcesso(token, dados) {
+    return requisicao('/pacientes/me/primeiro-acesso', {
+        token,
+        method: 'POST',
+        body: dados,
+        mensagemErro: 'Não foi possível salvar suas informações.',
+    })
+}

@@ -1,199 +1,104 @@
 // ============================================================
 // pages/auth/PersonalizarExperiencia
-// Primeiro acesso do paciente em 3 etapas (só o layout, sem API ainda):
+// Primeiro acesso do paciente em 3 etapas:
 //   1) DadosPessoais  -> como quer ser chamado e data de nascimento (opcionais)
 //   2) EquipeSaude    -> tem ou não profissional; busca e vínculo (modal de aviso)
 //   3) HumorDia       -> "Como você está hoje?" (sentimento, energia, sono...)
-// A página guarda a etapa atual e os valores; cada etapa só desenha a tela.
-// Ao terminar (ou pular), marca o primeiro acesso como concluído e vai para o painel.
+// Toda a lógica (estado, validação, API e navegação) está no hook
+// usePersonalizarExperiencia; esta página só escolhe o que desenhar.
 // Rota: /personalizar-experiencia
 // ============================================================
-
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../../contexts/AuthContext'
-import { concluirPrimeiroAcesso } from '../../../utils/primeiroAcesso'
 import Stepper from '../../../components/Stepper'
 import PontosProgresso from '../../../components/PontosProgresso'
+import { usePersonalizarExperiencia, PASSOS } from '../../../hooks/usePersonalizarExperiencia'
 import DadosPessoais from './components/DadosPessoais'
-import { usePersonalizarExperiencia } from '../../../hooks/usePersonalizarExperiencia'
 import EquipeSaude from './components/EquipeSaude'
 import HumorDia from './components/HumorDia'
 import ModalProfissionalEncontrado from './components/ModalProfissionalEncontrado'
 
-const PASSOS = ['Pessoal', 'Profissional', 'Humor']
-
-// Cria a função (campo, valor) que atualiza um dos objetos de valores
-const alterar = (setValores) => (campo, valor) => setValores((v) => ({ ...v, [campo]: valor }))
-
 export default function PersonalizarExperiencia() {
-  const navigate = useNavigate()
-  const { auth } = useAuth()
-  const [etapa, setEtapa] = useState(1) // TODO: trocar de etapa quando existirem as telas 2 e 3
+  const pe = usePersonalizarExperiencia()
 
-  // Recebe do hook os dados do paciente e as ações do formulário.
-  const {
-    paciente,
-    valores,
-    carregando,
-    erro,
-    alterarCampo,
-    tentarNovamente,
-  } = usePersonalizarExperiencia()
-
-  // Feedback temporário para as etapas que ainda não existem.
-  const [aviso, setAviso] = useState('')
-
-  const [modalAberto, setModalAberto] = useState(false)
-
-  const [equipe, setEquipe] = useState({ tem: null, busca: '', selecionado: false })
-  const [humor, setHumor] = useState({
-    sentimentos: [], energia: '', humorDia: '', horasSono: '', relato: '', pensamento: '',
-  })
-
-  function continuar(evento) {
-    evento.preventDefault()
-
-    // A validação e o avanço serão implementados na próxima entrega.
-    setAviso(
-      'A etapa Profissional ainda está em desenvolvimento. Os dados não foram salvos.'
+  // Conteúdo do cartão: carregando -> erro -> etapa atual
+  let conteudo
+  if (pe.carregando) {
+    conteudo = (
+      <p role="status" className="text-center text-[13px] text-secundaria">
+        Carregando seus dados...
+      </p>
     )
-  }
-
-  // Vai para outra etapa
-  const irParaEtapa = (proxima) => (e) => {
-    e.preventDefault()
-    setEtapa(proxima)
-  }
-
-  // Trocar a escolha ou mudar a busca desfaz o profissional já selecionado
-  const alterarEquipe = (campo, valor) =>
-    setEquipe((v) => ({ ...v, [campo]: valor, ...(campo !== 'selecionado' && { selecionado: false }) }))
-
-  const podeContinuarEquipe = equipe.tem === 'nao' || (equipe.tem === 'sim' && equipe.selecionado)
-
-  // Termina o primeiro acesso e segue para o painel do paciente
-  // TODO: salvar as respostas na API antes de sair
-  function concluir() {
-    concluirPrimeiroAcesso(auth.id)
-    navigate('/paciente/dashboard', { replace: true })
-  }
-
-  // Termina o primeiro acesso e segue para o painel do paciente
-  // function concluir() {
-  //   concluirPrimeiroAcesso(auth.id)
-  //   navigate('/paciente/dashboard', { replace: true })
-  // }
-
-  function pularEtapa() {
-    // Ainda não conclui o primeiro acesso, pois faltam as próximas etapas.
-    setAviso(
-      'Ainda não é possível avançar: a etapa Profissional está em desenvolvimento.'
+  } else if (pe.erroCarregamento) {
+    // Sem os dados do paciente não mostramos o formulário: o "Pular" enviaria
+    // apelido/data vazios e apagaria o que ele já tivesse salvo.
+    conteudo = (
+      <div className="flex flex-col items-center gap-4">
+        <p role="alert" className="text-center text-[13px] text-erro">{pe.erroCarregamento}</p>
+        <button type="button" onClick={pe.tentarCarregarNovamente} className="text-[12px] text-primaria underline cursor-pointer">
+          Tentar novamente
+        </button>
+      </div>
+    )
+  } else if (pe.etapa === 1) {
+    conteudo = (
+      <DadosPessoais
+        valores={pe.dadosPessoais}
+        erros={pe.errosDados}
+        nomeCompleto={pe.paciente?.nome_completo ?? ''}
+        onAlterarCampo={pe.alterarDadoPessoal}
+        onContinuar={pe.continuarDadosPessoais}
+        onPular={pe.pularDadosPessoais}
+      />
+    )
+  } else if (pe.etapa === 2) {
+    conteudo = (
+      <EquipeSaude
+        valores={pe.equipe}
+        busca={pe.busca}
+        erro={pe.erroEquipe}
+        vinculando={pe.vinculando}
+        podeContinuar={pe.podeContinuarEquipe}
+        onEscolherTem={pe.escolherTemEquipe}
+        onAlterarBusca={pe.alterarBusca}
+        onSelecionarProfissional={pe.selecionarProfissional}
+        onContinuar={pe.continuarEquipe}
+        onPular={pe.pularEquipe}
+        onVoltar={() => pe.voltarPara(1)}
+      />
+    )
+  } else {
+    conteudo = (
+      <HumorDia
+        valores={pe.humor}
+        erros={pe.errosHumor}
+        erroGeral={pe.erroGeral}
+        enviando={pe.enviando}
+        onAlterarCampo={pe.alterarHumor}
+        onSalvar={pe.salvarHumorEConcluir}
+        onAgoraNao={pe.concluirSemHumor}
+        onVoltar={() => pe.voltarPara(2)}
+      />
     )
   }
 
   return (
     <main className="flex flex-col items-center justify-center gap-6 min-h-svh py-8 px-4 bg-fundo-suave">
-      <Stepper passos={PASSOS} atual={etapa} />
-
-      {/* <section className="w-full max-w-[440px] p-6 bg-branco border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]">
-        {etapa === 1 && (
-          <DadosPessoais
-            valores={valores}
-            nomeCompleto={perfil?.nome_completo || ''}
-            onAlterarCampo={alterar(setValores)}
-            onContinuar={irParaEtapa(2)} // TODO: salvar na API antes de avançar
-            onPular={irParaEtapa(2)}
-          />
-        )}
-
-        {etapa === 2 && (
-          <EquipeSaude
-            valores={equipe}
-            profissional={PROFISSIONAL_EXEMPLO}
-            podeContinuar={podeContinuarEquipe}
-            onAlterarCampo={alterarEquipe}
-            onAbrirModal={() => setModalAberto(true)}
-            onContinuar={irParaEtapa(3)} // TODO: salvar o vínculo na API antes de avançar
-            onPular={irParaEtapa(3)}
-            onVoltar={irParaEtapa(1)}
-          />
-        )}
-
-        {etapa === 3 && (
-          <HumorDia
-            valores={humor}
-            onAlterarCampo={alterar(setHumor)}
-            onSalvar={(e) => {
-              e.preventDefault()
-              concluir() // TODO: salvar o humor na API
-            }}
-            onAgoraNao={concluir}
-            onVoltar={irParaEtapa(2)}
-          />
-        )}
-      </section> */}
+      <Stepper passos={PASSOS} atual={pe.etapa} />
 
       <section
-        aria-busy={carregando}
+        aria-busy={pe.carregando || pe.vinculando || pe.enviando}
         className="w-full max-w-[440px] p-6 bg-branco border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]"
       >
-        {/* Aguarda a consulta antes de mostrar o formulário. */}
-        {carregando ? (
-          <p role="status" className="text-center text-texto">
-            Carregando seus dados...
-          </p>
-        ) : erro ? (
-          // Permite repetir a consulta caso ocorra uma falha.
-          <div className="flex flex-col items-center gap-4">
-            <p role="alert" className="text-center text-texto">
-              {erro}
-            </p>
-
-            <button
-              type="button"
-              onClick={tentarNovamente}
-              className="text-primaria underline"
-            >
-              Tentar novamente
-            </button>
-          </div>
-        ) : etapa === 1 ? (
-          <>
-            <DadosPessoais
-              valores={valores}
-              nomeCompleto={paciente?.nome_completo ?? ''}
-              onAlterarCampo={(campo, valor) => {
-                setAviso('')
-                alterarCampo(campo, valor)
-              }}
-              onContinuar={continuar}
-              onPular={pularEtapa}
-            />
-
-            {/* Informa a limitação atual sem concluir o fluxo indevidamente. */}
-            {aviso && (
-              <p
-                role="status"
-                className="mt-4 text-center text-sm text-texto"
-              >
-                {aviso}
-              </p>
-            )}
-          </>
-        ) : null}
+        {conteudo}
       </section>
 
-      <PontosProgresso className="mt-4" total={PASSOS.length} atual={etapa} />
+      <PontosProgresso className="mt-4" total={PASSOS.length} atual={pe.etapa} />
 
+      {/* Nome do PROFISSIONAL escolhido (não do paciente) */}
       <ModalProfissionalEncontrado
-        aberto={modalAberto}
-        nome={perfil.nome_completo}
-        onFechar={() => setModalAberto(false)}
-        onEntendi={() => {
-          setModalAberto(false)
-          setEquipe((v) => ({ ...v, selecionado: true }))
-        }}
+        aberto={pe.modalAberto}
+        nome={pe.equipe.profissional?.nome_completo ?? ''}
+        onFechar={pe.fecharModal}
+        onEntendi={pe.confirmarModal}
       />
     </main>
   )
