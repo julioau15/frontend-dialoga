@@ -88,7 +88,7 @@ function montarRegistroHumor(humor) {
 
 export function usePersonalizarExperiencia() {
   const navigate = useNavigate()
-  const { auth } = useAuth()
+  const { auth, marcarPrimeiroAcessoConcluido } = useAuth()
   const token = auth?.token
 
   const [etapa, setEtapa] = useState(1)
@@ -262,6 +262,8 @@ export function usePersonalizarExperiencia() {
       apelido: dadosPessoais.apelido.trim() || null,
       data_nascimento: dataBRparaISO(dadosPessoais.dataNascimento), // null se vazio
     })
+
+    marcarPrimeiroAcessoConcluido()
 
     // O RequireAuth ainda consulta o navegador para saber se o primeiro acesso terminou
     concluirPrimeiroAcesso(auth.id)

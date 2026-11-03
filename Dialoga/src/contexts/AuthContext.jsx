@@ -88,6 +88,18 @@ export function AuthProvider({ children }) {
     setPerfil(null)
   }
 
+  // Registra na sessão que o paciente concluiu o primeiro acesso.
+  // Parte da sessão salva: é chamada depois de um await, e o usuário pode ter
+  // sido deslogado nesse intervalo (nesse caso, não recria a sessão).
+  function marcarPrimeiroAcessoConcluido() {
+    const sessao = lerSessaoSalva()
+    if (!sessao) return
+
+    const atualizada = { ...sessao, primeiroAcessoConcluido: true }
+    localStorage.setItem('auth', JSON.stringify(atualizada))
+    setAuth(atualizada)
+  }
+
   // Desloga automaticamente quando o token expira (mesmo com a aba aberta)
   useEffect(() => {
     if (!auth) return
@@ -133,7 +145,7 @@ export function AuthProvider({ children }) {
   }, [auth])
 
   return (
-    <AuthContext.Provider value={{ auth, perfil, login, logout }}>
+    <AuthContext.Provider value={{ auth, perfil, login, logout, marcarPrimeiroAcessoConcluido }}>
       {children}
     </AuthContext.Provider>
   )

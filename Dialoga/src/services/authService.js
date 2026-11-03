@@ -38,6 +38,12 @@ export async function loginRequest(email, senha) {
 
   // Pegamos só o necessário (a resposta do back também traz senha_hash,
   // que não deve ser guardada no front)
-  const { token, nivel, id, email: emailUsuario } = data.response.auth[0]
-  return { token, nivel, id, email: emailUsuario }
+  const { token, nivel, id, email: emailUsuario, primeiro_acesso_concluido } = data.response.auth[0]
+  return {
+    token,
+    nivel,
+    id,
+    email: emailUsuario,
+    primeiroAcessoConcluido: Boolean(primeiro_acesso_concluido), // o back manda 0/1
+  }
 }
