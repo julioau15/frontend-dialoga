@@ -19,7 +19,7 @@ import HumorDia from './components/HumorDia'
 import ModalProfissionalEncontrado from './components/ModalProfissionalEncontrado'
 
 const PASSOS = ['Pessoal', 'Profissional', 'Humor']
-const PROFISSIONAL_EXEMPLO = { nome: 'Carlos Eduardo Mendes', especialidade: 'Psicologia Clínica' } // TODO: vir da busca na API
+const PROFISSIONAL_EXEMPLO = { nome: 'Ana Eduardo Mendes', especialidade: 'Psicologia Clínica' } // TODO: vir da busca na API
 
 // Cria a função (campo, valor) que atualiza um dos objetos de valores
 const alterar = (setValores) => (campo, valor) => setValores((v) => ({ ...v, [campo]: valor }))

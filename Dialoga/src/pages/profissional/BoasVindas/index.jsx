@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import CardBoasVindas from './components/CardBoasVindas'
 import ModalPacienteEncontrado from './components/ModalPacienteEncontrado'
 
-const NOME_PROFISSIONAL = 'Carlos' // TODO: vir do cadastro do profissional
+const NOME_PROFISSIONAL = 'ana' // TODO: vir do cadastro do profissional
 const PACIENTE_EXEMPLO = { nome: 'Ana Beatriz Ferreira', email: 'ana.ferreira@email.com' } // TODO: vir da busca na API
 
 export default function BoasVindas() {

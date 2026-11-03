@@ -6,7 +6,6 @@ import Sidebar from '../../components/SideBar/Sidebar'
 function LayoutComSidebar({ itens }) {
   const { perfil, logout } = useAuth()
   const navigate = useNavigate()
-  console.log(perfil)
 
   // apaga a sessão salva e volta para a tela de login
   function sair() {
