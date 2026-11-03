@@ -22,8 +22,6 @@ import HumorDia from './components/HumorDia'
 import ModalProfissionalEncontrado from './components/ModalProfissionalEncontrado'
 
 const PASSOS = ['Pessoal', 'Profissional', 'Humor']
-const NOME_COMPLETO = 'Ana Beatriz Ferreira' // TODO: vir do cadastro do paciente
-const PROFISSIONAL_EXEMPLO = { nome: 'Carlos Eduardo Mendes', especialidade: 'Psicologia Clínica' } // TODO: vir da busca na API
 
 // Cria a função (campo, valor) que atualiza um dos objetos de valores
 const alterar = (setValores) => (campo, valor) => setValores((v) => ({ ...v, [campo]: valor }))
@@ -102,7 +100,7 @@ export default function PersonalizarExperiencia() {
         {etapa === 1 && (
           <DadosPessoais
             valores={valores}
-            nomeCompleto={NOME_COMPLETO}
+            nomeCompleto={perfil?.nome_completo || ''}
             onAlterarCampo={alterar(setValores)}
             onContinuar={irParaEtapa(2)} // TODO: salvar na API antes de avançar
             onPular={irParaEtapa(2)}
@@ -190,7 +188,7 @@ export default function PersonalizarExperiencia() {
 
       <ModalProfissionalEncontrado
         aberto={modalAberto}
-        nome={PROFISSIONAL_EXEMPLO.nome}
+        nome={perfil.nome_completo}
         onFechar={() => setModalAberto(false)}
         onEntendi={() => {
           setModalAberto(false)

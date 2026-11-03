@@ -5,10 +5,12 @@
 //   2) EquipeSaude    -> tem ou não profissional; busca e vínculo (modal de aviso)
 //   3) HumorDia       -> "Como você está hoje?" (sentimento, energia, sono...)
 // A página guarda a etapa atual e os valores; cada etapa só desenha a tela.
+// O nome completo do paciente vem do AuthContext (perfil), que busca na API.
 // Rota: /personalizar-experiencia
 // ============================================================
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../../contexts/AuthContext'
 import Stepper from '../../../components/Stepper'
 import PontosProgresso from '../../../components/PontosProgresso'
 import DadosPessoais from './components/DadosPessoais'
@@ -17,7 +19,6 @@ import HumorDia from './components/HumorDia'
 import ModalProfissionalEncontrado from './components/ModalProfissionalEncontrado'
 
 const PASSOS = ['Pessoal', 'Profissional', 'Humor']
-const NOME_COMPLETO = 'Ana Beatriz Ferreira' // TODO: vir do cadastro do paciente
 const PROFISSIONAL_EXEMPLO = { nome: 'Carlos Eduardo Mendes', especialidade: 'Psicologia Clínica' } // TODO: vir da busca na API
 
 // Cria a função (campo, valor) que atualiza um dos objetos de valores
@@ -25,6 +26,9 @@ const alterar = (setValores) => (campo, valor) => setValores((v) => ({ ...v, [ca
 
 export default function PersonalizarExperiencia() {
   const navigate = useNavigate()
+  const { perfil } = useAuth()
+  const nomeCompleto = perfil?.nome ?? ''
+
   const [etapa, setEtapa] = useState(1)
   const [modalAberto, setModalAberto] = useState(false)
 
@@ -57,7 +61,7 @@ export default function PersonalizarExperiencia() {
         {etapa === 1 && (
           <DadosPessoais
             valores={valores}
-            nomeCompleto={NOME_COMPLETO}
+            nomeCompleto={nomeCompleto}
             onAlterarCampo={alterar(setValores)}
             onContinuar={irParaEtapa(2)} // TODO: salvar na API antes de avançar
             onPular={irParaEtapa(2)}
