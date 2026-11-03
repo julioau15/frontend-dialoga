@@ -18,7 +18,9 @@ import RecuperarSenha from '../pages/auth/RecuperarSenha'
 import PersonalizarExperiencia from '../pages/auth/PersonalizarExperiencia'
 
 // Admin
+import AdministradoresAdmin from '../pages/admin/Administradores'
 import DashboardAdmin from '../pages/admin/Dashboard'
+import PerfilAdmin from '../pages/admin/Perfil'
 
 // Paciente
 import AgendaPaciente from '../pages/paciente/Agenda'
@@ -58,6 +60,8 @@ function AppRoutes() {
         <Route path="/admin" element={<LayoutAdmin />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DashboardAdmin />} />
+          <Route path="administradores" element={<AdministradoresAdmin />} />
+          <Route path="perfil" element={<PerfilAdmin />} />
         </Route>
       </Route>
 

@@ -16,9 +16,9 @@ const AuthContext = createContext(null)
 // nivel -> rota onde ficam os dados daquele tipo de usuário.
 // AJUSTE: confira qual número é cada nível e o nome real das rotas.
 const ROTA_POR_NIVEL = {
-  0: 'administradores',
-  1: 'profissionais',
-  2: 'pacientes',
+  0: 'administradores/me',
+  1: 'profissionais/me',
+  2: 'pacientes/me',
 }
 
 const NIVEL = {
@@ -32,13 +32,13 @@ const NIVEL = {
 function normalizarPerfil(dados) {
   if (!dados) return null
   // se a API devolver uma lista ou um objeto embrulhado, pega o registro
-  const registro = dados[0]
+  const registro = Array.isArray(dados) ? dados[0] : dados
   console.log(registro)
   if (!registro) return null
 
   return {
-    nome: registro.nome_completo ?? '',
-    fotoUrl: registro.foto_avatar ?? null
+    nome: registro.nome_completo ?? registro.nome ?? '',
+    fotoUrl: registro.foto_avatar ?? null,
   }
 }
 
@@ -127,7 +127,7 @@ export function AuthProvider({ children }) {
 
     let cancelado = false
 
-    fetch(`${API_URL}/${rota}/${auth.id}`, {
+    fetch(`${API_URL}/${rota}`, {
       headers: { 'x-access-token': auth.token },
     })
       .then((r) => (r.ok ? r.json() : null))
