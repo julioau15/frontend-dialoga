@@ -15,8 +15,9 @@ import { textoParaBusca } from '../utils/formatadores'
 import { validarNovoAdministrador } from '../utils/validators'
 
 export function useAdministradores() {
-  const { auth, perfil } = useAuth()
+  const { auth } = useAuth()
   const idUsuarioLogado = auth?.id // id de tbl_usuario que veio no login
+  const token = auth?.token
 
   const [lista, setLista] = useState([]) // como veio do service
   const [busca, setBusca] = useState('')
@@ -33,7 +34,7 @@ export function useAdministradores() {
     let cancelado = false // ignoro a resposta se eu sair da tela antes de ela chegar
     const minhaTentativa = tentativa
 
-    listarAdministradores()
+    listarAdministradores(token)
       .then((resultado) => {
         if (cancelado) return
         setLista(resultado)
@@ -46,7 +47,7 @@ export function useAdministradores() {
     return () => {
       cancelado = true
     }
-  }, [tentativa])
+  }, [tentativa, token])
 
   const cargaAtual = carga?.tentativa === tentativa ? carga : null
   const carregando = !cargaAtual
@@ -80,8 +81,8 @@ export function useAdministradores() {
   async function criar(valores) {
     setCriando(true)
     try {
-      const novo = await criarAdministrador({ ...valores, criadoPor: perfil?.nome })
-      setLista((atual) => [...atual, novo])
+      const novo = await criarAdministrador(token, valores)
+      setLista((atual) => [novo, ...atual]) // a API lista do mais novo para o mais antigo
       return novo
     } finally {
       setCriando(false)
@@ -95,7 +96,7 @@ export function useAdministradores() {
 
     setRemovendo(true)
     try {
-      await removerAdministrador(administrador.id)
+      await removerAdministrador(token, administrador.id)
       setLista((atual) => atual.filter((a) => a.id !== administrador.id))
     } finally {
       setRemovendo(false)

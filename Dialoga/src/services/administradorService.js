@@ -1,93 +1,122 @@
 // ============================================================
 // services/administradorService.js
-// Aqui ficam as funções de administradores que a tela usa.
-// Por enquanto elas são MOCK: trabalho com uma lista na memória e
-// simulo a demora da rede. Na integração, troco só o corpo de cada
-// função pelo fetch indicado no comentário; o hook e a tela continuam
-// iguais, porque a entrada e a saída já estão no formato final.
-//   listarAdministradores(busca) -> GET    /administradores?busca=
-//   criarAdministrador(dados)    -> POST   /administradores
-//   removerAdministrador(id)     -> DELETE /administradores/{id}
-// Formato de cada administrador que eu devolvo:
+// Requisições de administradores na API (sem tela e sem controle de estado).
+//   listarAdministradores(token, busca)         -> GET    /administradores
+//   criarAdministrador(token, dados)            -> POST   /administradores (FormData)
+//   removerAdministrador(token, id)             -> DELETE /administradores/:id
+// O token é enviado no header x-access-token.
+// Formato de cada administrador devolvido:
 //   { id, idUsuario, nome, email, criadoPor, criadoEm }
-// Em caso de erro, lanço um Error com .message (texto para a tela),
-// .status (código HTTP) e, quando é de um campo, .campo.
+// Em caso de erro, é lançado um Error com .message (texto para a tela),
+// .status (código HTTP) e, quando o erro é do e-mail, .campo = 'email'.
 // ============================================================
-import { ADMINISTRADORES_EXEMPLO } from './administradoresExemplo'
+import { API_URL } from '../config/api'
 import { textoParaBusca } from '../utils/formatadores'
 
-const ESPERA_MS = 600 // simulo o tempo de resposta da API
+const ERRO_CONEXAO = 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.'
+const ERRO_SESSAO = 'Sua sessão expirou. Faça login novamente.'
+const ERRO_SERVIDOR = 'Tivemos um problema no servidor. Tente novamente em instantes.'
 
-// Mudo para true quando quero testar as mensagens de erro da tela
-const SIMULAR_FALHA = false
+// Faz a requisição autenticada e devolve o JSON da API.
+// Com FormData, o navegador define sozinho o Content-Type com o boundary.
+async function requisicao(caminho, { token, method = 'GET', body, mensagemErro }) {
+  if (!token) {
+    const erro = new Error(ERRO_SESSAO)
+    erro.status = 401
+    throw erro
+  }
 
-// Minha "tabela" de mentira: começa com os dados de exemplo e muda quando crio ou removo.
-// Ela volta ao estado inicial quando a página é recarregada.
-let administradoresMock = [...ADMINISTRADORES_EXEMPLO]
+  let resposta
+  try {
+    resposta = await fetch(`${API_URL}${caminho}`, {
+      method,
+      headers: { 'x-access-token': token },
+      body,
+    })
+  } catch (erro) {
+    throw new Error(ERRO_CONEXAO, { cause: erro })
+  }
 
-function esperar() {
-  return new Promise((resolve) => setTimeout(resolve, ESPERA_MS))
+  const dados = await resposta.json().catch(() => null)
+
+  if (!resposta.ok || !dados?.status) {
+    let mensagem = dados?.message || mensagemErro || 'Não foi possível concluir a ação.'
+
+    if (resposta.status === 401) mensagem = ERRO_SESSAO
+    // Troca as mensagens técnicas de erro 500 por um texto para a tela
+    if (resposta.status >= 500) mensagem = mensagemErro || ERRO_SERVIDOR
+
+    const erro = new Error(mensagem)
+    erro.status = resposta.status
+    // Somente o erro de e-mail é associado a um campo do formulário
+    if (String(dados?.field ?? '').startsWith('[EMAIL]')) erro.campo = 'email'
+    throw erro
+  }
+
+  return dados
 }
 
-// Crio o erro no mesmo formato que o fetch vai lançar na integração
-function erroSimulado(mensagem, status, campo) {
-  const erro = new Error(mensagem)
-  erro.status = status
-  if (campo) erro.campo = campo
-  return erro
+// Converte o item da API para o formato usado na tela.
+// A listagem traz os dados do usuário no próprio item; a criação traz em "usuario" (array).
+function normalizarAdministrador(item) {
+  const usuario = Array.isArray(item.usuario) ? item.usuario[0] : item.usuario
+
+  return {
+    id: item.id,
+    idUsuario: item.id_usuario ?? usuario?.id,
+    nome: item.nome_completo,
+    email: item.email ?? usuario?.email,
+    criadoPor: item.criado_por ?? null,
+    criadoEm: item.data_criacao ?? usuario?.data_criacao ?? null,
+  }
 }
 
-export async function listarAdministradores(busca = '') {
-  // Integração: GET `${API_URL}/administradores?busca=${busca}` com o header x-access-token.
-  // O back devolve nome_completo, id_usuario e o e-mail dentro de "usuario":
-  // vou converter para o formato do topo deste arquivo.
-  await esperar()
-  if (SIMULAR_FALHA) throw erroSimulado('Não foi possível carregar os administradores.', 500)
+// Busca a lista de administradores.
+// A API não filtra por texto, então a busca é aplicada sobre a lista recebida.
+export async function listarAdministradores(token, busca = '') {
+  let dados
+  try {
+    dados = await requisicao('/administradores', {
+      token,
+      mensagemErro: 'Não foi possível carregar os administradores.',
+    })
+  } catch (erro) {
+    // A API responde 404 quando a tabela está vazia
+    if (erro.status === 404) return []
+    throw erro
+  }
 
+  const lista = (dados.response?.administrador ?? []).map(normalizarAdministrador)
   const termo = textoParaBusca(busca.trim())
-  const lista = termo
-    ? administradoresMock.filter((a) => textoParaBusca(`${a.nome} ${a.email}`).includes(termo))
-    : administradoresMock
 
-  return lista.map((a) => ({ ...a })) // devolvo cópias para a tela não alterar a minha "tabela"
+  return termo ? lista.filter((a) => textoParaBusca(`${a.nome} ${a.email}`).includes(termo)) : lista
 }
 
-export async function criarAdministrador({ nome, email, criadoPor }) {
-  // Integração: POST `${API_URL}/administradores` em FormData (o back usa multer),
-  // com os campos nome_completo, email e senha_provisoria e o header x-access-token.
-  // O envio do e-mail com as credenciais (RN01) fica por conta do back-end.
-  await esperar()
-  if (SIMULAR_FALHA) throw erroSimulado('Não foi possível criar o administrador. Tente novamente.', 500)
+// Cria o administrador.
+// O celular segue vazio porque a rota converte campo ausente no texto "undefined";
+// vazio é gravado como NULL.
+export async function criarAdministrador(token, { nome, email, senha }) {
+  const corpo = new FormData()
+  corpo.append('nome_completo', nome.trim())
+  corpo.append('email', email.trim().toLowerCase())
+  corpo.append('celular', '')
+  corpo.append('senha_provisoria', senha)
 
-  const emailLimpo = email.trim().toLowerCase()
+  const dados = await requisicao('/administradores', {
+    token,
+    method: 'POST',
+    body: corpo,
+    mensagemErro: 'Não foi possível criar o administrador. Tente novamente.',
+  })
 
-  // O back responde 409 quando o e-mail já existe; simulo o mesmo
-  if (administradoresMock.some((a) => a.email.toLowerCase() === emailLimpo)) {
-    throw erroSimulado('Já existe um administrador com este e-mail.', 409, 'email')
-  }
-
-  const id = Date.now() // id provisório; na integração uso os ids que o back-end devolver
-  const novo = {
-    id,
-    idUsuario: id,
-    nome: nome.trim(),
-    email: emailLimpo,
-    criadoPor: criadoPor ?? 'Sistema',
-    criadoEm: new Date().toISOString(),
-  }
-  administradoresMock = [...administradoresMock, novo]
-  return { ...novo }
+  return normalizarAdministrador(dados.response.administrador)
 }
 
-export async function removerAdministrador(id) {
-  // Integração: DELETE `${API_URL}/administradores/${id}` com o header x-access-token
-  await esperar()
-  if (SIMULAR_FALHA) throw erroSimulado('Não foi possível remover o administrador. Tente novamente.', 500)
-
-  if (!administradoresMock.some((a) => a.id === id)) throw erroSimulado('Administrador não encontrado.', 404)
-
-  // Proteção extra, como o back-end também deve ter: o sistema nunca fica sem administrador
-  if (administradoresMock.length <= 1) throw erroSimulado('Não é possível remover o último administrador.', 403)
-
-  administradoresMock = administradoresMock.filter((a) => a.id !== id)
+// Remove o administrador e o usuário vinculado a ele.
+export async function removerAdministrador(token, id) {
+  await requisicao(`/administradores/${encodeURIComponent(id)}`, {
+    token,
+    method: 'DELETE',
+    mensagemErro: 'Não foi possível remover o administrador. Tente novamente.',
+  })
 }

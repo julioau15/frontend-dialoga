@@ -16,6 +16,7 @@ import { formatarData } from '../../../../../utils/formatadores'
 
 export default function CartaoAdministrador({ administrador, podeRemover, onRemover }) {
   const { nome, email, criadoPor, criadoEm, voce } = administrador
+  const dataCriacao = formatarData(criadoEm)
 
   return (
     // Reaproveito o Card como <li>, porque o cartão fica dentro de uma lista <ul>
@@ -29,9 +30,12 @@ export default function CartaoAdministrador({ administrador, podeRemover, onRemo
         </p>
         {/* truncate: um e-mail muito longo não empurra a lixeira para fora do cartão */}
         <p className="text-[11px] text-secundaria truncate">{email}</p>
-        <p className="text-[11px] text-secundaria">
-          Criado por {criadoPor} · {formatarData(criadoEm)}
-        </p>
+        {/* Sem "criadoPor", exibe só a data; sem data, a linha não aparece */}
+        {dataCriacao && (
+          <p className="text-[11px] text-secundaria">
+            {criadoPor ? `Criado por ${criadoPor} · ${dataCriacao}` : `Criado em ${dataCriacao}`}
+          </p>
+        )}
       </div>
 
       {/* O administrador não pode remover a própria conta, então não mostro a lixeira no cartão dele */}

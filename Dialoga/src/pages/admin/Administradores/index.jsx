@@ -2,8 +2,6 @@
 // pages/admin/Administradores
 // Lista de administradores com busca, pop-up de novo administrador,
 // pop-up de remoção e toasts de aviso.
-// Nesta etapa uso dados fixos (services/administradoresExemplo.js):
-// criar e remover só mudam a lista na memória, sem back-end.
 // Tela feita para computador (Figma 1440 × 1024); o LayoutAdmin
 // mostra um aviso em telas menores que 1024px.
 // Rota: /admin/administradores
@@ -48,13 +46,13 @@ export default function AdministradoresAdmin() {
   // O hook cria; aqui só cuido do que a tela mostra depois.
   // Se der erro, ele chega no pop-up, que mostra a mensagem.
   async function criar(valores) {
-    const novo = await adm.criar(valores)
+    await adm.criar(valores)
     setNovoAberto(false)
     // RF10 e RNF02: notificação imediata de sucesso
     setToast({
       aberto: true,
       tipo: 'sucesso',
-      mensagem: `Administrador criado. Um e-mail de acesso foi enviado para ${novo.email}.`,
+      mensagem: 'Administrador criado com sucesso.',
     })
   }
 

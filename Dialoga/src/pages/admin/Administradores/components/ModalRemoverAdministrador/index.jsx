@@ -48,6 +48,7 @@ export default function ModalRemoverAdministrador({ administrador, enviando = fa
         <p className="mt-1.5 text-[12px] text-secundaria">
           Esta conta perderá acesso à área administrativa. A ação não pode ser desfeita.
         </p>
+        {erro && <p role="alert" className="mt-3 text-[11px] text-erro">{erro}</p>}
       </div>
     </Modal>
   )
