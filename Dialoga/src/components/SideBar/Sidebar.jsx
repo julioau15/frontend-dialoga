@@ -1,7 +1,47 @@
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import logoPadrao from '../../assets/auth/logo-dialoga.png'
-import Icone from '../Icone'
+
+// ajuste nomes e extensões para os arquivos reais de src/assets/sidebar
+import iconeDashboard from '../../assets/sidebar/dashboard.png'
+import iconeAgenda from '../../assets/sidebar/agenda.png'
+import iconeTarefas from '../../assets/sidebar/tarefas.png'
+import iconeTratamentos from '../../assets/sidebar/tratamentos.png'
+import iconeProfissionais from '../../assets/sidebar/profissionais.png'
+import iconePacientes from '../../assets/sidebar/profissionais.png'
+import iconeRelatorios from '../../assets/sidebar/relatorios.png'
+import iconeNotificacoes from '../../assets/sidebar/notificacao.png'
+import iconePerfil from '../../assets/sidebar/perfil.png'
+import iconeSair from '../../assets/sidebar/sair.png'
+
+const icones = {
+  dashboard: iconeDashboard,
+  agenda: iconeAgenda,
+  tarefas: iconeTarefas,
+  tratamentos: iconeTratamentos,
+  profissionais: iconeProfissionais,
+  pacientes: iconePacientes,
+  relatorios: iconeRelatorios,
+  notificacoes: iconeNotificacoes,
+  perfil: iconePerfil,
+  sair: iconeSair,
+}
+
+function IconeMenu({ nome, ativo = false, tamanho = 18 }) {
+  const src = icones[nome]
+  if (!src) return null
+
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      width={tamanho}
+      height={tamanho}
+      className={`shrink-0 ${ativo ? 'brightness-0 invert' : ''}`}
+    />
+  )
+}
 
 const classeLink = ({ isActive }) =>
   `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7B4EA3] ${
@@ -46,7 +86,7 @@ function Avatar({ nome, foto }) {
   )
 }
 
-// itens: [{ rotulo, caminho, icone? }]  (icone = nome em components/Icone)
+// itens: [{ rotulo, caminho, icone? }]  (icone = chave do objeto `icones` acima)
 function Sidebar({ logo = logoPadrao, nome = '', foto, itens = [], onSair }) {
   const primeiroNome = nome.trim().split(/\s+/)[0]
 
@@ -72,7 +112,7 @@ function Sidebar({ logo = logoPadrao, nome = '', foto, itens = [], onSair }) {
       >
         {itens.map(({ rotulo, caminho, icone }) => (
           <NavLink key={caminho} to={caminho} className={classeLink}>
-            {icone && <Icone nome={icone} tamanho={18} />}
+            {icone && <IconeMenu nome={icone} />}
             {rotulo}
           </NavLink>
         ))}
@@ -85,7 +125,7 @@ function Sidebar({ logo = logoPadrao, nome = '', foto, itens = [], onSair }) {
           onClick={onSair}
           className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-[#7D7490] transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7B4EA3]"
         >
-          <Icone nome="sair" tamanho={18} />
+          <IconeMenu nome="sair" />
           Sair da conta
         </button>
       </div>
