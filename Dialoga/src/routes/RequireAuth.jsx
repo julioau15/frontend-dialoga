@@ -29,5 +29,10 @@ export default function RequireAuth({ nivel, exigirPrimeiroAcesso = true }) {
     return <Navigate to={ROTA_PRIMEIRO_ACESSO} replace />
   }
 
+  // Paciente que já concluiu não volta para as perguntas de primeiro acesso
+  if (!exigirPrimeiroAcesso && auth.nivel === NIVEL.PACIENTE && (auth.primeiroAcessoConcluido ?? primeiroAcessoConcluido(auth.id))) {
+    return <Navigate to={rotaInicialPorNivel(auth.nivel)} replace />
+  }
+
   return <Outlet />
 }

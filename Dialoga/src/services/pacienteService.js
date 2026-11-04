@@ -40,6 +40,10 @@ export async function buscarMeuPaciente(token, signal) {
         // Se o cancelamento for acionado, o fetch pode rejeitar com AbortError.
         // Quem chamou esta função deve tratar esse cancelamento.
         signal,
+    }).catch((erro) => {
+        // Cancelamento não é falha de conexão: repassa como veio, para o hook ignorar.
+        if (signal?.aborted) throw erro
+        throw new Error(ERRO_CONEXAO, { cause: erro })
     })
 
     // Tenta interpretar o corpo da resposta como JSON.
@@ -61,6 +65,11 @@ export async function buscarMeuPaciente(token, signal) {
         // Isso pode acontecer, por exemplo, quando o token expirou ou é inválido.
         if (resposta.status === 401) {
             throw new Error('Sua sessão expirou. Faça login novamente.')
+        }
+
+        // As mensagens 500 do back são técnicas: não mostramos ao paciente.
+        if (resposta.status >= 500) {
+            throw new Error('Não foi possível carregar seus dados.')
         }
 
         throw new Error(
