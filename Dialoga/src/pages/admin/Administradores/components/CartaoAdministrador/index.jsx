@@ -6,6 +6,7 @@
 // Props:
 //   administrador -> { nome, email, criadoPor, criadoEm, voce }
 //   onRemover     -> (administrador) => void, chamado ao clicar na lixeira
+//   podeRemover   -> true mostra a lixeira (false no cartão do administrador logado, RN03)
 // ============================================================
 import AvatarIniciais from '../../../../../components/AvatarIniciais'
 import Card from '../../../../../components/Card'
@@ -13,7 +14,7 @@ import Selo from '../../../../../components/Selo'
 import { IconeLixeira } from '../../../../../components/Icones'
 import { formatarData } from '../../../../../utils/formatadores'
 
-export default function CartaoAdministrador({ administrador, onRemover }) {
+export default function CartaoAdministrador({ administrador, podeRemover, onRemover }) {
   const { nome, email, criadoPor, criadoEm, voce } = administrador
 
   return (
@@ -34,7 +35,8 @@ export default function CartaoAdministrador({ administrador, onRemover }) {
       </div>
 
       {/* O administrador não pode remover a própria conta, então não mostro a lixeira no cartão dele */}
-      {!voce && (
+      {/* Agora a regra vem do hook useAdministradores */}
+      {podeRemover && (
         <button
           type="button"
           onClick={() => onRemover(administrador)}
