@@ -13,11 +13,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { aprovarProfissional, listarAprovacoes, recusarProfissional } from '../services/aprovacoesService'
-import { SOLICITACOES_EXEMPLO } from '../services/aprovacoesExemplo'
-
-// TODO (lógica): mude para false para usar as rotas reais do back-end.
-// Com true, as telas rodam só com os dados de exemplo (nada é enviado à API).
-const USAR_DADOS_DE_EXEMPLO = true
 
 export default function useAprovacoes() {
   const { auth } = useAuth()
@@ -32,7 +27,7 @@ export default function useAprovacoes() {
 
     async function carregar() {
       try {
-        const dados = USAR_DADOS_DE_EXEMPLO ? SOLICITACOES_EXEMPLO : await listarAprovacoes(token)
+        const dados = await listarAprovacoes(token)
         if (!cancelado) setSolicitacoes(dados)
       } catch (e) {
         if (!cancelado) setErro(e.message)
@@ -52,13 +47,13 @@ export default function useAprovacoes() {
 
   async function aprovar(solicitacao) {
     // TODO (lógica): o back ainda não envia o e-mail de boas-vindas ao aprovar
-    if (!USAR_DADOS_DE_EXEMPLO) await aprovarProfissional(solicitacao.idProfissional, token)
+    await aprovarProfissional(solicitacao.idProfissional, token)
     marcarStatus(solicitacao.id, 'aprovado')
   }
 
   async function recusar(solicitacao) {
     // TODO (lógica): o back ainda não envia o e-mail de notificação ao recusar
-    if (!USAR_DADOS_DE_EXEMPLO) await recusarProfissional(solicitacao.idProfissional, token)
+    await recusarProfissional(solicitacao.idProfissional, token)
     marcarStatus(solicitacao.id, 'recusado')
   }
 
