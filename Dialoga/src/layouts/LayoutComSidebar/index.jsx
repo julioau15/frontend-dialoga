@@ -14,7 +14,7 @@ function LayoutComSidebar({ itens }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
+    <div className="flex min-h-screen flex-col lg:flex-row">
       <Sidebar
         nome={perfil?.nome}
         foto={perfil?.fotoUrl}
