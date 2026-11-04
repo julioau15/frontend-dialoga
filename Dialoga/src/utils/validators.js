@@ -210,3 +210,45 @@ export function validarHumor({ sentimento, energia, humorDia, horasSono, pensame
 
   return erros
 }
+
+
+// ---------- Administradores ----------
+// Limites do pop-up "Novo administrador".
+// Nome e e-mail seguem os mesmos limites do cadastro e do back-end.
+// A senha provisória segue o Figma (mínimo 4). O cadastro usa 6:
+// esse valor está nos pontos a alinhar com o back-end.
+export const LIMITES_ADMINISTRADOR = {
+  NOME: MAX_NOME,
+  EMAIL: MAX_EMAIL,
+  SENHA_MIN: 4,
+  SENHA_MAX: MAX_SENHA,
+}
+
+// Valido o pop-up "Novo administrador".
+// emailsExistentes: e-mails que já estão na lista, para eu não deixar repetir.
+// Devolvo { campo: 'mensagem' }; objeto vazio = tudo certo.
+export function validarNovoAdministrador({ nome, email, senha }, emailsExistentes = []) {
+  const erros = {}
+  const nomeLimpo = nome.trim()
+  const emailLimpo = email.trim().toLowerCase()
+
+  // Mesma regra do cadastro: preciso de pelo menos nome e sobrenome
+  if (!nomeLimpo) erros.nome = 'Informe o nome completo.'
+  else if (nomeLimpo.split(/\s+/).length < 2) erros.nome = 'Informe nome e sobrenome.'
+  else if (nomeLimpo.length > LIMITES_ADMINISTRADOR.NOME)
+    erros.nome = `Use no máximo ${LIMITES_ADMINISTRADOR.NOME} caracteres.`
+
+  if (!emailLimpo) erros.email = 'Informe o e-mail.'
+  else if (!REGEX_EMAIL.test(emailLimpo) || emailLimpo.length > LIMITES_ADMINISTRADOR.EMAIL)
+    erros.email = 'E-mail inválido.'
+  else if (emailsExistentes.some((e) => e.trim().toLowerCase() === emailLimpo))
+    erros.email = 'Já existe um administrador com este e-mail.'
+
+  if (!senha) erros.senha = 'Informe a senha provisória.'
+  else if (senha.length < LIMITES_ADMINISTRADOR.SENHA_MIN)
+    erros.senha = `A senha deve ter pelo menos ${LIMITES_ADMINISTRADOR.SENHA_MIN} caracteres.`
+  else if (senha.length > LIMITES_ADMINISTRADOR.SENHA_MAX)
+    erros.senha = `A senha deve ter no máximo ${LIMITES_ADMINISTRADOR.SENHA_MAX} caracteres.`
+
+  return erros
+}
