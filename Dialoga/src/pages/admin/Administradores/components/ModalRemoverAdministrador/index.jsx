@@ -8,23 +8,27 @@
 //   administrador -> administrador escolhido ou null (null = pop-up fechado)
 //   onCancelar    -> chamado no X, no fundo escuro, no Esc ou no "Cancelar"
 //   onConfirmar   -> chamado ao clicar em "Remover"
+//   enviando      -> true enquanto o administrador é removido (trava os botões)
+//   erro          -> mensagem de falha ao remover ('' quando não há erro)
 // ============================================================
 import Modal from '../../../../../components/Modal'
 import Button from '../../../../../components/Button'
 import { IconeLixeira } from '../../../../../components/Icones'
 
-export default function ModalRemoverAdministrador({ administrador, onCancelar, onConfirmar }) {
-  const rodape = (
-    <>
-      <Button type="button" variante="suave" larguraAuto onClick={onCancelar}>
-        Cancelar
-      </Button>
-      <Button type="button" variante="perigo" larguraAuto onClick={onConfirmar}>
-        <IconeLixeira tamanho={13} />
-        Remover
-      </Button>
-    </>
-  )
+export default function ModalRemoverAdministrador({ administrador, enviando = false, erro = '', onCancelar, onConfirmar }) {
+    const rodape = (
+      <>
+        {/* RF14: Cancelar não remove nada */}
+        <Button type="button" variante="suave" larguraAuto disabled={enviando} onClick={onCancelar}>
+          Cancelar
+        </Button>
+        {/* RF15: confirma a remoção */}
+        <Button type="button" variante="perigo" larguraAuto carregando={enviando} onClick={onConfirmar}>
+          <IconeLixeira tamanho={13} />
+          {enviando ? 'Removendo...' : 'Remover'}
+        </Button>
+      </>
+    )
 
   return (
     // O pop-up fica aberto enquanto existir um administrador escolhido
@@ -44,6 +48,7 @@ export default function ModalRemoverAdministrador({ administrador, onCancelar, o
         <p className="mt-1.5 text-[12px] text-secundaria">
           Esta conta perderá acesso à área administrativa. A ação não pode ser desfeita.
         </p>
+        {erro && <p role="alert" className="mt-3 text-[11px] text-erro">{erro}</p>}
       </div>
     </Modal>
   )

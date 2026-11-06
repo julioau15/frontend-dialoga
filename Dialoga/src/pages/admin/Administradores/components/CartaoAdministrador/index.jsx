@@ -6,6 +6,7 @@
 // Props:
 //   administrador -> { nome, email, criadoPor, criadoEm, voce }
 //   onRemover     -> (administrador) => void, chamado ao clicar na lixeira
+//   podeRemover   -> true mostra a lixeira (false no cartão do administrador logado, RN03)
 // ============================================================
 import AvatarIniciais from '../../../../../components/AvatarIniciais'
 import Card from '../../../../../components/Card'
@@ -13,8 +14,9 @@ import Selo from '../../../../../components/Selo'
 import { IconeLixeira } from '../../../../../components/Icones'
 import { formatarData } from '../../../../../utils/formatadores'
 
-export default function CartaoAdministrador({ administrador, onRemover }) {
+export default function CartaoAdministrador({ administrador, podeRemover, onRemover }) {
   const { nome, email, criadoPor, criadoEm, voce } = administrador
+  const dataCriacao = formatarData(criadoEm)
 
   return (
     // Reaproveito o Card como <li>, porque o cartão fica dentro de uma lista <ul>
@@ -28,13 +30,17 @@ export default function CartaoAdministrador({ administrador, onRemover }) {
         </p>
         {/* truncate: um e-mail muito longo não empurra a lixeira para fora do cartão */}
         <p className="text-[11px] text-secundaria truncate">{email}</p>
-        <p className="text-[11px] text-secundaria">
-          Criado por {criadoPor} · {formatarData(criadoEm)}
-        </p>
+        {/* Sem "criadoPor", exibe só a data; sem data, a linha não aparece */}
+        {dataCriacao && (
+          <p className="text-[11px] text-secundaria">
+            {criadoPor ? `Criado por ${criadoPor} · ${dataCriacao}` : `Criado em ${dataCriacao}`}
+          </p>
+        )}
       </div>
 
       {/* O administrador não pode remover a própria conta, então não mostro a lixeira no cartão dele */}
-      {!voce && (
+      {/* Agora a regra vem do hook useAdministradores */}
+      {podeRemover && (
         <button
           type="button"
           onClick={() => onRemover(administrador)}
