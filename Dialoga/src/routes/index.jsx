@@ -53,7 +53,6 @@ function AppRoutes() {
       <Route path="/primeiro-acesso" element={<PrimeiroAcesso />} />
       <Route path="/perfil-em-analise" element={<PerfilEmAnalise />} />
       <Route path="/recuperar-senha" element={<RecuperarSenha />} />
-      <Route path="/boas-vindas-profissional" element={<BoasVindasProfissional />} />
 
       {/* Administrador (nivel 0) */}
       <Route element={<RequireAuth nivel={NIVEL.ADMIN} />}>
@@ -76,6 +75,11 @@ function AppRoutes() {
           <Route path="notificacoes" element={<NotificacoesProfissional />} />
           <Route path="perfil" element={<PerfilProfissional />} />
         </Route>
+      </Route>
+
+      {/* Primeiro acesso do profissional, depois de aprovado (logado, mas sem exigir o primeiro acesso concluído) */}
+      <Route element={<RequireAuth nivel={NIVEL.PROFISSIONAL} exigirPrimeiroAcesso={false} />}>
+        <Route path="/boas-vindas-profissional" element={<BoasVindasProfissional />} />
       </Route>
 
       {/* Primeiro acesso do paciente (logado, mas sem exigir o primeiro acesso concluído) */}

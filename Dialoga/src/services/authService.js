@@ -44,6 +44,7 @@ export async function loginRequest(email, senha) {
     nivel,
     id,
     email: emailUsuario,
-    primeiroAcessoConcluido: Boolean(primeiro_acesso_concluido), // o back manda 0/1
+    // o back manda 0/1 só para paciente; sem o campo, fica undefined e o app consulta o que ficou salvo no navegador
+    primeiroAcessoConcluido: primeiro_acesso_concluido === undefined ? undefined : Boolean(primeiro_acesso_concluido),
   }
 }

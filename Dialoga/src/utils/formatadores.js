@@ -26,6 +26,22 @@ export function iniciais(nome = '') {
   return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
 }
 
+// Primeiro nome, ignorando títulos: "Dr. Carlos Henrique Lima" -> "Carlos"
+export function primeiroNome(nome = '') {
+  const partes = nome
+    .trim()
+    .split(/\s+/)
+    .filter((parte) => parte && !/^(dr|dra|prof|profa)\.?$/i.test(parte))
+  return partes[0] ?? ''
+}
+
+// Data e hora locais (do navegador) no formato "YYYY-MM-DD HH:MM:SS", que é o que a API de
+// notificações aceita (o formato ISO com "Z" dá erro 500 no back).
+export function dataHoraSQL(data = new Date()) {
+  const dois = (n) => String(n).padStart(2, '0')
+  return `${dataLocalISO(data)} ${dois(data.getHours())}:${dois(data.getMinutes())}:${dois(data.getSeconds())}`
+}
+
 // Data local (do navegador) no formato YYYY-MM-DD, que é o que a API espera.
 // Não usa toISOString() de propósito: ele converte para UTC e, à noite no
 // Brasil, devolveria o dia seguinte.

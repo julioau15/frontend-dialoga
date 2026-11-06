@@ -4,12 +4,12 @@
 //   <Route element={<RequireAuth nivel={NIVEL.PROFISSIONAL} />}> ... </Route>
 // - Deslogado            -> /login
 // - Logado, nível errado -> manda para a área do próprio nível
-// - Paciente em primeiro acesso -> /personalizar-experiencia (exigirPrimeiroAcesso={false} desliga isso)
+// - Paciente em primeiro acesso      -> /personalizar-experiencia (exigirPrimeiroAcesso={false} desliga isso)
+// - Profissional em primeiro acesso  -> /boas-vindas-profissional (idem)
 // ============================================================
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { rotaInicialPorNivel, NIVEL, ROTA_PRIMEIRO_ACESSO } from '../utils/rotasPorNivel'
-import { primeiroAcessoConcluido } from '../utils/primeiroAcesso'
+import { rotaInicialPorNivel, rotaPrimeiroAcessoPorNivel, primeiroAcessoPendente } from '../utils/rotasPorNivel'
 
 export default function RequireAuth({ nivel, exigirPrimeiroAcesso = true }) {
   const { auth } = useAuth()
@@ -23,14 +23,16 @@ export default function RequireAuth({ nivel, exigirPrimeiroAcesso = true }) {
     return <Navigate to={propriaRota ?? '/login'} replace />
   }
 
-  // Paciente que ainda não respondeu as perguntas de primeiro acesso
+  // Paciente ou profissional que ainda não concluiu o primeiro acesso
   // (sessão antiga não tem o campo: consulta o que ficou salvo no navegador)
-  if (exigirPrimeiroAcesso && auth.nivel === NIVEL.PACIENTE && !(auth.primeiroAcessoConcluido ?? primeiroAcessoConcluido(auth.id))) {
-    return <Navigate to={ROTA_PRIMEIRO_ACESSO} replace />
+  const pendente = primeiroAcessoPendente(auth)
+
+  if (exigirPrimeiroAcesso && pendente) {
+    return <Navigate to={rotaPrimeiroAcessoPorNivel(auth.nivel)} replace />
   }
 
-  // Paciente que já concluiu não volta para as perguntas de primeiro acesso
-  if (!exigirPrimeiroAcesso && auth.nivel === NIVEL.PACIENTE && (auth.primeiroAcessoConcluido ?? primeiroAcessoConcluido(auth.id))) {
+  // Quem já concluiu não volta para a tela de primeiro acesso
+  if (!exigirPrimeiroAcesso && rotaPrimeiroAcessoPorNivel(auth.nivel) !== null && !pendente) {
     return <Navigate to={rotaInicialPorNivel(auth.nivel)} replace />
   }
 

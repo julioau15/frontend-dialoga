@@ -6,7 +6,7 @@
 //   nome        -> nome completo (as iniciais são tiradas dele)
 //   detalhe     -> texto abaixo do nome
 //   selecionado -> true deixa o cartão verde com ✓
-// Aceita as props normais de <button> (onClick, ...).
+// Aceita as props normais de <button> (onClick, disabled, ...). Com disabled, o cartão fica apagado e sem clique.
 // ============================================================
 export default function CartaoPessoa({ nome, detalhe, selecionado = false, ...props }) {
     const iniciais = nome.split(' ').filter(Boolean).slice(0, 2).map((parte) => parte[0]).join('').toUpperCase()
@@ -15,10 +15,10 @@ export default function CartaoPessoa({ nome, detalhe, selecionado = false, ...pr
       <button
         type="button"
         aria-pressed={selecionado}
-        className={`flex items-center gap-3 w-full p-3 rounded-[10px] text-left cursor-pointer transition-[background,border-color] duration-200 ease-[ease] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
+        className={`flex items-center gap-3 w-full p-3 rounded-[10px] text-left enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 transition-[background,border-color] duration-200 ease-[ease] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
           selecionado
             ? 'bg-sucesso-fundo border border-sucesso-borda'
-            : 'bg-branco border border-borda shadow-[0_2px_6px_var(--color-sombra)] hover:bg-fundo-suave-2'
+            : 'bg-branco border border-borda shadow-[0_2px_6px_var(--color-sombra)] enabled:hover:bg-fundo-suave-2'
         }`}
         {...props}
       >
