@@ -46,13 +46,13 @@ export default function AdministradoresAdmin() {
   // O hook cria; aqui só cuido do que a tela mostra depois.
   // Se der erro, ele chega no pop-up, que mostra a mensagem.
   async function criar(valores) {
-    await adm.criar(valores)
+    const novo = await adm.criar(valores)
     setNovoAberto(false)
     // RF10 e RNF02: notificação imediata de sucesso
     setToast({
       aberto: true,
       tipo: 'sucesso',
-      mensagem: 'Administrador criado com sucesso.',
+      mensagem: `Administrador criado. Um e-mail de acesso foi enviado para ${novo?.email ?? valores.email.trim().toLowerCase()}.`,
     })
   }
 

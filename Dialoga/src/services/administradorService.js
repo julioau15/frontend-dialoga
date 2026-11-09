@@ -95,12 +95,11 @@ export async function listarAdministradores(token, busca = '') {
 // Cria o administrador.
 // O celular segue vazio porque a rota converte campo ausente no texto "undefined";
 // vazio é gravado como NULL.
-export async function criarAdministrador(token, { nome, email, senha }) {
+export async function criarAdministrador(token, { nome, email }) {
   const corpo = new FormData()
   corpo.append('nome_completo', nome.trim())
   corpo.append('email', email.trim().toLowerCase())
   corpo.append('celular', '')
-  corpo.append('senha_provisoria', senha)
 
   const dados = await requisicao('/administradores', {
     token,
