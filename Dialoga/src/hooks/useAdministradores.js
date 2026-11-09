@@ -96,7 +96,8 @@ export function useAdministradores() {
 
     setRemovendo(true)
     try {
-      await removerAdministrador(token, administrador.id)
+      // Envia o id de tbl_usuario: a remoção do usuário retira também o administrador
+      await removerAdministrador(token, administrador.idUsuario)
       setLista((atual) => atual.filter((a) => a.id !== administrador.id))
     } finally {
       setRemovendo(false)
