@@ -13,17 +13,35 @@ const ROTAS = {
   [NIVEL.PACIENTE]: '/paciente/dashboard',
 }
 
-export const ROTA_PRIMEIRO_ACESSO = '/personalizar-experiencia'
+// Tela de primeiro acesso de cada nível (admin não tem)
+const ROTAS_PRIMEIRO_ACESSO = {
+  [NIVEL.PROFISSIONAL]: '/boas-vindas-profissional',
+  [NIVEL.PACIENTE]: '/personalizar-experiencia',
+}
+
+// Mantida para quem já importava: é a tela de primeiro acesso do paciente
+export const ROTA_PRIMEIRO_ACESSO = ROTAS_PRIMEIRO_ACESSO[NIVEL.PACIENTE]
 
 // Devolve a rota inicial do nível, ou null se o nível for desconhecido.
 export function rotaInicialPorNivel(nivel) {
   return ROTAS[nivel] ?? null
 }
 
-// Rota logo após o login: paciente no primeiro acesso vai para as perguntas
-// de personalização; os demais vão direto para a própria área.
-export function rotaAposLogin({ nivel, id, primeiroAcessoConcluido: concluido }) {
-  // sessão antiga não tem o campo: consulta o que ficou salvo no navegador
-  if (nivel === NIVEL.PACIENTE && !(concluido ?? primeiroAcessoConcluido(id))) return ROTA_PRIMEIRO_ACESSO
-  return rotaInicialPorNivel(nivel)
+// Devolve a tela de primeiro acesso do nível, ou null se o nível não tem primeiro acesso.
+export function rotaPrimeiroAcesso(nivel) {
+  return ROTAS_PRIMEIRO_ACESSO[nivel] ?? null
+}
+
+// true se esse usuário ainda precisa passar pelo primeiro acesso.
+// sessão antiga não tem o campo: consulta o que ficou salvo no navegador.
+export function precisaPrimeiroAcesso({ nivel, id, primeiroAcessoConcluido: concluido }) {
+  if (!rotaPrimeiroAcesso(nivel)) return false
+  return !(concluido ?? primeiroAcessoConcluido(id))
+}
+
+// Rota logo após o login: paciente e profissional no primeiro acesso vão para a
+// tela de boas-vindas deles; os demais vão direto para a própria área.
+export function rotaAposLogin(auth) {
+  if (precisaPrimeiroAcesso(auth)) return rotaPrimeiroAcesso(auth.nivel)
+  return rotaInicialPorNivel(auth.nivel)
 }

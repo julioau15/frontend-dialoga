@@ -120,7 +120,10 @@ export default function Cadastro() {
                     <TextField
                       label="Registro Profissional"
                       name="crp"
-                      placeholder="Número e estado (sigla)"
+                      inputMode="numeric" // teclado numérico no celular: o "CRP" e a "/" entram pela máscara
+                      maxLength={13} // "CRP 06/123456"
+                      placeholder="CRP 06/12345"
+                      ajuda={f.errosCampos.crp ? undefined : 'Digite a região e o número (5 ou 6 dígitos).'}
                       icone={iconeRegistro}
                       value={f.valores.crp}
                       onChange={(e) => f.alterarCampo('crp', e.target.value)}
