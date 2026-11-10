@@ -12,3 +12,13 @@ export function dataPorExtenso(data = new Date()) {
 export function capitalizarPalavras(texto) {
   return texto.replace(/(^|[\s-])(\p{L})/gu, (_, separador, letra) => separador + letra.toUpperCase())
 }
+
+// Devolve a data atual no fuso de São Paulo no formato "AAAA-MM-DD"
+export function dataHojeSaoPaulo(agora = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(agora)
+}

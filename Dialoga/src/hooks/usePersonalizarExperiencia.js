@@ -20,10 +20,12 @@ import {
   buscarMeuPaciente,
   vincularProfissional,
   salvarRegistroHumor,
+  buscarRegistroHumorDoDia,
   salvarPrimeiroAcesso,
 } from '../services/pacienteService'
 import { useBuscaProfissional } from './useBuscaProfissional'
 import { concluirPrimeiroAcesso } from '../utils/primeiroAcesso'
+import { dataHojeSaoPaulo } from '../utils/datas'
 import {
   LIMITES_PERSONALIZACAO,
   mascararData,
@@ -284,6 +286,14 @@ export function usePersonalizarExperiencia() {
     setErroGeral('')
     try {
       if (!humorSalvo) {
+        // Bloqueia um segundo registro na mesma data (fuso America/Sao_Paulo)
+        const registroDeHoje = await buscarRegistroHumorDoDia(token, dataHojeSaoPaulo())
+        if (registroDeHoje) {
+          setErroGeral('Você já registrou seu humor hoje. Use "Agora não — ir para o início" para continuar.')
+          setEnviando(false)
+          return
+        }
+
         await salvarRegistroHumor(token, montarRegistroHumor(humor))
         setHumorSalvo(true)
       }
