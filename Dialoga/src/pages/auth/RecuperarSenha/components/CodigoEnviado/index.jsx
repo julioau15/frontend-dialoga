@@ -39,7 +39,16 @@ export default function CodigoEnviado({
 }) {
   const refs = useRef([])
 
-  const focar = (indice) => refs.current[indice]?.focus()
+  // true enquanto o foco é movido pelo próprio componente (avanço automático).
+  // Sem isso, o onFocus da caixa seguinte lê o código ANTIGO (ainda sem o dígito
+  // recém-digitado) e devolve o foco para a primeira caixa vazia.
+  const movendoFoco = useRef(false)
+
+  const focar = (indice) => {
+    movendoFoco.current = true
+    refs.current[indice]?.focus()
+    movendoFoco.current = false
+  }
 
   // Digitou (ou apagou) em uma caixa
   function aoDigitar(indice, e) {
@@ -78,6 +87,7 @@ export default function CodigoEnviado({
 
   // Impede pular caixas: o foco vai para a primeira vazia
   function aoFocar(indice) {
+    if (movendoFoco.current) return
     if (indice > valor.length) focar(valor.length)
   }
 
@@ -89,7 +99,7 @@ export default function CodigoEnviado({
 
       <h1 className="mt-4 text-[20px] font-extrabold text-texto">E-mail enviado!</h1>
       <p className="mt-2 max-w-[280px] text-[12px] text-secundaria">
-        Verifique sua caixa de entrada. O código para redefinir a senha expirará em 30 minutos.
+        Verifique sua caixa de entrada. O código para redefinir a senha expirará em 10 minutos.
       </p>
 
       {/* Caixas do código */}

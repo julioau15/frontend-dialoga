@@ -8,7 +8,10 @@ const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // Limites iguais aos do back-end (controller_auth.js)
 const MAX_EMAIL = 150
-const MAX_SENHA = 30
+const MIN_EMAIL_CADASTRO = 10 // RN31
+const MAX_SENHA = 30 // mesmo limite do back (login e cadastro)
+const MIN_SENHA_LOGIN = 6
+const TEM_ESPACO = /\s/
 
 // Recebe { email, senha } e devolve um objeto com as mensagens de erro
 // de cada campo. Objeto vazio = tudo certo.
@@ -20,6 +23,8 @@ export function validarLogin({ email, senha }) {
   else if (!REGEX_EMAIL.test(email.trim()) || email.length > MAX_EMAIL) erros.email = 'E-mail inválido.'
 
   if (!senha.trim()) erros.senha = 'Informe sua senha.'
+  else if (TEM_ESPACO.test(senha)) erros.senha = 'A senha não pode conter espaços.'
+  else if (senha.length < MIN_SENHA_LOGIN) erros.senha = `A senha deve ter pelo menos ${MIN_SENHA_LOGIN} caracteres.`
   else if (senha.length > MAX_SENHA) erros.senha = `A senha deve ter no máximo ${MAX_SENHA} caracteres.`
 
   return erros
@@ -71,11 +76,13 @@ export function cpfValido(valor) {
 export function validarCadastroDados({ tipo, nome, email, celular, cpf, crp, especialidades = [] }) {
   const erros = {}
 
-  if (nome.trim().split(/\s+/).filter(Boolean).length < 2 || nome.length > MAX_NOME)
+  if (/\d/.test(nome)) erros.nome = 'O nome não pode conter números.'
+  else if (nome.trim().split(/\s+/).filter(Boolean).length < 2 || nome.length > MAX_NOME)
     erros.nome = 'Informe seu nome completo.'
 
   if (!email.trim()) erros.email = 'Informe seu e-mail.'
   else if (!REGEX_EMAIL.test(email.trim()) || email.length > MAX_EMAIL) erros.email = 'E-mail inválido.'
+  else if (email.trim().length < MIN_EMAIL_CADASTRO) erros.email = `O e-mail deve ter pelo menos ${MIN_EMAIL_CADASTRO} caracteres.`
 
   const digitos = soNumeros(celular).length
   if (digitos < 10 || digitos > 11) erros.celular = 'Informe um celular válido com DDD.'
@@ -96,7 +103,8 @@ export function validarCadastroDados({ tipo, nome, email, celular, cpf, crp, esp
 export function validarCadastroSenha({ senha, confirmarSenha }) {
   const erros = {}
 
-  if (senha.length < MIN_SENHA) erros.senha = `A senha deve ter pelo menos ${MIN_SENHA} caracteres.`
+  if (TEM_ESPACO.test(senha)) erros.senha = 'A senha não pode conter espaços.'
+  else if (senha.length < MIN_SENHA) erros.senha = `A senha deve ter pelo menos ${MIN_SENHA} caracteres.`
   else if (senha.length > MAX_SENHA) erros.senha = `A senha deve ter no máximo ${MAX_SENHA} caracteres.`
 
   if (!confirmarSenha) erros.confirmarSenha = 'Confirme sua senha.'

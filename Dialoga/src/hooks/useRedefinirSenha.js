@@ -15,7 +15,8 @@ import {
 } from '../services/redefinirSenha'
 
 const TAMANHO_CODIGO = 4   
-const TAMANHO_MIN_SENHA = 6 
+const TAMANHO_MIN_SENHA = 6
+const TAMANHO_MAX_SENHA = 30 // mesmo limite do back (controller_auth.js)
 
 // Validações de cada etapa (retornam { campo: 'mensagem' })
 function validarEmail({ email }) {
@@ -36,8 +37,11 @@ function validarCodigo({ codigo }) {
 function validarNovaSenha({ senha, confirmarSenha }) {
   const erros = {}
   if (!senha) erros.senha = 'Informe a nova senha.'
+  else if (/\s/.test(senha)) erros.senha = 'A senha não pode conter espaços.'
   else if (senha.length < TAMANHO_MIN_SENHA)
     erros.senha = `A senha deve ter pelo menos ${TAMANHO_MIN_SENHA} caracteres.`
+  else if (senha.length > TAMANHO_MAX_SENHA)
+    erros.senha = `A senha deve ter no máximo ${TAMANHO_MAX_SENHA} caracteres.`
 
   if (!confirmarSenha) erros.confirmarSenha = 'Confirme a nova senha.'
   else if (senha !== confirmarSenha) erros.confirmarSenha = 'As senhas não coincidem.'
@@ -122,7 +126,10 @@ export function useRedefinirSenha() {
   // Reenvia o código sem sair da etapa atual
   async function reenviarCodigo() {
     const ok = await executar(() => solicitarCodigoRequest(valores.email.trim()))
-    if (ok) setMensagem('Enviamos um novo código para o seu e-mail.')
+    if (ok) {
+      setValores((v) => ({ ...v, codigo: '' })) // o código anterior deixa de valer (RN29)
+      setMensagem('Enviamos um novo código para o seu e-mail.')
+    }
   }
 
   // Chamado no onSubmit do formulário: decide o que fazer conforme a etapa
@@ -139,7 +146,10 @@ export function useRedefinirSenha() {
     setErrosCampos({})
     setErroGeral('')
     setMensagem('')
-    if (etapa === 'codigo') setEtapa('email')
+    if (etapa === 'codigo') {
+      setValores((v) => ({ ...v, codigo: '' })) // o código pertence à solicitação anterior (RN29)
+      setEtapa('email')
+    }
     else if (etapa === 'senha') setEtapa('codigo')
   }
 
