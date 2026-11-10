@@ -15,6 +15,7 @@ const ROTAS = {
 
 // Tela de primeiro acesso de cada nível (admin não tem)
 const ROTAS_PRIMEIRO_ACESSO = {
+  [NIVEL.ADMIN]: '/primeiro-acesso',
   [NIVEL.PROFISSIONAL]: '/boas-vindas-profissional',
   [NIVEL.PACIENTE]: '/personalizar-experiencia',
 }
@@ -34,8 +35,10 @@ export function rotaPrimeiroAcesso(nivel) {
 
 // true se esse usuário ainda precisa passar pelo primeiro acesso.
 // sessão antiga não tem o campo: consulta o que ficou salvo no navegador.
-export function precisaPrimeiroAcesso({ nivel, id, primeiroAcessoConcluido: concluido }) {
+export function precisaPrimeiroAcesso({ nivel, id, primeiroAcessoConcluido: concluido, senhaProvisoria }) {
   if (!rotaPrimeiroAcesso(nivel)) return false
+  // Administrador: pendente enquanto a senha for provisória (sessão sem o campo entra normalmente)
+  if (nivel === NIVEL.ADMIN) return senhaProvisoria === 1
   return !(concluido ?? primeiroAcessoConcluido(id))
 }
 

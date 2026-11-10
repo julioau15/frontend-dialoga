@@ -96,7 +96,18 @@ export function AuthProvider({ children }) {
     const sessao = lerSessaoSalva()
     if (!sessao) return
 
-    const atualizada = { ...sessao, primeiroAcessoConcluido: true }
+      const atualizada = { ...sessao, primeiroAcessoConcluido: true }
+    localStorage.setItem('auth', JSON.stringify(atualizada))
+    setAuth(atualizada)
+  }
+
+  // Registra na sessão que o administrador trocou a senha provisória (senha_provisoria = 0).
+  // Mesmo cuidado do marcarPrimeiroAcessoConcluido: não recria uma sessão já encerrada.
+  function marcarSenhaDefinida() {
+    const sessao = lerSessaoSalva()
+    if (!sessao) return
+
+    const atualizada = { ...sessao, senhaProvisoria: 0 }
     localStorage.setItem('auth', JSON.stringify(atualizada))
     setAuth(atualizada)
   }
@@ -155,7 +166,7 @@ export function AuthProvider({ children }) {
   }, [auth])
 
   return (
-    <AuthContext.Provider value={{ auth, perfil, login, logout, marcarPrimeiroAcessoConcluido }}>
+    <AuthContext.Provider value={{ auth, perfil, login, logout, marcarPrimeiroAcessoConcluido, marcarSenhaDefinida }}>
       {children}
     </AuthContext.Provider>
   )

@@ -50,9 +50,14 @@ function AppRoutes() {
       {/* Públicas */}
       <Route path="/login" element={<Login />} />
       <Route path="/cadastro" element={<Cadastro />} />
-      <Route path="/primeiro-acesso" element={<PrimeiroAcesso />} />
+      {/* <Route path="/primeiro-acesso" element={<PrimeiroAcesso />} /> */}
       <Route path="/perfil-em-analise" element={<PerfilEmAnalise />} />
       <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+
+      {/* Primeiro acesso do administrador (logado, com a senha provisória ainda não trocada) */}
+      <Route element={<RequireAuth nivel={NIVEL.ADMIN} exigirPrimeiroAcesso={false} />}>
+        <Route path="/primeiro-acesso" element={<PrimeiroAcesso />} />
+      </Route>
 
       {/* Administrador (nivel 0) */}
       <Route element={<RequireAuth nivel={NIVEL.ADMIN} />}>

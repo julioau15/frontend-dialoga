@@ -7,6 +7,7 @@
 // - Paciente ou profissional em primeiro acesso -> tela de primeiro acesso do nível
 //     paciente     -> /personalizar-experiencia
 //     profissional -> /boas-vindas-profissional
+//     administrador -> /primeiro-acesso (enquanto a senha for provisória)
 //   (exigirPrimeiroAcesso={false} desliga isso: é o que as próprias telas de primeiro acesso usam)
 // ============================================================
 import { Navigate, Outlet } from 'react-router-dom'

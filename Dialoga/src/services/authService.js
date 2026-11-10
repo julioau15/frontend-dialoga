@@ -40,7 +40,7 @@ export async function loginRequest(email, senha) {
 
   // Pegamos só o necessário (a resposta do back também traz senha_hash,
   // que não deve ser guardada no front)
-  const { token, nivel, id, email: emailUsuario, primeiro_acesso_concluido } = data.response.auth[0]
+    const { token, nivel, id, email: emailUsuario, primeiro_acesso_concluido, senha_provisoria } = data.response.auth[0]
 
   // O login só informa o primeiro acesso do paciente. Para o profissional
   // (nivel 1), pergunta ao back em GET /profissionais/me.
@@ -52,6 +52,8 @@ export async function loginRequest(email, senha) {
     id,
     email: emailUsuario,
     primeiroAcessoConcluido: Boolean(concluido), // o back manda 0/1
+    // Só vem para administrador: 1 = precisa definir a senha, 0 = senha definida
+    senhaProvisoria: senha_provisoria === undefined ? undefined : Number(senha_provisoria),
   }
 }
 

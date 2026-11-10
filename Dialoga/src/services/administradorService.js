@@ -4,6 +4,7 @@
 //   listarAdministradores(token, busca)         -> GET    /administradores
 //   criarAdministrador(token, dados)            -> POST   /administradores (FormData)
 //   removerAdministrador(token, id)             -> DELETE /administradores/:id
+//   definirSenhaAdministrador(token, dados)     -> PUT    /administradores/me/senha (JSON)
 // O token é enviado no header x-access-token.
 // Formato de cada administrador devolvido:
 //   { id, idUsuario, nome, email, criadoPor, criadoEm }
@@ -25,13 +26,18 @@ async function requisicao(caminho, { token, method = 'GET', body, mensagemErro }
     erro.status = 401
     throw erro
   }
+    // Objeto comum vai como JSON; FormData segue como está (o navegador define o Content-Type).
+  // O back compara o Content-Type exatamente com "application/json".
+  const enviarJson = body !== undefined && !(body instanceof FormData)
+  const headers = { 'x-access-token': token }
+  if (enviarJson) headers['Content-Type'] = 'application/json'
 
   let resposta
   try {
     resposta = await fetch(`${API_URL}${caminho}`, {
       method,
-      headers: { 'x-access-token': token },
-      body,
+      headers,
+      body: enviarJson ? JSON.stringify(body) : body,
     })
   } catch (erro) {
     throw new Error(ERRO_CONEXAO, { cause: erro })
@@ -50,6 +56,8 @@ async function requisicao(caminho, { token, method = 'GET', body, mensagemErro }
     erro.status = resposta.status
     // Somente o erro de e-mail é associado a um campo do formulário
     if (String(dados?.field ?? '').startsWith('[EMAIL]')) erro.campo = 'email'
+    // Campo informado pela API (ex.: "[SENHA_ATUAL] INCORRETA"), usado pelo formulário de senha
+    erro.field = dados?.field ?? null
     throw erro
   }
 
@@ -111,11 +119,22 @@ export async function criarAdministrador(token, { nome, email }) {
   return normalizarAdministrador(dados.response.administrador)
 }
 
-// Remove o usuário do administrador (DELETE /usuarios/{idUsuario}).
-// A FK de tbl_administrador tem ON DELETE CASCADE, então o banco remove o administrador junto
-// e o acesso deixa de existir (RN02). A rota DELETE /administradores/{id} apaga só o administrador.
-export async function removerAdministrador(token, idUsuario) {
-  await requisicao(`/usuarios/${encodeURIComponent(idUsuario)}`, {
+// Troca a senha provisória do administrador logado (PUT /administradores/me/senha).
+// O back-end localiza o administrador pelo token, confere a senha atual e marca senha_provisoria = 0.
+export async function definirSenhaAdministrador(token, { senhaAtual, novaSenha }) {
+  return requisicao('/administradores/me/senha', {
+    token,
+    method: 'PUT',
+    body: { senha_atual: senhaAtual, nova_senha: novaSenha },
+    mensagemErro: 'Não foi possível salvar a nova senha. Tente novamente.',
+  })
+}
+
+// Remove o administrador (DELETE /administradores/{id}).
+// O back-end bloqueia a remoção da própria conta e do último administrador (403)
+// e exclui também o usuário vinculado, retirando o acesso (RN02).
+export async function removerAdministrador(token, id) {
+  await requisicao(`/administradores/${encodeURIComponent(id)}`, {
     token,
     method: 'DELETE',
     mensagemErro: 'Não foi possível remover o administrador. Tente novamente.',
