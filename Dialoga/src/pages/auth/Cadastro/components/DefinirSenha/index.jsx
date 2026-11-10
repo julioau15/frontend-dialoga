@@ -14,6 +14,8 @@
 //   onVoltar       -> (opcional) se não vier, o botão "Voltar" não aparece
 //   textoBotao     -> (opcional) texto do botão principal. Padrão: "Criar conta"
 //   textoCarregando-> (opcional) texto enquanto carrega. Padrão: "Criando conta..."
+//   comSenhaAtual  -> (opcional) true mostra o campo "Senha atual" (valores.senhaAtual)
+//                     e usa os rótulos "Nova senha" e "Confirmar nova senha"
 // ============================================================
 import TextField from '../../../../../components/TextField'
 import Button from '../../../../../components/Button'
@@ -32,15 +34,31 @@ export default function DefinirSenha({
   onSubmit,
   textoBotao = 'Criar conta',
   textoCarregando = 'Criando conta...',
+  comSenhaAtual = false,
 }) {
   return (
     <form onSubmit={onSubmit} noValidate>
       <h1 className="text-[20px] font-extrabold text-texto">Defina sua senha</h1>
       <p className="mt-1 text-[13px] text-secundaria">Crie uma senha segura para sua conta</p>
 
-      <div className="flex flex-col gap-4 mt-5">
+        <div className="flex flex-col gap-4 mt-5">
+        {/* Primeiro acesso do administrador: senha recebida por e-mail */}
+        {comSenhaAtual && (
+          <TextField
+            label="Senha atual"
+            type={mostrarSenha ? 'text' : 'password'}
+            name="senhaAtual"
+            autoComplete="current-password"
+            placeholder="Senha recebida por e-mail"
+            icone={iconeCadeado}
+            value={valores.senhaAtual}
+            onChange={(e) => onAlterarCampo('senhaAtual', e.target.value)}
+            erro={errosCampos.senhaAtual}
+          />
+        )}
+
         <TextField
-          label="Senha"
+          label={comSenhaAtual ? 'Nova senha' : 'Senha'}
           type={mostrarSenha ? 'text' : 'password'}
           name="senha"
           autoComplete="new-password"
@@ -62,7 +80,7 @@ export default function DefinirSenha({
         />
 
         <TextField
-          label="Confirmar senha"
+          label={comSenhaAtual ? 'Confirmar nova senha' : 'Confirmar senha'}
           type={mostrarSenha ? 'text' : 'password'}
           name="confirmarSenha"
           autoComplete="new-password"
