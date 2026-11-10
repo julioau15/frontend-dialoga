@@ -5,6 +5,8 @@
 // ============================================================
 import { API_URL } from '../config/api'
 
+const NIVEL_PROFISSIONAL = 1 // mesmo número de NIVEL.PROFISSIONAL em utils/rotasPorNivel.js
+
 // POST /auth/login
 // Envia e-mail e senha. Se der certo, devolve { token, nivel, id, email }.
 // Se der errado, lança um Error com a mensagem para mostrar ao usuário
@@ -39,11 +41,31 @@ export async function loginRequest(email, senha) {
   // Pegamos só o necessário (a resposta do back também traz senha_hash,
   // que não deve ser guardada no front)
   const { token, nivel, id, email: emailUsuario, primeiro_acesso_concluido } = data.response.auth[0]
+
+  // O login só informa o primeiro acesso do paciente. Para o profissional
+  // (nivel 1), pergunta ao back em GET /profissionais/me.
+  const concluido = primeiro_acesso_concluido ?? (nivel === NIVEL_PROFISSIONAL ? await profissionalConcluiuPrimeiroAcesso(token) : undefined)
+
   return {
     token,
     nivel,
     id,
     email: emailUsuario,
-    primeiroAcessoConcluido: Boolean(primeiro_acesso_concluido), // o back manda 0/1
+    primeiroAcessoConcluido: Boolean(concluido), // o back manda 0/1
+  }
+}
+
+// Confere se o profissional já concluiu o primeiro acesso.
+// Se a consulta falhar, considera que concluiu: é melhor deixar o profissional
+// entrar no painel do que prendê-lo na tela de boas-vindas por causa de um erro de rede.
+async function profissionalConcluiuPrimeiroAcesso(token) {
+  try {
+    const res = await fetch(`${API_URL}/profissionais/me`, { headers: { 'x-access-token': token } })
+    const dados = await res.json().catch(() => null)
+    const profissional = dados?.response?.profissional?.[0]
+    if (!res.ok || !profissional) return true
+    return Boolean(Number(profissional.primeiro_acesso_concluido))
+  } catch {
+    return true
   }
 }

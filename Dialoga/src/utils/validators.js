@@ -57,6 +57,18 @@ export function mascararCpf(valor) {
 
 export const limparCpf = soNumeros
 
+// CRP no formato "CRP 06/12345": prefixo, região (2 dígitos), barra e número (5 ou 6 dígitos)
+export const REGEX_CRP = /^CRP \d{2}\/\d{5,6}$/
+
+// Máscara de CRP: o profissional digita só números ("06123456") e o campo
+// monta "CRP 06/123456" (também funciona ao colar "CRP 06/00123" ou "06/00123").
+export function mascararCrp(valor) {
+  const n = soNumeros(valor).slice(0, 8) // 2 da região + até 6 do número
+  if (n.length === 0) return ''
+  if (n.length <= 2) return `CRP ${n}`
+  return `CRP ${n.slice(0, 2)}/${n.slice(2)}`
+}
+
 // CPF válido = 11 números (não todos iguais) + 2 dígitos verificadores (mesma regra do back-end)
 export function cpfValido(valor) {
   const cpf = soNumeros(valor)
@@ -91,7 +103,8 @@ export function validarCadastroDados({ tipo, nome, email, celular, cpf, crp, esp
     if (soNumeros(cpf).length !== 11) erros.cpf = 'CPF deve ter 11 números.'
     else if (!cpfValido(cpf)) erros.cpf = 'CPF inválido.'
 
-    if (!crp.trim() || crp.length > 20) erros.crp = 'Informe seu CRP.'
+    if (!crp.trim()) erros.crp = 'Informe seu CRP.'
+    else if (!REGEX_CRP.test(crp.trim())) erros.crp = 'CRP inválido. Use o formato CRP 06/12345 (5 ou 6 dígitos).'
 
     if (especialidades.length === 0) erros.especialidades = 'Selecione ao menos uma especialidade.'
   }

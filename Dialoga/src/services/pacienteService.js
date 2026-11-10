@@ -115,7 +115,7 @@ const ERRO_SERVIDOR = 'Tivemos um problema no servidor. Tente novamente em insta
 //   caminho -> ex.: '/profissionais/busca?q=ana'
 //   opcoes  -> { token, method, body, signal, mensagemErro }
 // body (objeto) é enviado como JSON.
-async function requisicao(caminho, { token, method = 'GET', body, signal, mensagemErro }) {
+export async function requisicao(caminho, { token, method = 'GET', body, signal, mensagemErro }) {
     // Sem token não adianta chamar a API: ela responderia 401
     if (!token) {
         const erro = new Error(ERRO_SESSAO)

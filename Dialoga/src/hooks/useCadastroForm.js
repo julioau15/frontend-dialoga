@@ -19,6 +19,7 @@ import {
   validarCadastroSenha,
   mascararCelular,
   mascararCpf,
+  mascararCrp,
   limparCpf,
 } from '../utils/validators'
 
@@ -82,6 +83,7 @@ export function useCadastroForm() {
   function alterarCampo(campo, valor) {
     if (campo === 'celular') valor = mascararCelular(valor)
     if (campo === 'cpf') valor = mascararCpf(valor)
+    if (campo === 'crp') valor = mascararCrp(valor)
     setValores((v) => ({ ...v, [campo]: valor }))
     setErrosCampos((e) => ({ ...e, [campo]: undefined }))
     setErroGeral('')
