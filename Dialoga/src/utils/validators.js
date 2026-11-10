@@ -207,6 +207,20 @@ export function mascararHorasSono(valor) {
   return `${inteiro.slice(0, 2)}.${resto.join('').slice(0, 2)}`
 }
 
+// Valida as horas de sono entre 0 e 24: obrigatório, só números e até 2 casas decimais.
+// Devolve a mensagem de erro ou '' quando o valor é válido.
+export function validarHorasSono(valor) {
+  const horas = String(valor ?? '').trim()
+
+  if (horas === '') return 'Informe quantas horas você dormiu.'
+  if (!/^\d{1,2}(\.\d{1,2})?$/.test(horas))
+    return 'Use apenas números, com até 2 casas decimais (ex: 7.5).'
+  if (Number(horas) > LIMITES_PERSONALIZACAO.HORAS_SONO_MAX)
+    return `Informe um valor entre 0 e ${LIMITES_PERSONALIZACAO.HORAS_SONO_MAX} horas.`
+
+  return ''
+}
+
 // Etapa 3: registro de humor. Campos obrigatórios iguais aos do back
 // (sentimento, energia, humor, padrao_pensamentos, horas_sono); relato é opcional.
 export function validarHumor({ sentimento, energia, humorDia, horasSono, pensamento, relato }) {
@@ -217,14 +231,9 @@ export function validarHumor({ sentimento, energia, humorDia, horasSono, pensame
   if (!humorDia) erros.humorDia = 'Escolha como está seu humor.'
   if (!pensamento) erros.pensamento = 'Escolha o tipo de pensamento do dia.'
 
-  const horas = horasSono.trim()
-  if (horas === '') {
-    erros.horasSono = 'Informe quantas horas você dormiu.'
-  } else if (!/^\d{1,2}(\.\d{1,2})?$/.test(horas)) {
-    erros.horasSono = 'Use apenas números, com até 2 casas decimais (ex: 7.5).'
-  } else if (Number(horas) > LIMITES_PERSONALIZACAO.HORAS_SONO_MAX) {
-    erros.horasSono = `Informe um valor entre 0 e ${LIMITES_PERSONALIZACAO.HORAS_SONO_MAX} horas.`
-  }
+  // Valida as horas de sono pela regra compartilhada (entre 0 e 24)
+  const erroHorasSono = validarHorasSono(horasSono)
+  if (erroHorasSono) erros.horasSono = erroHorasSono
 
   if (relato.length > LIMITES_PERSONALIZACAO.RELATO)
     erros.relato = `Use no máximo ${LIMITES_PERSONALIZACAO.RELATO} caracteres.`
