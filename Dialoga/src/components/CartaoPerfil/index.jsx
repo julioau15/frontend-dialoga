@@ -68,10 +68,10 @@ export default function CartaoPerfil({ tom = 'paciente', nome, selo, fotoUrl, on
         </button>
 
         <p className="mt-1.5 text-[18px] font-extrabold text-branco text-center">{nome}</p>
-        <span className={`inline-flex items-center gap-1 h-[22px] px-2.5 rounded-full text-[11px] font-semibold ${t.selo}`}>
+        <span className={`inline-flex items-center gap-1 h-[22px] px-2.5 rounded-full text-[12px] font-semibold ${t.selo}`}>
           {selo}
         </span>
-        <p className={`text-[10px] ${t.dica}`}>Clique na foto para alterar</p>
+        <p className={`text-[12px] ${t.dica}`}>Clique na foto para alterar</p>
       </div>
 
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5 p-5">

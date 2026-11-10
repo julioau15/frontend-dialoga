@@ -90,7 +90,7 @@ function PerfilAdmin() {
 
         {p.editando && (
           <div className="flex flex-col gap-5 pt-4 border-t border-borda">
-            <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-secundaria">
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-secundaria">
               Alterar senha <span className="font-normal normal-case tracking-normal">(opcional)</span>
             </span>
             {campoSenha('senhaAtual', 'Senha atual')}
