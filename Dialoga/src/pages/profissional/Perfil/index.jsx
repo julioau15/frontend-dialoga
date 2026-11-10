@@ -78,10 +78,10 @@ function PerfilProfissional() {
         />
 
         <div className="flex flex-col gap-2.5 pt-4 border-t border-borda">
-          <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-secundaria">Dados imutáveis</span>
+          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-secundaria">Dados imutáveis</span>
           <CampoImutavel label="CRP" valor={dados.crp} />
           <CampoImutavel label="CPF" valor={dados.cpf} />
-          <p className="text-[10px] text-secundaria">
+          <p className="text-[12px] text-secundaria">
             CRP e CPF não podem ser alterados. Em caso de erro, entre em contato com o suporte.
           </p>
         </div>
