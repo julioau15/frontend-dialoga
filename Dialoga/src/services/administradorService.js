@@ -111,11 +111,11 @@ export async function criarAdministrador(token, { nome, email }) {
   return normalizarAdministrador(dados.response.administrador)
 }
 
-// Remove o usuário do administrador (DELETE /usuarios/{idUsuario}).
-// A FK de tbl_administrador tem ON DELETE CASCADE, então o banco remove o administrador junto
-// e o acesso deixa de existir (RN02). A rota DELETE /administradores/{id} apaga só o administrador.
-export async function removerAdministrador(token, idUsuario) {
-  await requisicao(`/usuarios/${encodeURIComponent(idUsuario)}`, {
+// Remove o administrador (DELETE /administradores/{id}).
+// O back-end bloqueia a remoção da própria conta e do último administrador (403)
+// e exclui também o usuário vinculado, retirando o acesso (RN02).
+export async function removerAdministrador(token, id) {
+  await requisicao(`/administradores/${encodeURIComponent(id)}`, {
     token,
     method: 'DELETE',
     mensagemErro: 'Não foi possível remover o administrador. Tente novamente.',
