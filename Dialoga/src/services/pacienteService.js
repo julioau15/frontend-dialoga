@@ -200,6 +200,26 @@ export async function salvarRegistroHumor(token, registro) {
     })
 }
 
+// GET /pacientes/me/registros-humor?inicio=AAAA-MM-DD&fim=AAAA-MM-DD
+// Busca o registro de humor do paciente na data informada (formato "AAAA-MM-DD").
+// Devolve o registro encontrado ou null; o 404 da API indica que não há registro na data.
+export async function buscarRegistroHumorDoDia(token, data, signal) {
+    const params = new URLSearchParams({ inicio: data, fim: data })
+
+    try {
+        const dados = await requisicao(`/pacientes/me/registros-humor?${params}`, {
+            token,
+            signal,
+            mensagemErro: 'Não foi possível verificar o registro de humor de hoje.',
+        })
+        return dados.response?.registroHumor?.[0] ?? null
+    } catch (erro) {
+        // Trata o 404 como ausência de registro na data
+        if (erro.status === 404) return null
+        throw erro
+    }
+}
+
 // POST /pacientes/me/primeiro-acesso
 // dados = { apelido, data_nascimento } (os dois podem ser null)
 // O back salva os dados e marca primeiro_acesso_concluido = 1.
