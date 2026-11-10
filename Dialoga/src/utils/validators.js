@@ -228,14 +228,12 @@ export function validarHumor({ sentimento, energia, humorDia, horasSono, pensame
 export const LIMITES_ADMINISTRADOR = {
   NOME: MAX_NOME,
   EMAIL: MAX_EMAIL,
-  SENHA_MIN: 4,
-  SENHA_MAX: MAX_SENHA,
 }
 
 // Valido o pop-up "Novo administrador".
 // emailsExistentes: e-mails que já estão na lista, para eu não deixar repetir.
 // Devolvo { campo: 'mensagem' }; objeto vazio = tudo certo.
-export function validarNovoAdministrador({ nome, email, senha }, emailsExistentes = []) {
+export function validarNovoAdministrador({ nome, email}, emailsExistentes = []) {
   const erros = {}
   const nomeLimpo = nome.trim()
   const emailLimpo = email.trim().toLowerCase()
@@ -251,12 +249,6 @@ export function validarNovoAdministrador({ nome, email, senha }, emailsExistente
     erros.email = 'E-mail inválido.'
   else if (emailsExistentes.some((e) => e.trim().toLowerCase() === emailLimpo))
     erros.email = 'Já existe um administrador com este e-mail.'
-
-  if (!senha) erros.senha = 'Informe a senha provisória.'
-  else if (senha.length < LIMITES_ADMINISTRADOR.SENHA_MIN)
-    erros.senha = `A senha deve ter pelo menos ${LIMITES_ADMINISTRADOR.SENHA_MIN} caracteres.`
-  else if (senha.length > LIMITES_ADMINISTRADOR.SENHA_MAX)
-    erros.senha = `A senha deve ter no máximo ${LIMITES_ADMINISTRADOR.SENHA_MAX} caracteres.`
-
+  
   return erros
 }

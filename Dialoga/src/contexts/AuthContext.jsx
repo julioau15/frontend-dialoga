@@ -16,7 +16,8 @@ const AuthContext = createContext(null)
 // nivel -> rota onde ficam os dados daquele tipo de usuário.
 // AJUSTE: confira qual número é cada nível e o nome real das rotas.
 const ROTA_POR_NIVEL = {
-  0: 'administradores/me',
+  // Administrador: busca a lista e localiza o registro pelo id do usuário da sessão
+  0: 'administradores',
   1: 'profissionais/me',
   2: 'pacientes/me',
 }
@@ -132,7 +133,16 @@ export function AuthProvider({ children }) {
     })
       .then((r) => (r.ok ? r.json() : null))
       .then((dados) => {
-        if (!cancelado) setPerfil(normalizarPerfil(dados.response[nivel]))
+        if (cancelado) return
+
+        let registro = dados?.response?.[nivel]
+
+        // Na lista de administradores, mantém apenas o registro ligado ao usuário da sessão
+        if (nivel === 'administrador' && Array.isArray(registro)) {
+          registro = registro.find((item) => Number(item.id_usuario) === Number(auth.id))
+        }
+
+        setPerfil(normalizarPerfil(registro))
       })
       .catch(() => {
         if (!cancelado) setPerfil(null)

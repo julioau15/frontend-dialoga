@@ -19,7 +19,6 @@ import Button from '../../../../../components/Button'
 import TextField from '../../../../../components/TextField'
 import iconeNome from '../../../../../assets/auth/IconNome.png'
 import iconeEmail from '../../../../../assets/auth/icon_email.png'
-import iconeCadeado from '../../../../../assets/auth/icon_cadeado.png'
 import { LIMITES_ADMINISTRADOR } from '../../../../../utils/validators'
 
 const VALORES_INICIAIS = { nome: '', email: '', senha: '' }
@@ -114,22 +113,11 @@ export default function ModalNovoAdministrador({ aberto, enviando = false, onFec
             onChange={alterar('email')}
             erro={erros.email}
           />
-          <TextField
-            label={rotuloComIcone(iconeCadeado, 'Senha provisória')}
-            type="password"
-            name="senha"
-            autoComplete="new-password"
-            placeholder={`Mínimo ${LIMITES_ADMINISTRADOR.SENHA_MIN} caracteres`}
-            maxLength={LIMITES_ADMINISTRADOR.SENHA_MAX}
-            value={valores.senha}
-            onChange={alterar('senha')}
-            erro={erros.senha}
-          />
-  
+
           {/* RF07: aviso sobre o e-mail com as credenciais */}
           <p className="p-3 bg-fundo-card rounded-lg text-[11.5px] leading-relaxed text-secundaria">
-            O envio automático por e-mail ainda não está disponível. <strong className="font-bold">Informe as credenciais de acesso</strong> ao
-            novo administrador.
+                        O novo administrador receberá um e-mail com as <strong className="font-bold">credenciais de acesso</strong> e
+            instruções para redefinir a senha no primeiro login.
           </p>
   
           {erroGeral && <p role="alert" className="text-[11px] text-erro">{erroGeral}</p>}

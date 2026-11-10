@@ -95,12 +95,11 @@ export async function listarAdministradores(token, busca = '') {
 // Cria o administrador.
 // O celular segue vazio porque a rota converte campo ausente no texto "undefined";
 // vazio é gravado como NULL.
-export async function criarAdministrador(token, { nome, email, senha }) {
+export async function criarAdministrador(token, { nome, email }) {
   const corpo = new FormData()
   corpo.append('nome_completo', nome.trim())
   corpo.append('email', email.trim().toLowerCase())
   corpo.append('celular', '')
-  corpo.append('senha_provisoria', senha)
 
   const dados = await requisicao('/administradores', {
     token,
@@ -112,9 +111,11 @@ export async function criarAdministrador(token, { nome, email, senha }) {
   return normalizarAdministrador(dados.response.administrador)
 }
 
-// Remove o administrador e o usuário vinculado a ele.
-export async function removerAdministrador(token, id) {
-  await requisicao(`/administradores/${encodeURIComponent(id)}`, {
+// Remove o usuário do administrador (DELETE /usuarios/{idUsuario}).
+// A FK de tbl_administrador tem ON DELETE CASCADE, então o banco remove o administrador junto
+// e o acesso deixa de existir (RN02). A rota DELETE /administradores/{id} apaga só o administrador.
+export async function removerAdministrador(token, idUsuario) {
+  await requisicao(`/usuarios/${encodeURIComponent(idUsuario)}`, {
     token,
     method: 'DELETE',
     mensagemErro: 'Não foi possível remover o administrador. Tente novamente.',
