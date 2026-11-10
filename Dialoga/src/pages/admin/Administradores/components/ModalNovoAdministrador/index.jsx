@@ -21,7 +21,7 @@ import iconeNome from '../../../../../assets/auth/IconNome.png'
 import iconeEmail from '../../../../../assets/auth/icon_email.png'
 import { LIMITES_ADMINISTRADOR } from '../../../../../utils/validators'
 
-const VALORES_INICIAIS = { nome: '', email: '', senha: '' }
+const VALORES_INICIAIS = { nome: '', email: ''}
 
 // Rótulo com o ícone ao lado do texto, como no Figma.
 // Reaproveito os mesmos ícones do Login e do Cadastro.
