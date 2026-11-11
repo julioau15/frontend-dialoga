@@ -15,6 +15,7 @@
   /* ---------- Secundária (cinza-arroxeado) ---------- */
   --color-secundaria: #7C6B8A;
   --color-secundaria-alfa-50: #7C6B8A80;
+  --color-secundaria-escura: #5E4D6E; /* passa no contraste (AA) sobre o fundo lilás e o degradê */
   
   /* ---------- Texto ---------- */
   --color-texto: #2D1B45;
@@ -34,6 +35,7 @@
   
   /* ---------- Sucesso (verde) ---------- */
   --color-sucesso: #059669;
+  --color-sucesso-escura: #047857; /* verde que passa no contraste (AA) para texto pequeno */
   --color-sucesso-fundo: #F0FDF4;
   --color-sucesso-borda: #B9F8CF;
   --color-sucesso-borda-suave: #DCFCE7;
@@ -52,6 +54,7 @@
   /* ---------- Alerta (âmbar) ---------- */
   --color-alerta: #D97706;
   --color-alerta-escura: #B45309;
+  --color-alerta-mais-escura: #92400E; /* fim do degradê do cartão de Perfil do admin */
   --color-alerta-fundo: #FFFBEB;
   --color-alerta-borda: #FEE685;
   --color-alerta-borda-suave: #FEF3C6;

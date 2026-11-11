@@ -13,8 +13,8 @@ export default function PaginaPerfil({ subtitulo, compensarLayout = true, childr
   return (
     <div className={`min-h-svh bg-fundo-suave ${compensarLayout ? '-m-6' : ''}`}>
       <div className="mx-auto w-full max-w-[488px] px-4 py-8 sm:px-6 sm:py-12">
-        <h1 className="text-[22px] font-extrabold text-texto">Meu perfil</h1>
-        <p className="mb-5 text-[12px] text-secundaria">{subtitulo}</p>
+        <h1 className="text-[24px] font-extrabold text-texto">Meu perfil</h1>
+        <p className="mb-5 text-[14px] text-secundaria-escura">{subtitulo}</p>
         {children}
       </div>
     </div>

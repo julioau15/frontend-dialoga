@@ -1,16 +1,17 @@
 // ============================================================
 // pages/admin/Perfil (RF_2026_008)
-// Perfil do administrador: leitura e edição, com troca de senha opcional.
+// Perfil do administrador: leitura, edição (com troca de senha opcional)
+// e "perfil editado" (aviso verde no cartão + toast "Perfil atualizado!").
 // Rota: /admin/perfil
-// Frames: Perfil - Admin (leitura) | Perfil - Admin (edição, bloco "Alterar senha").
-// Ainda sem frame: o 3º frame do Admin. O toast "Perfil atualizado!" abaixo
-// foi copiado do Profissional e deve ser conferido com o Figma.
+// Frames: Perfil - Admin (leitura) | Perfil - Admin-1 (perfil editado)
+//         | Perfil - Admin-2 (edição, bloco "ALTERAR SENHA (OPCIONAL)")
 // ============================================================
 import Toast from '../../../components/Toast'
 import CampoPerfil from '../../../components/CampoPerfil'
 import CartaoPerfil from '../../../components/CartaoPerfil'
 import PaginaPerfil from '../../../components/PaginaPerfil'
 import AcoesPerfil from '../../../components/AcoesPerfil'
+import AvisoSucesso from '../../../components/AvisoSucesso'
 import { IconeEmail, IconeEscudo, IconeTelefone, IconeUsuario } from '../../../components/Icones'
 import { IconeCadeado } from '../../../components/IconesPerfil'
 import { usePerfilEditavel } from '../../../hooks/usePerfilEditavel'
@@ -59,6 +60,8 @@ function PerfilAdmin() {
         selo={<><IconeEscudo tamanho={10} />Administrador</>}
         onSubmit={p.salvar}
       >
+        {p.salvo && !p.editando && <AvisoSucesso />}
+
         <CampoPerfil
           label="Nome"
           icone={<IconeUsuario tamanho={14} />}
@@ -90,8 +93,9 @@ function PerfilAdmin() {
 
         {p.editando && (
           <div className="flex flex-col gap-5 pt-4 border-t border-borda">
-            <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-secundaria">
-              Alterar senha <span className="font-normal normal-case tracking-normal">(opcional)</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-secundaria">
+              {/* no Figma (Admin-2) o título inteiro fica em maiúsculas, inclusive "(opcional)" */}
+              Alterar senha <span className="font-normal tracking-normal">(opcional)</span>
             </span>
             {campoSenha('senhaAtual', 'Senha atual')}
             {campoSenha('novaSenha', 'Nova senha')}
