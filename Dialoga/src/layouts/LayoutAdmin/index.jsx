@@ -4,6 +4,7 @@
 // navegação, sair) + área da página (<Outlet />).
 // Em telas pequenas o menu vira uma faixa no topo.
 // ============================================================
+import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import Logo from '../../components/Logo'
@@ -22,9 +23,33 @@ const classeLink = ({ isActive }) =>
     isActive ? 'bg-primaria text-branco' : 'text-secundaria hover:bg-fundo-suave'
   }`
 
+// Foto do administrador no menu; sem foto (ou se a imagem não carregar) mostra as iniciais.
+function AvatarAdmin({ nome, foto }) {
+  // guarda QUAL url falhou: ao salvar uma foto nova a url muda e ela é tentada de novo
+  const [fotoQuebrada, setFotoQuebrada] = useState(null)
+
+  if (foto && foto !== fotoQuebrada) {
+    return (
+      <img
+        src={foto}
+        alt={`Foto de ${nome}`}
+        onError={() => setFotoQuebrada(foto)}
+        className="w-[60px] h-[60px] rounded-full object-cover"
+      />
+    )
+  }
+
+  return (
+    <span className="grid place-items-center w-[60px] h-[60px] rounded-full bg-borda-forte text-[18px] font-extrabold text-primaria" aria-hidden="true">
+      {iniciais(nome)}
+    </span>
+  )
+}
+
 function LayoutAdmin() {
   const { perfil, logout } = useAuth()
   const nome = perfil?.nome ?? 'Administrador' // vem de GET /administradores/:id (AuthContext)
+  const foto = perfil?.fotoUrl ?? null
   const navigate = useNavigate()
 
   // apaga a sessão salva e volta para a tela de login
@@ -60,9 +85,7 @@ function LayoutAdmin() {
           </div>
 
           <div className="hidden md:flex flex-col items-center gap-1 px-4 py-5 border-b border-borda">
-            <span className="grid place-items-center w-[60px] h-[60px] rounded-full bg-borda-forte text-[18px] font-extrabold text-primaria" aria-hidden="true">
-              {iniciais(nome)}
-            </span>
+            <AvatarAdmin nome={nome} foto={foto} />
             <p className="mt-1 text-[13px] font-bold text-texto">{nome}</p>
             <span className="inline-flex items-center gap-1 h-[22px] px-2.5 bg-alerta-fundo border border-alerta-borda rounded-full text-[10.5px] font-semibold text-alerta-escura">
               <IconeEscudo tamanho={11} />

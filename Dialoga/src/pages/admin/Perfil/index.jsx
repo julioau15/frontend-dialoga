@@ -5,6 +5,9 @@
 // Rota: /admin/perfil
 // Frames: Perfil - Admin (leitura) | Perfil - Admin-1 (perfil editado)
 //         | Perfil - Admin-2 (edição, bloco "ALTERAR SENHA (OPCIONAL)")
+// Dados: GET /administradores (acha o registro do usuário logado)
+// Salvar: PUT /administradores/me (multipart, com foto opcional) e, se preencher
+//         o bloco de senha, PUT /administradores/me/senha.
 // ============================================================
 import Toast from '../../../components/Toast'
 import CampoPerfil from '../../../components/CampoPerfil'
@@ -12,27 +15,42 @@ import CartaoPerfil from '../../../components/CartaoPerfil'
 import PaginaPerfil from '../../../components/PaginaPerfil'
 import AcoesPerfil from '../../../components/AcoesPerfil'
 import AvisoSucesso from '../../../components/AvisoSucesso'
+import PerfilCarregando from '../../../components/PerfilCarregando'
 import { IconeEmail, IconeEscudo, IconeTelefone, IconeUsuario } from '../../../components/Icones'
 import { IconeCadeado } from '../../../components/IconesPerfil'
+import { useAuth } from '../../../contexts/AuthContext'
 import { usePerfilEditavel } from '../../../hooks/usePerfilEditavel'
+import { usePerfilRemoto } from '../../../hooks/usePerfilRemoto'
+import { salvarPerfil } from '../../../services/perfilService'
 import { validarPerfilBasico, validarTrocaSenha } from '../../../utils/validarPerfil'
 import { mascararCelular } from '../../../utils/validators'
 
-// TODO: trocar pelos dados reais (GET /administradores/me). Valores do Figma por enquanto.
-const DADOS_INICIAIS = {
-  nome: 'Rafaela Souto',
-  email: 'admin@dialoga.com.br',
-  celular: '(11) 91234-5678',
-}
 const SENHAS_VAZIAS = { senhaAtual: '', novaSenha: '', confirmarSenha: '' }
 
-function PerfilAdmin() {
-  const p = usePerfilEditavel(DADOS_INICIAIS, {
+const SUBTITULO = 'Suas informações de administrador'
+
+// O back diz qual campo da senha deu problema em "field", ex.: "[SENHA_ATUAL] INCORRETA"
+function erroDeSenha(erro) {
+  // senha já foi trocada e o resto falhou: a mensagem completa precisa aparecer no toast
+  if (erro.senhaAlterada) return null
+
+  const campo = String(erro.field ?? '')
+  if (campo.startsWith('[SENHA_ATUAL]')) return { senhaAtual: erro.message }
+  if (campo.startsWith('[NOVA_SENHA]')) return { novaSenha: erro.message }
+  if (campo.startsWith('[CELULAR]')) return { celular: erro.message }
+  return null
+}
+
+function FormularioPerfil({ dadosIniciais }) {
+  const { auth, atualizarPerfilLocal } = useAuth()
+  const p = usePerfilEditavel(dadosIniciais, {
     validar: (r) => ({ ...validarPerfilBasico(r), ...validarTrocaSenha(r) }),
     mensagemSucesso: 'Perfil atualizado!',
     aoEditar: (v) => ({ ...v, ...SENHAS_VAZIAS }), // campos de senha começam vazios
-    // senhas nunca ficam guardadas na tela depois de salvar
-    aoSalvar: ({ nome, email, celular }) => ({ nome, email, celular }),
+    // os novos valores vêm da API (nunca trazem senha)
+    salvarNaApi: (rascunho) => salvarPerfil(auth, rascunho),
+    mapearErro: erroDeSenha,
+    aoSalvarComSucesso: (v) => atualizarPerfilLocal({ nome: v.nome, fotoUrl: v.fotoUrl }),
   })
   const dados = p.editando ? p.rascunho : p.valores
   const modo = p.editando ? 'edicao' : 'leitura'
@@ -53,11 +71,13 @@ function PerfilAdmin() {
   )
 
   return (
-    <PaginaPerfil subtitulo="Suas informações de administrador" compensarLayout={false}>
+    <PaginaPerfil subtitulo={SUBTITULO} compensarLayout={false}>
       <CartaoPerfil
         tom="admin"
         nome={p.valores.nome}
         selo={<><IconeEscudo tamanho={10} />Administrador</>}
+        fotoUrl={p.fotoUrl}
+        onEscolherFoto={p.escolherFoto}
         onSubmit={p.salvar}
       >
         {p.salvo && !p.editando && <AvisoSucesso />}
@@ -103,12 +123,21 @@ function PerfilAdmin() {
           </div>
         )}
 
-        <AcoesPerfil editando={p.editando} onEditar={p.editar} onCancelar={p.cancelar} />
+        <AcoesPerfil editando={p.editando} salvando={p.salvando} onEditar={p.editar} onCancelar={p.cancelar} />
       </CartaoPerfil>
 
       <Toast {...p.toast} onFechar={p.fecharToast} />
     </PaginaPerfil>
   )
+}
+
+function PerfilAdmin() {
+  const { dados, erro, recarregar } = usePerfilRemoto()
+
+  if (!dados) {
+    return <PerfilCarregando erro={erro} onTentarNovamente={recarregar} subtitulo={SUBTITULO} compensarLayout={false} />
+  }
+  return <FormularioPerfil dadosIniciais={dados} />
 }
 
 export default PerfilAdmin

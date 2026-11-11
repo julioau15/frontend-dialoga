@@ -8,9 +8,10 @@
 //   nome         -> nome completo (as iniciais são calculadas aqui)
 //   selo         -> conteúdo da etiqueta embaixo do nome (texto ou elementos)
 //   fotoUrl      -> foto (opcional); sem ela aparecem as iniciais
-//   onTrocarFoto -> clique no avatar (opcional; a troca de foto ainda não está ligada)
+//   onEscolherFoto -> recebe o arquivo (File) escolhido ao clicar no avatar. Sem ela, o clique não faz nada.
 //   onSubmit     -> envio do formulário
 // ============================================================
+import { useRef } from 'react'
 import { doisPrimeirosNomes } from '../../utils/formatadores'
 import { IconeLapis } from '../IconesPerfil'
 
@@ -49,17 +50,25 @@ const TONS = {
   },
 }
 
-export default function CartaoPerfil({ tom = 'paciente', nome, selo, fotoUrl, onTrocarFoto, onSubmit, children }) {
+export default function CartaoPerfil({ tom = 'paciente', nome, selo, fotoUrl, onEscolherFoto, onSubmit, children }) {
   const t = TONS[tom]
+  const campoArquivo = useRef(null)
+
+  function aoEscolherArquivo(e) {
+    const arquivo = e.target.files?.[0]
+    e.target.value = '' // permite escolher o mesmo arquivo de novo depois de cancelar
+    if (arquivo) onEscolherFoto?.(arquivo)
+  }
 
   return (
     <section className="overflow-hidden rounded-xl border border-borda bg-branco shadow-sm">
       <div className={`flex flex-col items-center gap-1.5 px-6 py-7 ${t.faixa}`}>
         <button
           type="button"
-          onClick={onTrocarFoto}
+          onClick={() => campoArquivo.current?.click()}
           className="relative rounded-full cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-branco"
         >
+          <input ref={campoArquivo} type="file" accept="image/*" className="hidden" tabIndex={-1} onChange={aoEscolherArquivo} />
           {/* nome do botão para leitores de tela (texto oculto em vez de aria-label,
               para não conflitar com as iniciais visíveis) */}
           <span className="sr-only">Alterar foto de perfil</span>

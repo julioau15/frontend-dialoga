@@ -6,6 +6,7 @@
 //   perfil -> { nome, fotoUrl } do usuário logado ou null
 //   login  -> faz o login na API e salva a sessão
 //   logout -> apaga a sessão
+//   atualizarPerfilLocal -> troca nome/foto do menu lateral (depois de salvar o Perfil)
 // ============================================================
 import { createContext, useContext, useEffect, useState } from 'react'
 import { loginRequest } from '../services/authService'
@@ -112,6 +113,12 @@ export function AuthProvider({ children }) {
     setAuth(atualizada)
   }
 
+  // Atualiza nome/foto mostrados no menu lateral sem precisar buscar na API de novo
+  // (usado pelas telas de Perfil depois de salvar).
+  function atualizarPerfilLocal(parcial) {
+    setPerfil((atual) => ({ ...atual, ...parcial }))
+  }
+
   // Desloga automaticamente quando o token expira (mesmo com a aba aberta)
   useEffect(() => {
     if (!auth) return
@@ -166,7 +173,7 @@ export function AuthProvider({ children }) {
   }, [auth])
 
   return (
-    <AuthContext.Provider value={{ auth, perfil, login, logout, marcarPrimeiroAcessoConcluido, marcarSenhaDefinida }}>
+    <AuthContext.Provider value={{ auth, perfil, login, logout, marcarPrimeiroAcessoConcluido, marcarSenhaDefinida, atualizarPerfilLocal }}>
       {children}
     </AuthContext.Provider>
   )
