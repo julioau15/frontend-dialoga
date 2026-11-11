@@ -9,7 +9,8 @@ import CampoPerfil from '../../../components/CampoPerfil'
 import CartaoPerfil from '../../../components/CartaoPerfil'
 import PaginaPerfil from '../../../components/PaginaPerfil'
 import AcoesPerfil from '../../../components/AcoesPerfil'
-import { IconeCheck, IconeEmail, IconeTelefone, IconeUsuario } from '../../../components/Icones'
+import AvisoSucesso from '../../../components/AvisoSucesso'
+import { IconeEmail, IconeTelefone, IconeUsuario } from '../../../components/Icones'
 import { usePerfilEditavel } from '../../../hooks/usePerfilEditavel'
 import { validarPerfilBasico } from '../../../utils/validarPerfil'
 import { mascararCelular } from '../../../utils/validators'
@@ -33,12 +34,7 @@ function PerfilPaciente() {
   return (
     <PaginaPerfil subtitulo="Suas informações pessoais">
       <CartaoPerfil tom="paciente" nome={p.valores.nome} selo="Paciente" onSubmit={p.salvar}>
-        {p.salvo && !p.editando && (
-          <div role="status" className="flex items-center gap-2 h-10 px-3 rounded-lg border border-sucesso-borda-suave bg-sucesso-fundo text-[12px] text-sucesso">
-            <IconeCheck tamanho={13} />
-            Alterações salvas com sucesso!
-          </div>
-        )}
+        {p.salvo && !p.editando && <AvisoSucesso />}
 
         <CampoPerfil
           label="Nome completo"

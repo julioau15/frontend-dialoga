@@ -13,7 +13,8 @@ import { IconeAlerta, IconeCheck } from '../Icones'
 const TEMPO_MS = 4000
 
 const TIPOS = {
-  sucesso: { classes: 'bg-sucesso', Icone: IconeCheck },
+  // verde mais escuro: texto branco de 12px precisa de 4,5:1 (com bg-sucesso dava 3,8:1)
+  sucesso: { classes: 'bg-sucesso-escura', Icone: IconeCheck },
   erro: { classes: 'bg-erro', Icone: IconeAlerta },
 }
 
