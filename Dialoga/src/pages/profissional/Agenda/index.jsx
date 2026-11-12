@@ -2,9 +2,10 @@
 // pages/profissional/Agenda
 // Agenda do profissional (só visual, dados fixos e estado local).
 // Frames: Agenda - Profissional | Nova consulta | Detalhes da consulta |
-//         Editar consulta | Excluir consulta | Consulta excluída.
-// Ainda sem frame: aba "Disponibilidade" (fica desabilitada) e as telas
-// Tablet/Mobile (a página só empilha as colunas em telas menores).
+//         Editar consulta | Excluir consulta | Consulta excluída |
+//         Disponibilidade - Profissional | Adicionar disponibilidade |
+//         Disponibilidade adicionada | Remover disponibilidade.
+// Ainda sem frame: as telas Tablet/Mobile (a página só empilha as colunas em telas menores).
 // Rota: /profissional/agenda
 // ============================================================
 import { useCallback, useMemo, useState } from 'react'
@@ -17,20 +18,32 @@ import CalendarioMes from '../../../components/CalendarioMes'
 import CartaoConsulta from '../../../components/CartaoConsulta'
 import { IconeCalendarioPequeno, IconeMais, IconeRelogioPequeno } from '../../../components/IconesAgenda'
 import { dataPorExtenso, normalizar } from '../../../utils/datasAgenda'
+import {
+  acharConflito,
+  diasComDisponibilidade,
+  ordenarDisponibilidades,
+  proximaData,
+  siglaDoDia,
+  faixaDeHorario,
+} from '../../../utils/disponibilidade'
 import { CONSULTAS_MOCK, HOJE } from './components/consultasMock'
 import ModalConsulta from './components/ModalConsulta'
 import ModalDetalhes from './components/ModalDetalhes'
 import ModalExcluir from './components/ModalExcluir'
+import ModalDisponibilidade from './components/ModalDisponibilidade'
+import PainelDisponibilidade from './components/PainelDisponibilidade'
+import { DISPONIBILIDADES_MOCK } from './components/disponibilidadesMock'
 
 const ABAS = [
   { id: 'eventos', rotulo: 'Eventos', icone: <IconeCalendarioPequeno tamanho={12} /> },
-  // Sem frame no Figma: aba só aparece, ainda sem conteúdo
-  { id: 'disponibilidade', rotulo: 'Disponibilidade', icone: <IconeRelogioPequeno tamanho={12} />, desabilitada: true },
+  { id: 'disponibilidade', rotulo: 'Disponibilidade', icone: <IconeRelogioPequeno tamanho={12} /> },
 ]
 
 const RotuloSecao = ({ children }) => (
   <h2 className="text-[10px] font-semibold uppercase tracking-[0.06em] text-secundaria">{children}</h2>
 )
+
+const SEM_CONSULTAS = new Set() // na aba Disponibilidade o calendário não mostra o pontinho de consulta
 
 const ordenar = (lista) => [...lista].sort((a, b) => `${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`))
 
@@ -42,8 +55,12 @@ function Agenda() {
   const [selecionado, setSelecionado] = useState(HOJE)
   // modal aberto: null | { tipo: 'nova' | 'detalhes' | 'editar' | 'excluir', consulta? }
   const [modal, setModal] = useState(null)
-  const [toastAberto, setToastAberto] = useState(false)
-  const fecharToast = useCallback(() => setToastAberto(false), [])
+  const [disponibilidades, setDisponibilidades] = useState(DISPONIBILIDADES_MOCK)
+  const [modalDisponibilidade, setModalDisponibilidade] = useState(false)
+  const [erroDisponibilidade, setErroDisponibilidade] = useState('')
+  const [toast, setToast] = useState({ aberto: false, tipo: 'sucesso', mensagem: '' })
+  const fecharToast = useCallback(() => setToast((t) => ({ ...t, aberto: false })), [])
+  const mostrarToast = (tipo, mensagem) => setToast({ aberto: true, tipo, mensagem })
   const fecharModal = () => setModal(null)
 
   const filtradas = useMemo(
@@ -53,6 +70,12 @@ function Agenda() {
   const doDia = filtradas.filter((c) => c.data === selecionado)
   const proximas = filtradas.filter((c) => c.data >= HOJE)
   const diasComConsulta = useMemo(() => new Set(consultas.map((c) => c.data)), [consultas])
+  const listaDisponibilidade = useMemo(() => ordenarDisponibilidades(disponibilidades), [disponibilidades])
+  const diasDisponiveis = useMemo(
+    () => diasComDisponibilidade(disponibilidades, mesVisivel.ano, mesVisivel.mes),
+    [disponibilidades, mesVisivel],
+  )
+  const naAbaDisponibilidade = aba === 'disponibilidade'
 
   function mudarMes(delta) {
     setMesVisivel(({ ano, mes }) => {
@@ -74,7 +97,43 @@ function Agenda() {
   function excluir() {
     setConsultas((lista) => lista.filter((c) => c.id !== modal.consulta.id))
     fecharModal()
-    setToastAberto(true)
+    mostrarToast('erro', 'Consulta removida.')
+  }
+
+  function fecharModalDisponibilidade() {
+    setModalDisponibilidade(false)
+    setErroDisponibilidade('')
+  }
+
+  // Salvar: cria um item por dia escolhido. "Repetir semanalmente" desligado vira
+  // "Única vez" na próxima data (hoje inclusive) que cai naquele dia da semana.
+  function salvarDisponibilidade({ dias, inicio, fim, repetir }) {
+    const base = Date.now()
+    const novas = dias.map((dia, i) => ({
+      id: base + i,
+      dia,
+      inicio,
+      fim,
+      tipo: repetir ? 'semanal' : 'unica',
+      ...(repetir ? {} : { data: proximaData(dia, HOJE) }),
+    }))
+
+    const conflito = acharConflito(novas, disponibilidades)
+    if (conflito) {
+      setErroDisponibilidade(
+        `Já existe disponibilidade na ${siglaDoDia(conflito.dia)} em ${faixaDeHorario(conflito)}. Ajuste o horário.`,
+      )
+      return
+    }
+
+    setDisponibilidades((lista) => [...lista, ...novas])
+    fecharModalDisponibilidade()
+    mostrarToast('sucesso', 'Disponibilidade adicionada!')
+  }
+
+  function removerDisponibilidade(item) {
+    setDisponibilidades((lista) => lista.filter((d) => d.id !== item.id))
+    mostrarToast('sucesso', 'Disponibilidade removida.')
   }
 
   return (
@@ -102,52 +161,62 @@ function Agenda() {
               ano={mesVisivel.ano}
               mes={mesVisivel.mes}
               selecionado={selecionado}
-              diasComConsulta={diasComConsulta}
+              diasComConsulta={naAbaDisponibilidade ? SEM_CONSULTAS : diasComConsulta}
+              diasComDisponibilidade={naAbaDisponibilidade ? diasDisponiveis : undefined}
+              legenda={naAbaDisponibilidade ? 'Dias com disponibilidade' : undefined}
               onSelecionar={setSelecionado}
               onMudarMes={mudarMes}
             />
           </div>
 
-          <div className="flex min-w-0 flex-col gap-4">
-            {/* só o campo, sem rótulo visível (o nome fica para leitores de tela) */}
-            <div className="[&>div>label]:sr-only">
-              <TextField
-                label="Buscar paciente"
-                aria-label="Buscar paciente"
-                icone={<IconeBusca />}
-                placeholder="Buscar paciente..."
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-              />
-            </div>
+          {naAbaDisponibilidade ? (
+            <PainelDisponibilidade
+              itens={listaDisponibilidade}
+              onAdicionar={() => setModalDisponibilidade(true)}
+              onRemover={removerDisponibilidade}
+            />
+          ) : (
+            <div className="flex min-w-0 flex-col gap-4">
+              {/* só o campo, sem rótulo visível (o nome fica para leitores de tela) */}
+              <div className="[&>div>label]:sr-only">
+                <TextField
+                  label="Buscar paciente"
+                  aria-label="Buscar paciente"
+                  icone={<IconeBusca />}
+                  placeholder="Buscar paciente..."
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                />
+              </div>
 
-            <section className="flex flex-col gap-2">
-              <RotuloSecao>{dataPorExtenso(selecionado)}</RotuloSecao>
-              {doDia.length > 0 ? (
-                doDia.map((c) => (
-                  <CartaoConsulta key={c.id} consulta={c} onAbrir={() => setModal({ tipo: 'detalhes', consulta: c })} />
-                ))
-              ) : (
-                <p className="rounded-xl bg-branco px-4 py-6 text-center text-[12px] text-secundaria">
-                  Não há consultas registradas
-                </p>
-              )}
-            </section>
-
-            {proximas.length > 0 && (
               <section className="flex flex-col gap-2">
-                <RotuloSecao>Próximos atendimentos</RotuloSecao>
-                {proximas.map((c) => (
-                  <CartaoConsulta
-                    key={c.id}
-                    variante="proxima"
-                    consulta={c}
-                    onAbrir={() => setModal({ tipo: 'detalhes', consulta: c })}
-                  />
-                ))}
+                <RotuloSecao>{dataPorExtenso(selecionado)}</RotuloSecao>
+                {doDia.length > 0 ? (
+                  doDia.map((c) => (
+                    <CartaoConsulta key={c.id} consulta={c} onAbrir={() => setModal({ tipo: 'detalhes', consulta: c })} />
+                  ))
+                ) : (
+                  <p className="rounded-xl bg-branco px-4 py-6 text-center text-[12px] text-secundaria">
+                    Não há consultas registradas
+                  </p>
+                )}
               </section>
-            )}
-          </div>
+
+              {proximas.length > 0 && (
+                <section className="flex flex-col gap-2">
+                  <RotuloSecao>Próximos atendimentos</RotuloSecao>
+                  {proximas.map((c) => (
+                    <CartaoConsulta
+                      key={c.id}
+                      variante="proxima"
+                      consulta={c}
+                      onAbrir={() => setModal({ tipo: 'detalhes', consulta: c })}
+                    />
+                  ))}
+                </section>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -165,7 +234,15 @@ function Agenda() {
       )}
       {modal?.tipo === 'excluir' && <ModalExcluir consulta={modal.consulta} onFechar={fecharModal} onConfirmar={excluir} />}
 
-      <Toast aberto={toastAberto} tipo="erro" mensagem="Consulta removida." onFechar={fecharToast} />
+      {modalDisponibilidade && (
+        <ModalDisponibilidade
+          onFechar={fecharModalDisponibilidade}
+          onSalvar={salvarDisponibilidade}
+          erroGeral={erroDisponibilidade}
+        />
+      )}
+
+      <Toast {...toast} onFechar={fecharToast} />
     </div>
   )
 }
