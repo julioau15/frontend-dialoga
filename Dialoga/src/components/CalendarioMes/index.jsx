@@ -5,6 +5,8 @@
 //   ano, mes            -> mês mostrado (mes de 0 a 11)
 //   selecionado         -> dia escolhido, 'AAAA-MM-DD'
 //   diasComConsulta     -> Set com os dias que têm consulta (ficam com um pontinho)
+//   diasComDisponibilidade -> (opcional) Set com os dias disponíveis (ficam com fundo verde)
+//   legenda             -> (opcional) texto da legenda embaixo, ex.: "Dias com disponibilidade"
 //   onSelecionar(iso)   -> clique em um dia
 //   onMudarMes(delta)   -> -1 (mês anterior) ou 1 (próximo mês)
 // ============================================================
@@ -23,7 +25,16 @@ const SEMANA = [
 
 const BOTAO_SETA = 'grid place-items-center h-6 w-6 rounded-md text-secundaria cursor-pointer hover:bg-fundo-suave focus-visible:outline-2 focus-visible:outline-primaria'
 
-export default function CalendarioMes({ ano, mes, selecionado, diasComConsulta, onSelecionar, onMudarMes }) {
+export default function CalendarioMes({
+  ano,
+  mes,
+  selecionado,
+  diasComConsulta,
+  diasComDisponibilidade,
+  legenda,
+  onSelecionar,
+  onMudarMes,
+}) {
   const celulas = celulasDoMes(ano, mes)
 
   return (
@@ -48,15 +59,20 @@ export default function CalendarioMes({ ano, mes, selecionado, diasComConsulta, 
           const iso = montarIso(ano, mes, dia)
           const ativo = iso === selecionado
           const temConsulta = diasComConsulta.has(iso)
+          const temDisponibilidade = diasComDisponibilidade?.has(iso) ?? false
           return (
             <button
               key={iso}
               type="button"
               aria-pressed={ativo}
-              aria-label={`${dia}${temConsulta ? ', com consulta' : ''}`}
+              aria-label={`${dia}${temConsulta ? ', com consulta' : ''}${temDisponibilidade ? ', com disponibilidade' : ''}`}
               onClick={() => onSelecionar(iso)}
               className={`relative mx-auto grid h-8 w-8 place-items-center rounded-lg text-[11px] font-semibold cursor-pointer focus-visible:outline-2 focus-visible:outline-primaria ${
-                ativo ? 'bg-primaria text-branco' : 'text-texto hover:bg-fundo-suave'
+                ativo
+                  ? 'bg-primaria text-branco'
+                  : temDisponibilidade
+                    ? 'bg-sucesso-alfa-10 text-sucesso-escura hover:bg-sucesso-alfa-20'
+                    : 'text-texto hover:bg-fundo-suave'
               }`}
             >
               {dia}
@@ -65,6 +81,13 @@ export default function CalendarioMes({ ano, mes, selecionado, diasComConsulta, 
           )
         })}
       </div>
+
+      {legenda && (
+        <p className="mt-4 flex items-center gap-2 text-[10px] text-secundaria">
+          <span aria-hidden="true" className="h-3.5 w-3.5 rounded border border-sucesso-alfa-30 bg-sucesso-alfa-20" />
+          {legenda}
+        </p>
+      )}
     </section>
   )
 }
