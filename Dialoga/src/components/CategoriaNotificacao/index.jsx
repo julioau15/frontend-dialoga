@@ -63,14 +63,13 @@ export default function CategoriaNotificacao({
               <p className="text-[13px] text-texto">{tipo.nome}</p>
               <p className="mt-0.5 text-[11px] text-secundaria">{tipo.descricao}</p>
             </div>
-            {/* Acinzenta e bloqueia o interruptor (mouse, teclado e leitor de tela) enquanto "Desligar todas" estiver ativo */}
-            <div className={desabilitado ? 'opacity-50' : ''} inert={desabilitado}>
-              <Interruptor
-                ligado={!!ativos[tipo.id]}
-                onAlternar={() => onAlternarTipo(tipo.id)}
-                rotulo={tipo.nome}
-              />
-            </div>
+                        {/* Acinzenta e bloqueia o interruptor enquanto "Desligar todas" estiver ativo (RF364, RF369) */}
+            <Interruptor
+              ligado={!!ativos[tipo.id]}
+              onAlternar={() => onAlternarTipo(tipo.id)}
+              rotulo={tipo.nome}
+              desabilitado={desabilitado}
+            />
           </li>
         ))}
       </ul>
