@@ -32,6 +32,8 @@ import ProfissionaisPaciente from '../pages/paciente/Profissionais'
 import RelatoriosPaciente from '../pages/paciente/Relatorios'
 import TarefasPaciente from '../pages/paciente/Tarefas'
 import TratamentosPaciente from '../pages/paciente/Tratamentos'
+// Configurações de notificação do paciente (versão Mobile do modal)
+import ConfiguracoesNotificacaoPaciente from '../pages/paciente/ConfiguracoesNotificacao'
 
 // Profissional
 import AgendaProfissional from '../pages/profissional/Agenda'
@@ -41,6 +43,8 @@ import NotificacoesProfissional from '../pages/profissional/Notificacoes'
 import PacientesProfissional from '../pages/profissional/Pacientes'
 import PerfilProfissional from '../pages/profissional/Perfil'
 import TarefasProfissional from '../pages/profissional/Tarefas'
+// Configurações de notificação do profissional
+import ConfiguracoesNotificacaoProfissional from '../pages/profissional/ConfiguracoesNotificacao'
 
 function AppRoutes() {
   return (
@@ -78,6 +82,8 @@ function AppRoutes() {
           <Route path="pacientes" element={<PacientesProfissional />} />
           <Route path="tarefas" element={<TarefasProfissional />} />
           <Route path="notificacoes" element={<NotificacoesProfissional />} />
+          {/* Tela de configurações de notificação do profissional */}
+          <Route path="notificacoes/configuracoes" element={<ConfiguracoesNotificacaoProfissional />} />
           <Route path="perfil" element={<PerfilProfissional />} />
         </Route>
       </Route>
@@ -103,6 +109,8 @@ function AppRoutes() {
           <Route path="profissionais" element={<ProfissionaisPaciente />} />
           <Route path="relatorios" element={<RelatoriosPaciente />} />
           <Route path="notificacoes" element={<NotificacoesPaciente />} />
+          {/* Tela de configurações de notificação do paciente (Mobile) */}
+          <Route path="notificacoes/configuracoes" element={<ConfiguracoesNotificacaoPaciente />} />
           <Route path="perfil" element={<PerfilPaciente />} />
         </Route>
       </Route>

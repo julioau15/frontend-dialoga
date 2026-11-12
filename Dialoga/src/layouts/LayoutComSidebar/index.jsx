@@ -21,7 +21,8 @@ function LayoutComSidebar({ itens }) {
         itens={itens}
         onSair={sair}
       />
-      <main className="min-w-0 flex-1 p-6">
+        {/* Fundo lilás padrão das telas internas (paciente e profissional) */}
+        <main className="min-w-0 flex-1 bg-fundo-suave p-6">
         <Outlet />
       </main>
     </div>
