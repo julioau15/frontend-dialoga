@@ -1,6 +1,6 @@
 // ============================================================
 // ModalDetalhes
-// Pop-up "Detalhes da consulta": paciente, data, horário, anotações e
+// Pop-up "Detalhes da consulta": título, paciente, data, horário, anotações e
 // lembrete, com os botões Excluir e Editar.
 // Props: consulta, onFechar, onEditar, onExcluir
 // ============================================================
@@ -23,7 +23,7 @@ function Informacao({ icone, rotulo, children }) {
 }
 
 export default function ModalDetalhes({ consulta, onFechar, onEditar, onExcluir }) {
-  const { paciente, especialidade, data, hora, anotacoes, lembrete } = consulta
+  const { titulo, paciente, especialidade, data, hora, anotacoes, lembrete } = consulta
 
   return (
     <Modal
@@ -48,6 +48,7 @@ export default function ModalDetalhes({ consulta, onFechar, onEditar, onExcluir 
             {iniciaisDe(paciente)}
           </span>
           <div className="flex min-w-0 flex-col">
+            {titulo && <span className="truncate text-[10px] font-semibold text-primaria">{titulo}</span>}
             <span className="truncate text-[13px] font-extrabold text-texto">{paciente}</span>
             <span className="text-[10px] text-secundaria">{especialidade}</span>
           </div>
