@@ -1,6 +1,7 @@
 // ============================================================
 // components/Toast
 // Aviso rápido no canto inferior direito (some sozinho depois de 4 s).
+// A largura acompanha o texto, em qualquer tela; frases longas quebram a linha.
 // Props:
 //   aberto   -> mostra ou esconde
 //   tipo     -> 'sucesso' (verde, ✓) | 'erro' (vermelho, !)
@@ -32,7 +33,7 @@ export default function Toast({ aberto, tipo = 'sucesso', mensagem, onFechar }) 
     <div
       role="status"
       aria-live="polite"
-      className={`fixed bottom-6 right-6 left-6 sm:left-auto z-50 flex items-center gap-3 px-4 py-3 rounded-lg text-[12px] font-semibold text-branco shadow-[0_4px_12px_var(--color-sombra-media)] ${classes}`}
+      className={`fixed bottom-6 right-6 z-50 max-w-[calc(100%-3rem)] flex items-center gap-3 px-4 py-3 rounded-lg text-[12px] font-semibold text-branco shadow-[0_4px_12px_var(--color-sombra-media)] ${classes}`}
     >
       <Icone tamanho={14} className="shrink-0" />
       <span>{mensagem}</span>

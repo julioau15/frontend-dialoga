@@ -13,7 +13,7 @@ export default function ModalExcluir({ consulta, onFechar, onConfirmar }) {
       aberto
       comDivisores
       largura="max-w-[420px]"
-      titulo="Detalhes da consulta"
+      titulo="Excluir consulta"
       onFechar={onFechar}
       rodape={
         <>
