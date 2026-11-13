@@ -6,7 +6,7 @@
 export const HOJE = '2026-09-08'
 
 export const CONSULTAS_MOCK = [
-  { id: 1, profissional: 'Carlos Eduardo Mendes', especialidade: 'Psicologia Clínica', data: '2026-09-10', hora: '14:00', observacoes: '', lembrete: true },
-  { id: 2, profissional: 'Carlos Eduardo Mendes', especialidade: 'Psicologia Clínica', data: '2026-09-24', hora: '14:00', observacoes: '', lembrete: true },
-  { id: 3, profissional: 'Patrícia Lima', especialidade: 'Psicologia Clínica', data: '2026-10-05', hora: '10:30', observacoes: '', lembrete: true },
+  { id: 1, titulo: 'Sessão de acompanhamento', profissional: 'Carlos Eduardo Mendes', especialidade: 'Psicologia Clínica', data: '2026-09-10', hora: '14:00', observacoes: '', lembrete: true },
+  { id: 2, titulo: 'Sessão de terapia', profissional: 'Carlos Eduardo Mendes', especialidade: 'Psicologia Clínica', data: '2026-09-24', hora: '14:00', observacoes: '', lembrete: true },
+  { id: 3, titulo: 'Avaliação inicial', profissional: 'Patrícia Lima', especialidade: 'Psicologia Clínica', data: '2026-10-05', hora: '10:30', observacoes: '', lembrete: true },
 ]
