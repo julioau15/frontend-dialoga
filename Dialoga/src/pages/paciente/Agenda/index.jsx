@@ -48,7 +48,9 @@ function Agenda() {
 
   function navegar(sentido) {
     if (visao === 'mes') {
-      setAncora(primeiroDiaDoMes(ancora, sentido))
+      const primeiroDia = primeiroDiaDoMes(ancora, sentido)
+      setAncora(primeiroDia)
+      setSelecionado(primeiroDia)
       return
     }
     const novo = somarDias(ancora, visao === 'semana' ? 7 * sentido : sentido)
@@ -72,7 +74,8 @@ function Agenda() {
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
     <div className="-m-6 min-h-svh bg-fundo-suave">
-      <div className="flex flex-col gap-5 px-4 py-8 sm:px-8">
+      {/* conteúdo limitado a ~976px e centralizado no desktop (como no Figma) */}
+      <div className="mx-auto flex w-full max-w-[1040px] flex-col gap-5 px-4 py-8 sm:px-8">
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-[22px] font-extrabold text-texto">Agenda</h1>
@@ -84,7 +87,7 @@ function Agenda() {
           </Button>
         </header>
 
-        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_290px]">
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_312px]">
           <CalendarioAgenda
             visao={visao}
             onMudarVisao={mudarVisao}
@@ -109,7 +112,7 @@ function Agenda() {
 
       {novaAberta && <ModalNovaConsulta onFechar={() => setNovaAberta(false)} onSalvar={salvar} />}
       {consultaParaExcluir && (
-        <ModalExcluirConsulta onFechar={() => setConsultaParaExcluir(null)} onConfirmar={excluir} />
+        <ModalExcluirConsulta consulta={consultaParaExcluir} onFechar={() => setConsultaParaExcluir(null)} onConfirmar={excluir} />
       )}
 
       <Toast {...toast} onFechar={fecharToast} />

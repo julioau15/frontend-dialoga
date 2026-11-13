@@ -27,6 +27,7 @@ export default function ProximasConsultas({ consultas, onExcluir }) {
                   <span className="text-[8px]">{mes}</span>
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  {c.titulo && <span className="truncate text-[9px] font-semibold text-primaria">{c.titulo}</span>}
                   <span className="truncate text-[10px] font-bold text-texto">{c.profissional}</span>
                   <span className="flex items-center gap-1 text-[9px] text-secundaria">
                     <IconeRelogioPequeno tamanho={9} />

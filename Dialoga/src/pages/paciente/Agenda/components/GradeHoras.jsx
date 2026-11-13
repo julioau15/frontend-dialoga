@@ -14,13 +14,20 @@ const HORA_INICIAL = 7
 const HORA_FINAL_PADRAO = 14
 const ALTURA_LINHA = 52 // px
 
-function BlocoConsulta({ consulta }) {
+// indice/total: consultas na mesma hora e dia ficam lado a lado, dividindo a largura
+function BlocoConsulta({ consulta, indice, total }) {
   const minutos = Number(consulta.hora.split(':')[1])
   return (
     <div
-      className="absolute inset-x-0.5 z-10 overflow-hidden rounded-md border-l-[3px] border-primaria bg-borda-forte px-1.5 py-1"
-      style={{ top: (minutos / 60) * ALTURA_LINHA + 2, minHeight: 36 }}
+      className="absolute z-10 overflow-hidden rounded-md border-l-[3px] border-primaria bg-borda-forte px-1.5 py-1"
+      style={{
+        top: (minutos / 60) * ALTURA_LINHA + 2,
+        minHeight: 36,
+        left: `calc(${(100 / total) * indice}% + 2px)`,
+        width: `calc(${100 / total}% - 4px)`,
+      }}
     >
+      {consulta.titulo && <p className="truncate text-[8px] font-semibold text-primaria">{consulta.titulo}</p>}
       <p className="text-[9px] font-bold leading-tight text-texto">{consulta.profissional}</p>
       <p className="flex items-center gap-1 text-[9px] text-secundaria-escura">
         <IconeRelogioPequeno tamanho={8} />
@@ -34,7 +41,9 @@ export default function GradeHoras({ dias, consultas }) {
   const modoDia = dias.length === 1
   const doPeriodo = consultas.filter((c) => dias.includes(c.data))
   const ultimaHora = Math.max(HORA_FINAL_PADRAO, ...doPeriodo.map((c) => Number(c.hora.split(':')[0])))
-  const horas = Array.from({ length: ultimaHora - HORA_INICIAL + 1 }, (_, i) => HORA_INICIAL + i)
+  // começa às 07:00, ou antes se houver consulta mais cedo
+  const primeiraHora = Math.min(HORA_INICIAL, ...doPeriodo.map((c) => Number(c.hora.split(':')[0])))
+  const horas = Array.from({ length: ultimaHora - primeiraHora + 1 }, (_, i) => primeiraHora + i)
   const colunas = { gridTemplateColumns: `44px repeat(${dias.length}, minmax(0, 1fr))` }
 
   return (
@@ -64,7 +73,7 @@ export default function GradeHoras({ dias, consultas }) {
               <div key={dia} className="relative border-l border-borda">
                 {doPeriodo
                   .filter((c) => c.data === dia && Number(c.hora.split(':')[0]) === hora)
-                  .map((c) => <BlocoConsulta key={c.id} consulta={c} />)}
+                  .map((c, i, lista) => <BlocoConsulta key={c.id} consulta={c} indice={i} total={lista.length} />)}
               </div>
             ))}
           </div>
