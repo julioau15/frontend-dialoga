@@ -56,7 +56,7 @@ function Notificacoes() {
                 ))}
               </div>
             ) : notificacoes.aba === 'nao-lidas' ? (
-              <NotificacoesVazias mensagem="Você não tem notificações pendentes." />
+              <NotificacoesVazias mensagem="Nenhuma notificação pendente." />
             ) : (
               <NotificacoesVazias emoji="📭" titulo="Histórico vazio" mensagem="As notificações lidas aparecem aqui." />
             )}

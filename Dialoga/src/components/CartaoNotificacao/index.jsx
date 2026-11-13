@@ -19,7 +19,6 @@ import { CATEGORIAS_NOTIFICACAO } from '../../services/notificacoesRecebidasExem
 // Exibe uma notificação recebida
 export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 'ver', onMarcarLida }) {
   const categoria = CATEGORIAS_NOTIFICACAO[notificacao.categoria]
-  const soMobile = acao === 'ver-ou-marcar' ? 'md:hidden' : ''
 
   return (
     <Card as="article" className={`relative flex gap-3 p-4 ${notificacao.lida ? '' : 'border-borda-forte!'}`}>
@@ -43,38 +42,40 @@ export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 've
           {notificacao.titulo}
         </h3>
 
-        {/* Chip da categoria (no paciente, só abaixo de 768px) */}
+        {/* Chip da categoria */}
         <span
-          className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium text-secundaria ${categoria.fundo} ${soMobile}`}
+          className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium text-secundaria ${categoria.fundo}`}
         >
           {categoria.rotulo}
         </span>
 
         <p className="mt-1.5 text-[12px] text-secundaria">{notificacao.descricao}</p>
 
-        {/* Rodapé com a data e a ação */}
+        {/* Rodapé com a data e as ações */}
         <div className="mt-2 flex items-center justify-between gap-3">
           <p className="text-[11px] text-secundaria">{notificacao.data}</p>
 
-          {/* Leva à tela da categoria */}
-          <Link
-            to={`${prefixoRota}/${categoria.rota}`}
-            aria-label={`Ver ${notificacao.titulo}`}
-            className={`shrink-0 rounded text-[11px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${soMobile}`}
-          >
-            Ver <span aria-hidden="true">→</span>
-          </Link>
+          <div className="flex shrink-0 items-center gap-3">
+            {/* Marca só esta notificação como lida (paciente, a partir de 768px) */}
+            {acao === 'ver-ou-marcar' && !notificacao.lida && (
+              <button
+                type="button"
+                onClick={() => onMarcarLida(notificacao.id)}
+                className="hidden cursor-pointer rounded text-[11px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria md:inline"
+              >
+                Marcar como lida
+              </button>
+            )}
 
-          {/* Marca só esta notificação como lida (paciente, a partir de 768px) */}
-          {acao === 'ver-ou-marcar' && !notificacao.lida && (
-            <button
-              type="button"
-              onClick={() => onMarcarLida(notificacao.id)}
-              className="hidden shrink-0 cursor-pointer rounded text-[11px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria md:inline"
+            {/* Leva à tela da categoria */}
+            <Link
+              to={`${prefixoRota}/${categoria.rota}`}
+              aria-label={`Ver ${notificacao.titulo}`}
+              className="rounded text-[11px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
             >
-              Marcar como lida
-            </button>
-          )}
+              Ver <span aria-hidden="true">→</span>
+            </Link>
+          </div>
         </div>
       </div>
     </Card>
