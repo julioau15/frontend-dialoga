@@ -20,7 +20,7 @@ const obrigatorio = (texto) => (
   </>
 )
 
-const VAZIO = { profissional: '', especialidade: '', data: '', hora: '', observacoes: '', lembrete: true }
+const VAZIO = { titulo: '', profissional: '', especialidade: '', data: '', hora: '', observacoes: '', lembrete: true }
 
 export default function ModalNovaConsulta({ onFechar, onSalvar }) {
   const [campos, setCampos] = useState(VAZIO)
@@ -33,6 +33,7 @@ export default function ModalNovaConsulta({ onFechar, onSalvar }) {
 
   function enviar(continuar) {
     const encontrados = {}
+    if (!campos.titulo.trim()) encontrados.titulo = 'Informe a consulta.'
     if (!campos.profissional.trim()) encontrados.profissional = 'Informe o profissional.'
     if (!campos.data) encontrados.data = 'Informe a data.'
     if (!campos.hora) encontrados.hora = 'Informe o horário.'
@@ -40,7 +41,7 @@ export default function ModalNovaConsulta({ onFechar, onSalvar }) {
     if (Object.keys(encontrados).length > 0) return
 
     onSalvar(
-      { ...campos, profissional: campos.profissional.trim(), especialidade: campos.especialidade.trim(), observacoes: campos.observacoes.trim() },
+      { ...campos, titulo: campos.titulo.trim(), profissional: campos.profissional.trim(), especialidade: campos.especialidade.trim(), observacoes: campos.observacoes.trim() },
       { continuar },
     )
     if (continuar) setCampos(VAZIO) // "Adicionar outra": limpa para a próxima consulta
@@ -61,6 +62,13 @@ export default function ModalNovaConsulta({ onFechar, onSalvar }) {
       }
     >
       <div className="flex flex-col gap-4">
+        <TextField
+          label={obrigatorio('Consulta')}
+          placeholder="Ex.: Sessão de terapia"
+          value={campos.titulo}
+          onChange={alterar('titulo')}
+          erro={erros.titulo}
+        />
         <TextField
           label={obrigatorio('Profissional')}
           placeholder="Nome do profissional"

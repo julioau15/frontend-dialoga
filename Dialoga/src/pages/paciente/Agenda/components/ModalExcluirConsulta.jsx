@@ -1,12 +1,13 @@
 // ============================================================
 // ModalExcluirConsulta (paciente)
 // Pop-up de confirmação "Excluir consulta".
-// Props: onFechar, onConfirmar
+// Props: consulta (a que será excluída), onFechar, onConfirmar
 // ============================================================
 import Modal from '../../../../components/Modal'
 import Button from '../../../../components/Button'
+import { dataCurta } from '../../../../utils/datasAgenda'
 
-export default function ModalExcluirConsulta({ onFechar, onConfirmar }) {
+export default function ModalExcluirConsulta({ consulta, onFechar, onConfirmar }) {
   return (
     <Modal
       aberto
@@ -22,7 +23,9 @@ export default function ModalExcluirConsulta({ onFechar, onConfirmar }) {
       }
     >
       <p className="text-[12px] leading-relaxed text-secundaria">
-        Tem certeza que deseja excluir esta consulta? Esta ação não pode ser desfeita.
+        Tem certeza que deseja excluir a consulta{' '}
+        <strong>{consulta.titulo || consulta.profissional}</strong> em{' '}
+        <strong>{dataCurta(consulta.data)} às {consulta.hora}</strong>? Esta ação não pode ser desfeita.
       </p>
     </Modal>
   )
