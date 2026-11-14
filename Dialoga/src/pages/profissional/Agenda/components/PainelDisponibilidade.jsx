@@ -6,13 +6,15 @@
 // Props: itens (já ordenados), onAdicionar, onRemover(item)
 // ============================================================
 import Button from '../../../../components/Button'
+import Card from '../../../../components/Card'
+import Selo from '../../../../components/Selo'
 import { IconeLixeira } from '../../../../components/Icones'
 import { IconeMais } from '../../../../components/IconesAgenda'
 import { faixaDeHorario, siglaDoDia } from '../../../../utils/disponibilidade'
 
 const SELOS = {
-  semanal: { texto: 'Semanal', classes: 'bg-sucesso-fundo text-sucesso-escura' },
-  unica: { texto: 'Única vez', classes: 'bg-alerta-fundo text-alerta-escura' },
+  semanal: { texto: 'Semanal', tom: 'sucesso' },
+  unica: { texto: 'Única vez', tom: 'alerta' },
 }
 
 export default function PainelDisponibilidade({ itens, onAdicionar, onRemover }) {
@@ -30,25 +32,22 @@ export default function PainelDisponibilidade({ itens, onAdicionar, onRemover })
       </div>
 
       {itens.length === 0 ? (
-        <p className="rounded-xl bg-branco px-4 py-6 text-center text-[12px] text-secundaria">
+        <Card as="p" className="px-4 py-6 text-center text-[12px] text-secundaria">
           Nenhuma disponibilidade cadastrada
-        </p>
+        </Card>
       ) : (
         <ul className="flex flex-col gap-3">
           {itens.map((item) => {
             const selo = SELOS[item.tipo]
             const horario = faixaDeHorario(item)
             return (
-              <li
-                key={item.id}
-                className="flex items-center gap-3 rounded-xl bg-branco px-3 py-3 shadow-[0_1px_3px_var(--color-sombra)]"
-              >
+              <Card as="li" key={item.id} className="flex items-center gap-3 px-3 py-3">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-fundo-card text-[12px] font-extrabold text-primaria">
                   {siglaDoDia(item.dia)}
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
                   <span className="text-[13px] font-bold text-texto">{horario}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${selo.classes}`}>{selo.texto}</span>
+                  <Selo tom={selo.tom}>{selo.texto}</Selo>
                 </div>
                 <button
                   type="button"
@@ -58,7 +57,7 @@ export default function PainelDisponibilidade({ itens, onAdicionar, onRemover })
                 >
                   <IconeLixeira tamanho={14} />
                 </button>
-              </li>
+              </Card>
             )
           })}
         </ul>
