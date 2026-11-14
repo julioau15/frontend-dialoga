@@ -6,6 +6,17 @@
 export const HOJE = '2026-09-02'
 const ESPECIALIDADE = 'Psicologia Clínica'
 
+// Pacientes vinculados ao profissional (lista da busca do campo Paciente)
+export const PACIENTES_MOCK = [
+  'Ana Beatriz Ferreira',
+  'Camila Rocha',
+  'Fernanda Gomes',
+  'João Pedro Alves',
+  'Lucas Martins',
+  'Mariana Costa',
+  'Ricardo Sousa',
+]
+
 export const CONSULTAS_MOCK = [
   { id: 1, titulo: 'Sessão de acompanhamento', paciente: 'Ana Beatriz Ferreira', especialidade: ESPECIALIDADE, data: '2026-09-02', hora: '09:00', anotacoes: '', lembrete: true },
   { id: 2, titulo: 'Avaliação inicial', paciente: 'João Pedro Alves', especialidade: ESPECIALIDADE, data: '2026-09-02', hora: '11:00', anotacoes: 'Avaliação inicial do paciente.', lembrete: true },

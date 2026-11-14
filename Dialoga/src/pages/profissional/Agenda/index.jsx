@@ -5,7 +5,7 @@
 //         Editar consulta | Excluir consulta | Consulta excluída |
 //         Disponibilidade - Profissional | Adicionar disponibilidade |
 //         Disponibilidade adicionada | Remover disponibilidade.
-// Ainda sem frame: as telas Tablet/Mobile (a página só empilha as colunas em telas menores).
+// Desktop, Tablet e Mobile (403px): a página empilha as colunas em telas menores.
 // Rota: /profissional/agenda
 // ============================================================
 import { useCallback, useMemo, useState } from 'react'
@@ -34,6 +34,7 @@ import ModalConsulta from './components/ModalConsulta'
 import ModalDetalhes from './components/ModalDetalhes'
 import ModalExcluir from './components/ModalExcluir'
 import ModalDisponibilidade from './components/ModalDisponibilidade'
+import ModalRemoverDisponibilidade from './components/ModalRemoverDisponibilidade'
 import PainelDisponibilidade from './components/PainelDisponibilidade'
 import { DISPONIBILIDADES_MOCK } from './components/disponibilidadesMock'
 
@@ -62,6 +63,8 @@ function Agenda() {
   const [disponibilidades, setDisponibilidades] = useState(DISPONIBILIDADES_MOCK)
   const [modalDisponibilidade, setModalDisponibilidade] = useState(false)
   const [erroDisponibilidade, setErroDisponibilidade] = useState('')
+  // disponibilidade aguardando confirmação no pop-up "Remover disponibilidade" (null = fechado)
+  const [disponibilidadeRemover, setDisponibilidadeRemover] = useState(null)
   const [toast, setToast] = useState({ aberto: false, tipo: 'sucesso', mensagem: '' })
   const fecharToast = useCallback(() => setToast((t) => ({ ...t, aberto: false })), [])
   const mostrarToast = (tipo, mensagem) => setToast({ aberto: true, tipo, mensagem })
@@ -150,8 +153,11 @@ function Agenda() {
     mostrarToast('sucesso', 'Disponibilidade adicionada!')
   }
 
-  function removerDisponibilidade(item) {
-    setDisponibilidades((lista) => lista.filter((d) => d.id !== item.id))
+  // Só remove depois da confirmação no pop-up (RF37, RF40)
+  function removerDisponibilidade() {
+    const { id } = disponibilidadeRemover
+    setDisponibilidades((lista) => lista.filter((d) => d.id !== id))
+    setDisponibilidadeRemover(null)
     mostrarToast('sucesso', 'Disponibilidade removida.')
   }
 
@@ -193,7 +199,7 @@ function Agenda() {
               <PainelDisponibilidade
                 itens={listaDisponibilidade}
                 onAdicionar={() => setModalDisponibilidade(true)}
-                onRemover={removerDisponibilidade}
+                onRemover={setDisponibilidadeRemover}
               />
             </div>
           ) : (
@@ -270,6 +276,14 @@ function Agenda() {
           onFechar={fecharModalDisponibilidade}
           onSalvar={salvarDisponibilidade}
           erroGeral={erroDisponibilidade}
+        />
+      )}
+
+      {disponibilidadeRemover && (
+        <ModalRemoverDisponibilidade
+          item={disponibilidadeRemover}
+          onFechar={() => setDisponibilidadeRemover(null)}
+          onConfirmar={removerDisponibilidade}
         />
       )}
 
