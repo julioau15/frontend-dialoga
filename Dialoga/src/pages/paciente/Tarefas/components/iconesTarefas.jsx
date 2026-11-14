@@ -4,7 +4,7 @@
 // não depender de outros arquivos do projeto.
 // Uso: <IconeRelogio tamanho={11} />  (herda a cor do texto)
 // ============================================================
-function Base({ tamanho = 16, children }) {
+function Base({ tamanho = 16, className = '', children }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -16,7 +16,7 @@ function Base({ tamanho = 16, children }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="shrink-0"
+      className={`shrink-0 ${className}`}
       aria-hidden="true"
     >
       {children}
