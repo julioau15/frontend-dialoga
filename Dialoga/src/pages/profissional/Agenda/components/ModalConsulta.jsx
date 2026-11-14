@@ -8,6 +8,7 @@
 //   onSalvar -> recebe ({ titulo, paciente, profissional, especialidade, data, hora, anotacoes, lembrete }, { continuar })
 // Rodapé: 'nova' -> [Adicionar +] [Salvar] | 'editar' -> [Cancelar] [Salvar alterações]
 // Obrigatórios: consulta, paciente, data e horário (marcados com *).
+// Paciente: campo com busca (BuscaPaciente); só aceita um nome da lista.
 // Nome do profissional vem do perfil logado e não pode ser editado.
 // ============================================================
 import { useState } from 'react'
@@ -16,9 +17,10 @@ import Modal from '../../../../components/Modal'
 import Button from '../../../../components/Button'
 import TextField from '../../../../components/TextField'
 import TextAreaField from '../../../../components/TextAreaField'
-import IconeBusca from '../../../../components/IconeBusca'
 import Interruptor from '../../../../components/Interruptor'
 import { IconeMais, IconeSino } from '../../../../components/IconesAgenda'
+import BuscaPaciente from './BuscaPaciente'
+import { PACIENTES_MOCK } from './consultasMock'
 
 const ESPECIALIDADE_PADRAO = 'Psicologia Clínica'
 
@@ -46,6 +48,7 @@ export default function ModalConsulta({ modo = 'nova', consulta, onFechar, onSal
     const encontrados = {}
     if (!titulo.trim()) encontrados.titulo = 'Informe a consulta.'
     if (!paciente.trim()) encontrados.paciente = 'Informe o paciente.'
+    else if (!PACIENTES_MOCK.includes(paciente.trim())) encontrados.paciente = 'Selecione um paciente da lista.'
     if (!data) encontrados.data = 'Informe a data.'
     if (!hora) encontrados.hora = 'Informe o horário.'
     setErros(encontrados)
@@ -107,12 +110,10 @@ export default function ModalConsulta({ modo = 'nova', consulta, onFechar, onSal
           erro={erros.titulo}
         />
 
-        <TextField
+        <BuscaPaciente
           label={obrigatorio('Paciente')}
-          icone={<IconeBusca />}
-          placeholder="Nome do paciente"
           value={paciente}
-          onChange={(e) => setPaciente(e.target.value)}
+          onChange={setPaciente}
           erro={erros.paciente}
         />
 
