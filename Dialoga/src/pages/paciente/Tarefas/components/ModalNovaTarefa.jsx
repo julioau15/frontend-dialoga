@@ -73,11 +73,11 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
       titulo="Nova tarefa"
       onFechar={fechar}
       comDivisores
-      largura="max-w-[400px]"
+      largura="max-w-[384px]"
       rodape={
         <>
-          <Button type="button" variante="suave" larguraAuto className="px-4" onClick={fechar}>Cancelar</Button>
-          <Button type="button" larguraAuto className="px-4" onClick={criar}>Criar</Button>
+          <Button type="button" variante="suave" larguraAuto className="px-4 rounded-xl! text-[14px]!" onClick={fechar}>Cancelar</Button>
+          <Button type="button" larguraAuto className="px-4 rounded-xl! text-[14px]!" onClick={criar}>Criar</Button>
         </>
       }
     >

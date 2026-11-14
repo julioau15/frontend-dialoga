@@ -92,7 +92,7 @@ function Tarefas() {
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
     <div className="-m-6 min-h-svh bg-fundo-suave">
-      <div className="mx-auto flex w-full max-w-[720px] flex-col gap-5 px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto flex w-full max-w-[768px] flex-col gap-4 px-5 pt-6 pb-8 sm:gap-6 sm:px-6 sm:pt-14 sm:pb-12">
         {tarefaAberta ? (
           <FormularioTarefa
             key={`${tela.tipo}-${tarefaAberta.id}`}
@@ -105,20 +105,21 @@ function Tarefas() {
           />
         ) : (
         <>
-        <header className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+        {/* título e botão ficam lado a lado também no mobile (o subtítulo é que quebra a linha) */}
+        <header className="flex items-center justify-between gap-3 sm:items-start">
+          <div className="min-w-0">
             <h1 className="text-[24px] font-extrabold text-texto">Tarefas</h1>
-            <p className="text-[14px] text-secundaria">Questionários e atividades do seu profissional</p>
+            <p className="mt-0.5 text-[13px] leading-snug text-secundaria sm:text-[14px]">Questionários e atividades do seu profissional</p>
           </div>
-          <Button type="button" larguraAuto className="h-11 px-5" onClick={() => setModalNova(true)}>
+          <Button type="button" larguraAuto className="h-10 shrink-0 whitespace-nowrap px-3.5 sm:px-4 rounded-xl! text-[14px]! shadow-sm" onClick={() => setModalNova(true)}>
             <IconeMais tamanho={14} />
             Adicionar tarefa
           </Button>
         </header>
 
-        <AbasComContagem abas={abas} ativa={abaAtiva} onMudar={setAbaAtiva} painel={ID_PAINEL} />
+        <AbasComContagem abas={abas} ativa={abaAtiva} onMudar={setAbaAtiva} painel={ID_PAINEL} className="-mx-5 px-5 sm:mx-0 sm:px-0" />
 
-        <div id={ID_PAINEL} role="tabpanel" className="flex flex-col gap-4">
+        <div id={ID_PAINEL} role="tabpanel" aria-labelledby={`aba-${abaAtiva}`} className="flex flex-col gap-3">
           {visiveis.length > 0 ? (
             visiveis.map((tarefa) => <CartaoTarefa key={tarefa.id} tarefa={tarefa} onAcao={aoAcionar} />)
           ) : (

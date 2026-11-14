@@ -15,17 +15,11 @@ import Button from '../../../../components/Button'
 import Card from '../../../../components/Card'
 import Selo from '../../../../components/Selo'
 import BarraProgresso from '../../../../components/BarraProgresso'
-import { IconeRelogioPequeno } from '../../../../components/IconesAgenda'
+import { IconeRelogio } from './iconesTarefas'
+import { STATUS } from './statusTarefa'
 
-export const STATUS = {
-  pendente: { rotulo: 'Pendente', tom: 'primaria', acao: 'Abrir tarefa', barra: true },
-  andamento: { rotulo: 'Em andamento', tom: 'info', acao: 'Continuar', barra: true },
-  atrasada: { rotulo: 'Em atraso', tom: 'erro', acao: 'Abrir tarefa', barra: true },
-  concluida: { rotulo: 'Concluída', tom: 'sucesso', acao: 'Ver respostas', barra: false },
-}
-
-// "Ver respostas" é um verde bem claro (o Button ainda não tem essa variante, por isso as classes extras)
-const VER_RESPOSTAS = 'bg-sucesso-fundo! border-sucesso-fundo! text-sucesso-escura! enabled:hover:brightness-97'
+// botão do card no tamanho do Figma (40px de altura, cantos 12px, texto 14px)
+const BOTAO_CARD = 'rounded-xl! text-[14px]!'
 
 export default function CartaoTarefa({ tarefa, onAcao }) {
   const idTitulo = useId()
@@ -38,10 +32,10 @@ export default function CartaoTarefa({ tarefa, onAcao }) {
     <Card as="article" aria-labelledby={idTitulo} className="flex flex-col gap-4 p-5">
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 id={idTitulo} className="text-[15px] font-bold leading-snug text-texto">{titulo}</h2>
-          <p className="text-[13px] text-secundaria">{autotarefa ? 'Você (autotarefa)' : profissional}</p>
-          <p className="mt-2 flex items-center gap-1 text-[11px] text-secundaria">
-            <IconeRelogioPequeno tamanho={11} />
+          <h2 id={idTitulo} className="text-[16px] font-bold leading-snug text-texto">{titulo}</h2>
+          <p className="mt-0.5 text-[14px] text-secundaria">{autotarefa ? 'Você (autotarefa)' : profissional}</p>
+          <p className="mt-2 flex items-center gap-1 text-[12px] text-secundaria">
+            <IconeRelogio tamanho={12} />
             Prazo: {prazo}
           </p>
         </div>
@@ -54,8 +48,8 @@ export default function CartaoTarefa({ tarefa, onAcao }) {
       {!(autotarefa && concluida) && (
         <Button
           type="button"
-          variante={concluida ? 'sucesso' : 'primario'}
-          className={concluida ? VER_RESPOSTAS : ''}
+          variante={concluida ? 'sucesso-suave' : 'primario'}
+          className={BOTAO_CARD}
           onClick={() => onAcao?.(tarefa)}
         >
           {textoAcao}

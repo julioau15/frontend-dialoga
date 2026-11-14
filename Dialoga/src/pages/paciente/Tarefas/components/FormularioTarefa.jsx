@@ -13,7 +13,7 @@ import Card from '../../../../components/Card'
 import Selo from '../../../../components/Selo'
 import OpcaoSelecionavel from '../../../../components/OpcaoSelecionavel'
 import ModalConfirmarEnvio from './ModalConfirmarEnvio'
-import { STATUS } from './CartaoTarefa'
+import { STATUS } from './statusTarefa'
 import { IconeEnviar, IconeRelogio, IconeSalvar, IconeSetaEsquerda } from './iconesTarefas'
 import { PERGUNTAS, respondida } from './perguntasMock'
 
