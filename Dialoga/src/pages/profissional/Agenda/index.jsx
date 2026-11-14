@@ -87,7 +87,9 @@ function Agenda() {
   const tituloPeriodo =
     periodo === 'todos' ? 'Todas as consultas' : periodo === 'semana' ? 'Consultas da semana' : dataPorExtenso(selecionado)
   const varianteCartao = { todos: 'proxima', hoje: 'dia', semana: 'semana' }[periodo]
-  const proximas = filtradas.filter((c) => c.data >= HOJE)
+  // Próximos atendimentos: só o que ainda não aparece na lista do período acima
+  const idsNoPeriodo = useMemo(() => new Set(doPeriodo.map((c) => c.id)), [doPeriodo])
+  const proximas = filtradas.filter((c) => c.data >= HOJE && !idsNoPeriodo.has(c.id))
   const diasComConsulta = useMemo(() => new Set(consultas.map((c) => c.data)), [consultas])
   const listaDisponibilidade = useMemo(() => ordenarDisponibilidades(disponibilidades), [disponibilidades])
   const diasDisponiveis = useMemo(

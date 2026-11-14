@@ -2,13 +2,14 @@
 // components/Selo
 // Etiqueta pequena e arredondada para mostrar um status (ex.: "Ativo").
 // Props:
-//   tom -> 'sucesso' | 'info' | 'primaria' | 'erro' | 'neutro' (padrão)
+//   tom -> 'sucesso' | 'info' | 'primaria' | 'erro' | 'alerta' | 'neutro' (padrão)
 // ============================================================
 const TONS = {
   sucesso: 'bg-sucesso-fundo text-sucesso',
   info: 'bg-info-fundo text-info',
   primaria: 'bg-fundo-card text-primaria',
   erro: 'bg-erro-fundo text-erro',
+  alerta: 'bg-alerta-fundo text-alerta-escura',
   neutro: 'bg-cinza-100 text-secundaria',
 }
 
