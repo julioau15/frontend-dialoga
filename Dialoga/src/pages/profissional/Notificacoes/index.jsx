@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // pages/profissional/Notificacoes
 // Página de Notificações do profissional: cabeçalho com "N não lidas",
 // "Marcar todas" e engrenagem (leva à tela de configurações), abas
