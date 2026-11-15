@@ -43,6 +43,8 @@ import NotificacoesProfissional from '../pages/profissional/Notificacoes'
 import PacientesProfissional from '../pages/profissional/Pacientes'
 import PerfilProfissional from '../pages/profissional/Perfil'
 import TarefasProfissional from '../pages/profissional/Tarefas'
+// Criação de tarefa e pré-visualização do profissional
+import NovaTarefaProfissional from '../pages/profissional/NovaTarefa'
 // Configurações de notificação do profissional
 import ConfiguracoesNotificacaoProfissional from '../pages/profissional/ConfiguracoesNotificacao'
 
@@ -81,6 +83,8 @@ function AppRoutes() {
           <Route path="agenda" element={<AgendaProfissional />} />
           <Route path="pacientes" element={<PacientesProfissional />} />
           <Route path="tarefas" element={<TarefasProfissional />} />
+          {/* Tela Nova tarefa (criação + pré-visualização) */}
+          <Route path="tarefas/nova" element={<NovaTarefaProfissional />} />
           <Route path="notificacoes" element={<NotificacoesProfissional />} />
           {/* Tela de configurações de notificação do profissional */}
           <Route path="notificacoes/configuracoes" element={<ConfiguracoesNotificacaoProfissional />} />
