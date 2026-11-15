@@ -3,12 +3,13 @@
 // Cartão da lista de tarefas do profissional (frames "Tarefas - Profissional"
 // e "Tarefas profissional - mobile"): nome do questionário,
 // "N perguntas · Prazo: dd/mm/aaaa", selo de status e o lápis de editar (RF290).
-// No mobile o nome é cortado com "…" e aparece também o botão de
-// acompanhamento da tarefa (ícone de atividade), como no Figma.
+// Ao lado do lápis fica o botão de respostas da tarefa (ícone de atividade, como no
+// Figma do mobile; no desktop também), que leva direto para a tela de resposta dela.
+// No mobile o nome é cortado com "…".
 // Selo por status:
 //   em_andamento -> azul | pendente -> lilás | respondida -> verde | atrasada -> vermelho
 //   rascunho     -> cinza ("Rascunho")
-// Props: tarefa, onEditar(tarefa), onAcompanhar(tarefa)
+// Props: tarefa, onEditar(tarefa), onVerRespostas(tarefa)
 // ============================================================
 import { useId } from 'react'
 import Card from '../../../../components/Card'
@@ -18,7 +19,7 @@ import { IconeLapis } from '../../../../components/IconesPerfil'
 import { formatarDataBR } from '../../../../utils/formatadores'
 import { RASCUNHO, STATUS } from './statusTarefa'
 
-// botões só com ícone (acompanhar e editar)
+// botões só com ícone (respostas e editar)
 const BOTAO_ICONE =
   'grid h-8 w-8 shrink-0 place-items-center rounded-lg text-secundaria cursor-pointer transition-colors duration-200 hover:bg-fundo-suave-2 hover:text-primaria focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
@@ -27,7 +28,7 @@ function textoPerguntas(qtd) {
   return qtd === 1 ? '1 pergunta' : `${qtd} perguntas`
 }
 
-export default function ItemTarefa({ tarefa, onEditar, onAcompanhar }) {
+export default function ItemTarefa({ tarefa, onEditar, onVerRespostas }) {
   const idTitulo = useId()
   const { titulo, total_perguntas, prazo, status, is_rascunho } = tarefa
   // status desconhecido cai em "Pendente" (mesmo comportamento do Dashboard)
@@ -42,11 +43,12 @@ export default function ItemTarefa({ tarefa, onEditar, onAcompanhar }) {
         </p>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+      {/* gap de 11px no mobile: mesma distância do Figma entre o selo e os dois ícones */}
+      <div className="flex shrink-0 items-center gap-[11px] sm:gap-3">
         <Selo tom={config.tom}>{config.rotulo}</Selo>
-        {/* acompanhamento da tarefa: só no mobile e só para tarefas já enviadas */}
+        {/* respostas da tarefa: só para tarefas já enviadas */}
         {!is_rascunho && (
-          <button type="button" aria-label={`Acompanhar ${titulo}`} onClick={() => onAcompanhar?.(tarefa)} className={`${BOTAO_ICONE} sm:hidden`}>
+          <button type="button" aria-label={`Ver respostas de ${titulo}`} onClick={() => onVerRespostas?.(tarefa)} className={BOTAO_ICONE}>
             <Atividade className="h-4 w-4" />
           </button>
         )}

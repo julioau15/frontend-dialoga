@@ -14,6 +14,10 @@
 //          e "Confirmar envio".
 // Ao excluir uma pergunta, mostra o aviso (toast) "Pergunta excluída.".
 // Ao salvar ou enviar, volta para a lista com o aviso (toast) de sucesso.
+// Também é usada pela tela Editar tarefa (frame "Editar tarefa - Profissional"):
+// com editando = true o título vira "Editar tarefa", os campos já vêm preenchidos
+// e ficam só o botão "Enviar ao paciente" (sem "Visualizar" e sem "Salvar rascunho").
+// Props (opcionais): editando (true/false), inicial ({ dados, perguntas } já preenchidos)
 // Desktop, Tablet e Mobile (403px).
 // ============================================================
 import { useCallback, useEffect, useState } from 'react'
@@ -57,10 +61,11 @@ function rolarAteErro() {
   })
 }
 
-function NovaTarefa() {
+function NovaTarefa({ editando = false, inicial = null }) {
   const navigate = useNavigate()
-  const [dados, setDados] = useState(DADOS_INICIAIS)
-  const [perguntas, setPerguntas] = useState(() => [criarPergunta()])
+  // na edição os campos começam com os dados da tarefa; na criação, em branco
+  const [dados, setDados] = useState(() => inicial?.dados ?? DADOS_INICIAIS)
+  const [perguntas, setPerguntas] = useState(() => inicial?.perguntas ?? [criarPergunta()])
   const [erros, setErros] = useState({})
   const [modo, setModo] = useState('edicao') // 'edicao' | 'previa'
   const [confirmando, setConfirmando] = useState(false)
@@ -183,10 +188,13 @@ function NovaTarefa() {
             <BotaoVoltar onClick={() => navigate(ROTA_LISTA)}>Voltar às tarefas</BotaoVoltar>
 
             <header className="flex items-center justify-between gap-3">
-              <h1 className="text-[24px] font-extrabold leading-tight text-texto">Nova tarefa</h1>
-              <button type="button" className={`${BOTAO_CLARO} h-10 px-[19px]`} onClick={() => setModo('previa')}>
-                Visualizar
-              </button>
+              <h1 className="text-[24px] font-extrabold leading-tight text-texto">{editando ? 'Editar tarefa' : 'Nova tarefa'}</h1>
+              {/* no Figma da edição não há "Visualizar" */}
+              {!editando && (
+                <button type="button" className={`${BOTAO_CLARO} h-10 px-[19px]`} onClick={() => setModo('previa')}>
+                  Visualizar
+                </button>
+              )}
             </header>
 
             <DadosGerais dados={dados} erros={erros} onMudar={mudarDado} />
@@ -229,12 +237,15 @@ function NovaTarefa() {
               </button>
             </section>
 
-            {/* mobile: os dois botões lado a lado ocupando a largura; desktop: alinhados à esquerda */}
-            <div className="grid grid-cols-2 gap-3 sm:flex">
-              <button type="button" className={`${BOTAO_CLARO} h-12 px-3 sm:h-11 sm:px-5`} onClick={salvarRascunho}>
-                <IconeSalvar tamanho={16} />
-                Salvar rascunho
-              </button>
+            {/* mobile: botões ocupando a largura (lado a lado na criação); desktop: alinhados à esquerda.
+                Na edição só existe "Enviar ao paciente", como no Figma. */}
+            <div className={`grid gap-3 sm:flex ${editando ? 'grid-cols-1' : 'grid-cols-2'}`}>
+              {!editando && (
+                <button type="button" className={`${BOTAO_CLARO} h-12 px-3 sm:h-11 sm:px-5`} onClick={salvarRascunho}>
+                  <IconeSalvar tamanho={16} />
+                  Salvar rascunho
+                </button>
+              )}
               <button type="button" className={`${BOTAO_PRIMARIO} h-12 px-3 sm:h-11 sm:px-5`} onClick={aoEnviar}>
                 <IconeEnviar tamanho={16} />
                 Enviar ao paciente

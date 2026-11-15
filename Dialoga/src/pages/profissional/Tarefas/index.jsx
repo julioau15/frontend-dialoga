@@ -9,6 +9,10 @@
 // Cada item: nome, perguntas, prazo, selo de status e editar (RF290).
 // "+ Nova tarefa" abre /profissional/tarefas/nova; ao voltar de lá com um aviso
 // (ex.: "Questionário enviado ao(s) paciente(s)!"), a lista mostra o toast.
+// "Acompanhamento" abre /profissional/tarefas/acompanhamento.
+// O ícone de atividade do item abre direto a tela de resposta daquela tarefa
+// (o envio mais recente); tarefa sem envios abre o acompanhamento já buscando por ela.
+// O lápis do item abre /profissional/tarefas/:id/editar (tela Editar tarefa).
 // Desktop, Tablet e Mobile (403px): no mobile os botões descem para baixo do título.
 // ============================================================
 import { useCallback, useMemo, useState } from 'react'
@@ -17,6 +21,7 @@ import Button from '../../../components/Button'
 import Toast from '../../../components/Toast'
 import { Usuarios } from '../../../components/Icones'
 import { IconeMais } from '../../../components/IconesAgenda'
+import { respostaMaisRecente } from '../AcompanhamentoTarefas/components/acompanhamentoMock'
 import AbasTarefas from './components/AbasTarefas'
 import ItemTarefa from './components/ItemTarefa'
 import { TAREFAS_MOCK } from './components/tarefasMock'
@@ -64,9 +69,23 @@ function Tarefas() {
   const abas = ABAS.map((aba) => ({ ...aba, contagem: grupos[aba.id].length }))
   const visiveis = grupos[abaAtiva]
 
-  // TODO: ligar às telas de Acompanhamento e Editar tarefa (tasks próprias)
-  function abrirAcompanhamento() {}
-  function editarTarefa() {}
+  // lápis do cartão: abre a tela Editar tarefa
+  function editarTarefa(tarefa) {
+    navigate(`/profissional/tarefas/${tarefa.id}/editar`)
+  }
+
+  // botão "Acompanhamento" do cabeçalho: abre o acompanhamento de respostas
+  function abrirAcompanhamento() {
+    navigate('/profissional/tarefas/acompanhamento')
+  }
+
+  // ícone de atividade de uma tarefa: abre direto a tela de resposta dela;
+  // sem envios, abre o acompanhamento já buscando pela tarefa
+  function verRespostas(tarefa) {
+    const envio = respostaMaisRecente(tarefa.id)
+    if (envio) navigate(`/profissional/tarefas/acompanhamento/${envio.id}`)
+    else navigate('/profissional/tarefas/acompanhamento', { state: { busca: tarefa.titulo } })
+  }
 
   // abre a tela de criação de tarefa
   function novaTarefa() {
@@ -101,7 +120,7 @@ function Tarefas() {
         <div id={ID_PAINEL} role="tabpanel" aria-labelledby={`aba-${abaAtiva}`} className="mt-5 flex flex-col gap-3.5">
           {visiveis.length > 0 ? (
             visiveis.map((tarefa) => (
-              <ItemTarefa key={tarefa.id} tarefa={tarefa} onEditar={editarTarefa} onAcompanhar={abrirAcompanhamento} />
+              <ItemTarefa key={tarefa.id} tarefa={tarefa} onEditar={editarTarefa} onVerRespostas={verRespostas} />
             ))
           ) : (
             // estado vazio (frame "Tarefas rascunho")
