@@ -12,7 +12,7 @@ export default function OpcaoSelecionavel({ selecionado = false, children, ...pr
       type="button"
       role="radio"
       aria-checked={selecionado}
-      className={`flex items-center justify-center gap-1.5 h-11 px-3 rounded-[10px] text-[12px] font-medium leading-[normal] cursor-pointer transition-[background,border-color] duration-200 ease-[ease] hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
+      className={`flex items-center justify-center gap-1.5 h-11 px-3 rounded-[10px] text-[12px] font-medium leading-[normal] cursor-pointer disabled:cursor-default transition-[background,border-color] duration-200 ease-[ease] enabled:hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
         selecionado ? 'bg-fundo-card border-2 border-primaria text-primaria' : 'bg-branco border border-borda text-secundaria'
       }`}
       {...props}

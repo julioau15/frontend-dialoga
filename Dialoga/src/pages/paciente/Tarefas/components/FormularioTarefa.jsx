@@ -13,7 +13,7 @@ import Card from '../../../../components/Card'
 import Selo from '../../../../components/Selo'
 import OpcaoSelecionavel from '../../../../components/OpcaoSelecionavel'
 import ModalConfirmarEnvio from './ModalConfirmarEnvio'
-import { STATUS } from './CartaoTarefa'
+import { STATUS } from './statusTarefa'
 import { IconeEnviar, IconeRelogio, IconeSalvar, IconeSetaEsquerda } from './iconesTarefas'
 import { PERGUNTAS, respondida } from './perguntasMock'
 
@@ -24,7 +24,7 @@ function Pergunta({ numero, pergunta, valor, erro, somenteLeitura, onChange }) {
   const { tipo, titulo, obrigatoria } = pergunta
 
   return (
-    <Card as="section" aria-labelledby={idTitulo} data-pergunta={pergunta.id} className="p-5">
+    <Card as="section" aria-labelledby={idTitulo} data-pergunta={pergunta.id} className={`p-5 ${erro && tipo !== 'texto' ? 'ring-1 ring-erro' : ''}`}>
       <h2 id={idTitulo} className="mb-3 text-[13px] font-semibold text-texto">
         {numero}. {titulo}
         {obrigatoria && <span className="text-erro" aria-hidden="true"> *</span>}
@@ -59,8 +59,9 @@ function Pergunta({ numero, pergunta, valor, erro, somenteLeitura, onChange }) {
                   type="checkbox"
                   className="h-4 w-4 accent-primaria"
                   checked={marcado}
-                  disabled={somenteLeitura}
-                  onChange={() => onChange(marcado ? valor.filter((v) => v !== op) : [...valor, op])}
+                  aria-disabled={somenteLeitura || undefined}
+                  onClick={(e) => { if (somenteLeitura) e.preventDefault() }}
+                  onChange={() => { if (!somenteLeitura) onChange(marcado ? valor.filter((v) => v !== op) : [...valor, op]) }}
                 />
                 {op}
               </label>

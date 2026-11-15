@@ -8,8 +8,8 @@
 //   notificacao   -> { id, categoria, titulo, descricao, data, lida }
 //   prefixoRota   -> início da rota do "Ver →" (ex.: '/profissional')
 //   acao          -> 'ver': chip e "Ver →" em todas as larguras
-//                    'ver-ou-marcar': abaixo de 768px chip e "Ver →"; a partir
-//                    de 768px sem chip e com "Marcar como lida" (só se não lida)
+//                    'ver-ou-marcar': chip e "Ver →" em todas as larguras e,
+//                    a partir de 768px, também "Marcar como lida" (só se não lida)
 //   onMarcarLida  -> chamado com o id ao clicar em "Marcar como lida"
 // ============================================================
 import { Link } from 'react-router-dom'

@@ -34,6 +34,14 @@ function dataValida(texto) {
   return data.getFullYear() === ano && data.getMonth() === mes - 1 && data.getDate() === dia
 }
 
+// confere se a data (DD/MM/AAAA, já válida) é anterior a hoje (hoje às 00:00 é permitido)
+function dataNoPassado(texto) {
+  const [dia, mes, ano] = texto.split('/').map(Number)
+  const hoje = new Date()
+  hoje.setHours(0, 0, 0, 0)
+  return new Date(ano, mes - 1, dia) < hoje
+}
+
 export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
   const [titulo, setTitulo] = useState('')
   const [prazo, setPrazo] = useState('')
@@ -60,6 +68,7 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
     if (!titulo.trim()) novos.titulo = 'Informe o título da tarefa.'
     if (!prazo) novos.prazo = 'Informe a data de entrega.'
     else if (!dataValida(prazo)) novos.prazo = 'Use uma data válida no formato DD/MM/AAAA.'
+    else if (dataNoPassado(prazo)) novos.prazo = 'A data de entrega não pode ser anterior a hoje.'
     setErros(novos)
     if (Object.keys(novos).length > 0) return
 
@@ -73,11 +82,11 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
       titulo="Nova tarefa"
       onFechar={fechar}
       comDivisores
-      largura="max-w-[400px]"
+      largura="max-w-[384px]"
       rodape={
         <>
-          <Button type="button" variante="suave" larguraAuto className="px-4" onClick={fechar}>Cancelar</Button>
-          <Button type="button" larguraAuto className="px-4" onClick={criar}>Criar</Button>
+          <Button type="button" variante="suave" larguraAuto className="px-4 rounded-xl! text-[14px]!" onClick={fechar}>Cancelar</Button>
+          <Button type="button" larguraAuto className="px-4 rounded-xl! text-[14px]!" onClick={criar}>Criar</Button>
         </>
       }
     >

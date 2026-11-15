@@ -13,7 +13,6 @@ export const CATEGORIAS_NOTIFICACAO = {
   agenda: { rotulo: 'Agenda', emoji: '📅', fundo: 'bg-info-fundo', rota: 'agenda' },
   paciente: { rotulo: 'Paciente', emoji: '👤', fundo: 'bg-sucesso-fundo', rota: 'pacientes' },
   tratamento: { rotulo: 'Tratamento', emoji: '💊', fundo: 'bg-alerta-fundo', rota: 'tratamentos' },
-  profissional: { rotulo: 'Profissional', emoji: '🩺', fundo: 'bg-sucesso-fundo', rota: 'profissionais' },
 }
 
 // Notificações recebidas pelo paciente, da mais nova para a mais antiga
@@ -52,9 +51,9 @@ export const NOTIFICACOES_PACIENTE = [
   },
   {
     id: 'p5',
-    categoria: 'profissional',
-    titulo: 'Profissional confirmado',
-    descricao: 'Carlos Eduardo Mendes aceitou seu vínculo no Dialoga. Agora vocês estão conectados!',
+    categoria: 'agenda',
+    titulo: 'Consulta confirmada',
+    descricao: 'Carlos Eduardo Mendes confirmou sua consulta do dia 10/09 às 14:00.',
     data: '28/08/2026 às 14:30',
     lida: true,
   },

@@ -3,7 +3,8 @@
 // Botão padrão do sistema, ocupa 100% da largura do container.
 // Props:
 //   variante   -> 'primario' (roxo preenchido) | 'contorno' (borda roxa) | 'suave' (borda lilás clara)
-//                 | 'sucesso' (verde preenchido) | 'perigo' (vermelho preenchido)
+//                 | 'sucesso' (verde preenchido) | 'sucesso-suave' (verde claro, texto verde)
+//                 | 'perigo' (vermelho preenchido)
 //                 | 'perigo-contorno' (borda e texto vermelhos)
 //   carregando -> true desabilita o botão (evita clique duplo)
 //   larguraAuto -> true deixa o botão com a largura do conteúdo (ex.: rodapé de modal)
@@ -29,6 +30,8 @@ const VARIANTES = {
   suave: 'bg-branco border border-borda-forte text-texto enabled:hover:bg-fundo-suave-2',
   // fundo verde (ex.: Aprovar)
   sucesso: 'bg-sucesso border border-sucesso text-branco enabled:hover:brightness-95',
+  // fundo verde bem claro e texto verde (ex.: Ver respostas, na lista de tarefas)
+  'sucesso-suave': 'bg-sucesso-fundo border border-sucesso-fundo text-sucesso-escura enabled:hover:brightness-97',
   // fundo vermelho (ex.: Confirmar recusa)
   perigo: 'bg-erro border border-erro text-branco enabled:hover:brightness-95',
   // fundo branco, borda e texto vermelhos (ex.: Recusar)

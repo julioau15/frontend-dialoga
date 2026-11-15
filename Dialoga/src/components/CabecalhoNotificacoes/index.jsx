@@ -10,6 +10,7 @@
 //                        a partir de 768px e leva à tela de configurações abaixo disso
 // ============================================================
 import { Link } from 'react-router-dom'
+import Button from '../Button'
 import { IconeCheck } from '../Icones'
 
 const CLASSE_ENGRENAGEM =
@@ -40,14 +41,16 @@ export default function CabecalhoNotificacoes({ naoLidas, onMarcarTodas, rotaCon
       <div className="flex shrink-0 items-center gap-2">
         {/* Marca todas como lidas; some quando não há não lidas */}
         {naoLidas > 0 && (
-          <button
+          <Button
             type="button"
+            variante="suave"
+            larguraAuto
             onClick={onMarcarTodas}
-            className="flex h-9 items-center gap-1.5 rounded-lg border border-borda-forte bg-branco px-3 text-[11px] font-semibold text-primaria cursor-pointer hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+            className="h-9! gap-1.5! px-3! text-[11px]! text-primaria!"
           >
             <IconeCheck tamanho={12} />
             Marcar todas
-          </button>
+          </Button>
         )}
 
         {/* Engrenagem que leva à tela de configurações (abaixo de 768px quando há modal) */}

@@ -1,11 +1,11 @@
-﻿// ============================================================
+// ============================================================
 // pages/paciente/Notificacoes
 // Página de Notificações do paciente: cabeçalho com "N não lidas",
 // "Marcar todas" e engrenagem, abas "Não lidas" e "Histórico" (só as lidas),
 // cartões de notificação e o estado vazio "Tudo em dia!".
-// A partir de 768px a engrenagem abre o modal de configurações e cada
-// cartão não lido tem "Marcar como lida"; abaixo disso a engrenagem leva
-// à tela de configurações e o cartão tem chip e "Ver →".
+// Os cartões têm chip e "Ver →" em todas as larguras. A partir de 768px a
+// engrenagem abre o modal de configurações e cada cartão não lido ganha
+// também "Marcar como lida"; abaixo disso a engrenagem leva à tela de configurações.
 // Dados fixos, sem integração.
 // Rota: /paciente/notificacoes
 // ============================================================
