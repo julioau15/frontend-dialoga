@@ -45,6 +45,11 @@ import PerfilProfissional from '../pages/profissional/Perfil'
 import TarefasProfissional from '../pages/profissional/Tarefas'
 // Criação de tarefa e pré-visualização do profissional
 import NovaTarefaProfissional from '../pages/profissional/NovaTarefa'
+// Acompanhamento de respostas e tela de resposta da tarefa do profissional
+import AcompanhamentoTarefasProfissional from '../pages/profissional/AcompanhamentoTarefas'
+import RespostaTarefaProfissional from '../pages/profissional/RespostaTarefa'
+// Edição de tarefa do profissional
+import EditarTarefaProfissional from '../pages/profissional/EditarTarefa'
 // Configurações de notificação do profissional
 import ConfiguracoesNotificacaoProfissional from '../pages/profissional/ConfiguracoesNotificacao'
 
@@ -85,6 +90,11 @@ function AppRoutes() {
           <Route path="tarefas" element={<TarefasProfissional />} />
           {/* Tela Nova tarefa (criação + pré-visualização) */}
           <Route path="tarefas/nova" element={<NovaTarefaProfissional />} />
+          {/* Acompanhamento de respostas (lista) e resposta de uma tarefa enviada */}
+          <Route path="tarefas/acompanhamento" element={<AcompanhamentoTarefasProfissional />} />
+          <Route path="tarefas/acompanhamento/:id" element={<RespostaTarefaProfissional />} />
+          {/* Editar tarefa (lápis do cartão na lista de Tarefas) */}
+          <Route path="tarefas/:id/editar" element={<EditarTarefaProfissional />} />
           <Route path="notificacoes" element={<NotificacoesProfissional />} />
           {/* Tela de configurações de notificação do profissional */}
           <Route path="notificacoes/configuracoes" element={<ConfiguracoesNotificacaoProfissional />} />
