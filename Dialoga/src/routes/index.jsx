@@ -41,6 +41,8 @@ import BoasVindasProfissional from '../pages/profissional/BoasVindas'
 import DashboardProfissional from '../pages/profissional/Dashboard'
 import NotificacoesProfissional from '../pages/profissional/Notificacoes'
 import PacientesProfissional from '../pages/profissional/Pacientes'
+// Perfil do paciente na visão do profissional (acompanhamento, anotações e indicadores)
+import PerfilPacienteProfissional from '../pages/profissional/PerfilPaciente'
 import PerfilProfissional from '../pages/profissional/Perfil'
 import TarefasProfissional from '../pages/profissional/Tarefas'
 // Criação de tarefa e pré-visualização do profissional
@@ -87,6 +89,8 @@ function AppRoutes() {
           <Route path="dashboard" element={<DashboardProfissional />} />
           <Route path="agenda" element={<AgendaProfissional />} />
           <Route path="pacientes" element={<PacientesProfissional />} />
+          {/* Perfil do paciente (aberto pelo cartão da lista de Pacientes) */}
+          <Route path="pacientes/:id" element={<PerfilPacienteProfissional />} />
           <Route path="tarefas" element={<TarefasProfissional />} />
           {/* Tela Nova tarefa (criação + pré-visualização) */}
           <Route path="tarefas/nova" element={<NovaTarefaProfissional />} />

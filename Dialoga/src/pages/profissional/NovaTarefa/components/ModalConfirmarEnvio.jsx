@@ -2,7 +2,8 @@
 // ModalConfirmarEnvio (profissional)
 // Pop-up "Confirmar envio" da Nova tarefa (frame "Enviar ao paciente - Profissional", RF287):
 // "Enviar a tarefa <nome> para: <pacientes>?" com Cancelar e Enviar.
-// Quando todos os pacientes foram escolhidos, mostra "todos os pacientes".
+// Quando todos os pacientes que podem receber tarefas (sem os externos) foram escolhidos,
+// mostra "todos os pacientes".
 // Props:
 //   aberto, titulo (nome da tarefa)
 //   destinatarios -> [{ id, nome }]
@@ -10,11 +11,11 @@
 // ============================================================
 import Modal from '../../../../components/Modal'
 import { BOTAO_CLARO, BOTAO_PRIMARIO } from './estilos'
-import { PACIENTES_MOCK } from './pacientesMock'
+import { PACIENTES_TAREFA } from './pacientesMock'
 
 // "Ana", "Ana e Bruno", "Ana, Bruno e Carla" ou "todos os pacientes"
 function textoDestinatarios(lista) {
-  if (lista.length > 1 && lista.length === PACIENTES_MOCK.length) return 'todos os pacientes'
+  if (lista.length > 1 && lista.length === PACIENTES_TAREFA.length) return 'todos os pacientes'
   const nomes = lista.map((p) => p.nome)
   return nomes.length > 1 ? `${nomes.slice(0, -1).join(', ')} e ${nomes.at(-1)}` : nomes[0] ?? ''
 }

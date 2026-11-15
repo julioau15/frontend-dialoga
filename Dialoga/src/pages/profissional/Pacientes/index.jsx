@@ -8,11 +8,17 @@
 //   - busca por nome (sem diferenciar maiúsculas/acentos) e filtro Todos | Ativos | Inativos (RF300, RF301);
 //   - cartão do paciente com avatar, nome, selo "Plataforma", "Desde", próxima consulta,
 //     status e ícone de anotação (RF306);
-//   - pop-up "Adicionar paciente" (RF303, RF304) e toast "Paciente adicionado!" (RF227).
+//   - pop-up "Adicionar paciente" (RF303, RF304): ao adicionar, abre o perfil do paciente
+//     novo com o toast "Paciente adicionado!" (RF227), como no Figma;
+//   - cartão abre o perfil do paciente; o ícone de anotação abre o pop-up "Anotar — [nome]"
+//     e mostra o toast "Nota adicionada!" (card 1.6.4.3.1.3);
+//   - ao voltar do perfil depois de "Remover paciente", mostra o aviso "Paciente removido.".
+// A lista fica em pacientesMemoria (mock na memória), compartilhada com o perfil.
 // Busca e filtro valem juntos. Desktop (a partir de 1024px, com o menu lateral),
 // Tablet e Mobile (403px): Tablet segue o layout do mobile.
 // ============================================================
 import { useCallback, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Button from '../../../components/Button'
 import Toast from '../../../components/Toast'
 import { IconeMais } from '../../../components/IconesAgenda'
@@ -20,9 +26,12 @@ import { textoParaBusca } from '../../../utils/formatadores'
 import CampoPaciente from './components/CampoPaciente'
 import FiltroPilulas from './components/FiltroPilulas'
 import ItemPaciente from './components/ItemPaciente'
+import ModalAnotacao from './components/ModalAnotacao'
 import ModalNovoPaciente from './components/ModalNovoPaciente'
+import { salvarAnotacao } from './components/anotacoesMock'
 import { mesAtual } from './components/datasPacientes'
-import { PACIENTES_MOCK, PACIENTES_PLATAFORMA_MOCK } from './components/pacientesMock'
+import { PACIENTES_PLATAFORMA_MOCK } from './components/pacientesMock'
+import { guardarPaciente, listarPacientes } from './components/pacientesMemoria'
 import { FILTROS_STATUS } from './components/statusPaciente'
 
 // botão "+ Novo paciente": 40px de altura, cantos de 12px e texto de 14px em negrito
@@ -41,16 +50,30 @@ function textoAtivos(quantidade) {
 }
 
 function Pacientes() {
-  const [pacientes, setPacientes] = useState(PACIENTES_MOCK)
+  const navigate = useNavigate()
+  const location = useLocation()
+  // lista guardada na memória: já sem o paciente removido no perfil
+  const [pacientes] = useState(listarPacientes)
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState('todos')
   const [modalAberto, setModalAberto] = useState(false)
   const [chaveModal, setChaveModal] = useState(0) // troco a key do pop-up para ele abrir sempre limpo
-  const [toastAberto, setToastAberto] = useState(false)
+  const [notaPara, setNotaPara] = useState(null) // paciente do pop-up "Anotar" (null = fechado)
+  const [chaveNota, setChaveNota] = useState(0) // troco a key do pop-up para ele abrir sempre vazio
+  // toast: começa aberto quando o perfil mandou um aviso (ex.: "Paciente removido.")
+  const [toast, setToast] = useState(() => ({
+    aberto: Boolean(location.state?.aviso),
+    tipo: location.state?.tipoAviso ?? 'sucesso',
+    mensagem: location.state?.aviso ?? '',
+  }))
 
   // O Toast usa esta função dentro de um useEffect. Com o useCallback ela
   // não muda a cada render, e o tempo de 4 s do aviso não reinicia sem motivo.
-  const fecharToast = useCallback(() => setToastAberto(false), [])
+  // Também limpa o aviso da navegação, para ele não voltar ao recarregar a página.
+  const fecharToast = useCallback(() => {
+    setToast((t) => ({ ...t, aberto: false }))
+    navigate(location.pathname, { replace: true, state: null })
+  }, [navigate, location.pathname])
 
   const totalAtivos = pacientes.filter((p) => p.status === 'ativo').length
 
@@ -69,7 +92,8 @@ function Pacientes() {
     setModalAberto(true)
   }
 
-  // coloca o novo paciente no topo da lista (só na tela, sem API), fecha o pop-up e mostra o toast
+  // guarda o novo paciente no topo da lista (só na memória, sem API) e abre o perfil dele,
+  // que mostra o toast "Paciente adicionado!" (como no Figma)
   function adicionarPaciente(novo) {
     const paciente = {
       ...novo,
@@ -78,9 +102,22 @@ function Pacientes() {
       proximaConsulta: null,
       status: 'ativo',
     }
-    setPacientes((lista) => [paciente, ...lista])
+    guardarPaciente(paciente)
     setModalAberto(false)
-    setToastAberto(true)
+    navigate(`/profissional/pacientes/${paciente.id}`, { state: { aviso: 'Paciente adicionado!' } })
+  }
+
+  // ícone de anotação do cartão: abre o pop-up "Anotar — [nome]" daquele paciente
+  function abrirNota(paciente) {
+    setChaveNota((n) => n + 1)
+    setNotaPara(paciente)
+  }
+
+  // salva a nota (ela aparece no perfil do paciente), fecha o pop-up e mostra o toast
+  function salvarNota(dados) {
+    salvarAnotacao(notaPara.id, dados)
+    setNotaPara(null)
+    setToast({ aberto: true, tipo: 'sucesso', mensagem: 'Nota adicionada!' })
   }
 
   return (
@@ -128,7 +165,7 @@ function Pacientes() {
         {visiveis.length > 0 ? (
           <ul aria-label="Lista de pacientes" className="mt-[15px] flex flex-col gap-2.5">
             {visiveis.map((paciente) => (
-              <ItemPaciente key={paciente.id} paciente={paciente} />
+              <ItemPaciente key={paciente.id} paciente={paciente} onAnotacao={abrirNota} />
             ))}
           </ul>
         ) : (
@@ -156,9 +193,18 @@ function Pacientes() {
         onAdicionar={adicionarPaciente}
       />
 
-      {/* RF227 */}
+      {/* pop-up "Anotar — [nome]" aberto pelo ícone de anotação do cartão */}
+      <ModalAnotacao
+        key={`nota-${chaveNota}`}
+        aberto={notaPara !== null}
+        nomePaciente={notaPara?.nome}
+        onFechar={() => setNotaPara(null)}
+        onSalvar={salvarNota}
+      />
+
+      {/* avisos "Nota adicionada!" e "Paciente removido." */}
       <div className={AJUSTE_TOAST}>
-        <Toast aberto={toastAberto} tipo="sucesso" mensagem="Paciente adicionado!" onFechar={fecharToast} />
+        <Toast aberto={toast.aberto} tipo={toast.tipo} mensagem={toast.mensagem} onFechar={fecharToast} />
       </div>
     </div>
   )
