@@ -112,8 +112,9 @@ export default function BlocoPergunta({ pergunta, numero, total, erro, onMudar, 
     onMudar({ imagem: { nome: arquivo.name, url: URL.createObjectURL(arquivo) } })
   }
 
+  // tira a imagem só desta pergunta. O endereço temporário (blob:) não é liberado de propósito:
+  // uma pergunta duplicada usa o mesmo endereço, e liberar quebraria a imagem da original.
   function removerImagem() {
-    if (imagem?.url) URL.revokeObjectURL(imagem.url) // libera a memória da miniatura
     onMudar({ imagem: null })
     if (inputImagem.current) inputImagem.current.value = ''
   }
