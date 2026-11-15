@@ -1,61 +1,57 @@
 // ============================================================
 // ItemTarefa
-// Linha da lista de tarefas do profissional: nome do questionário,
-// número de perguntas, prazo, selo de status e botão de editar (RF290).
+// Cartão da lista de tarefas do profissional (frames "Tarefas - Profissional"
+// e "Tarefas profissional - mobile"): nome do questionário,
+// "N perguntas · Prazo: dd/mm/aaaa", selo de status e o lápis de editar (RF290).
+// No mobile o nome é cortado com "…" e aparece também o botão de
+// acompanhamento da tarefa (ícone de atividade), como no Figma.
 // Selo por status:
 //   em_andamento -> azul | pendente -> lilás | respondida -> verde | atrasada -> vermelho
 //   rascunho     -> cinza ("Rascunho")
-// Props: tarefa, onEditar(tarefa) (clique no lápis; quem decide a ação é a página Tarefas)
-// No mobile o selo fica abaixo do prazo; a partir de sm, ao lado do lápis.
+// Props: tarefa, onEditar(tarefa), onAcompanhar(tarefa)
 // ============================================================
 import { useId } from 'react'
 import Card from '../../../../components/Card'
 import Selo from '../../../../components/Selo'
-import { IconeRelogio } from '../../../../components/Icones'
+import { Atividade } from '../../../../components/Icones'
 import { IconeLapis } from '../../../../components/IconesPerfil'
 import { formatarDataBR } from '../../../../utils/formatadores'
 import { RASCUNHO, STATUS } from './statusTarefa'
+
+// botões só com ícone (acompanhar e editar)
+const BOTAO_ICONE =
+  'grid h-8 w-8 shrink-0 place-items-center rounded-lg text-secundaria cursor-pointer transition-colors duration-200 hover:bg-fundo-suave-2 hover:text-primaria focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
 // "1 pergunta" | "5 perguntas"
 function textoPerguntas(qtd) {
   return qtd === 1 ? '1 pergunta' : `${qtd} perguntas`
 }
 
-export default function ItemTarefa({ tarefa, onEditar }) {
+export default function ItemTarefa({ tarefa, onEditar, onAcompanhar }) {
   const idTitulo = useId()
   const { titulo, total_perguntas, prazo, status, is_rascunho } = tarefa
   // status desconhecido cai em "Pendente" (mesmo comportamento do Dashboard)
   const config = is_rascunho ? RASCUNHO : STATUS[status] ?? STATUS.pendente
 
   return (
-    <Card as="article" aria-labelledby={idTitulo} className="flex items-start justify-between gap-3 p-4 sm:p-5">
-      <div className="min-w-0">
-        <h2 id={idTitulo} className="text-[16px] font-bold leading-snug text-texto">{titulo}</h2>
-        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-secundaria sm:text-[13px]">
-          <span>{textoPerguntas(total_perguntas)}</span>
-          <span className="flex items-center gap-1">
-            <IconeRelogio tamanho={12} />
-            {prazo ? `Prazo: ${formatarDataBR(prazo)}` : 'Sem prazo'}
-          </span>
+    <Card as="article" aria-labelledby={idTitulo} className="flex items-center gap-3 px-4 py-4 sm:gap-4 sm:pl-[17px] sm:pr-5">
+      <div className="min-w-0 flex-1">
+        <h2 id={idTitulo} title={titulo} className="truncate text-[14px] font-bold leading-snug text-texto">{titulo}</h2>
+        <p className="mt-0.5 text-[11px] leading-snug text-secundaria">
+          {textoPerguntas(total_perguntas)} · {prazo ? `Prazo: ${formatarDataBR(prazo)}` : 'Sem prazo'}
         </p>
-        {/* no mobile o selo fica abaixo do prazo, para o título ter a largura toda */}
-        <div className="mt-2 sm:hidden">
-          <Selo tom={config.tom}>{config.rotulo}</Selo>
-        </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
-        {/* a partir de sm (tablet/desktop) o selo fica ao lado do lápis */}
-        <div className="hidden sm:block">
-          <Selo tom={config.tom}>{config.rotulo}</Selo>
-        </div>
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <Selo tom={config.tom}>{config.rotulo}</Selo>
+        {/* acompanhamento da tarefa: só no mobile e só para tarefas já enviadas */}
+        {!is_rascunho && (
+          <button type="button" aria-label={`Acompanhar ${titulo}`} onClick={() => onAcompanhar?.(tarefa)} className={`${BOTAO_ICONE} sm:hidden`}>
+            <Atividade className="h-4 w-4" />
+          </button>
+        )}
         {/* botão só com ícone: o aria-label diz para leitores de tela qual tarefa será editada */}
-        <button
-          type="button"
-          aria-label={`Editar ${titulo}`}
-          onClick={() => onEditar?.(tarefa)}
-          className="grid h-8 w-8 place-items-center rounded-lg text-secundaria cursor-pointer transition-colors duration-200 hover:bg-fundo-suave-2 hover:text-primaria focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
-        >
+        <button type="button" aria-label={`Editar ${titulo}`} onClick={() => onEditar?.(tarefa)} className={BOTAO_ICONE}>
           <IconeLapis tamanho={16} />
         </button>
       </div>
