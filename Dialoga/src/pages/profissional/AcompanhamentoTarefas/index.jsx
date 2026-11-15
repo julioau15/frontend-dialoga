@@ -19,6 +19,7 @@
 import { useId, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Card from '../../../components/Card'
+import IconeBusca from '../../../components/IconeBusca'
 import TextField from '../../../components/TextField'
 import { textoParaBusca } from '../../../utils/formatadores'
 import BotaoVoltar from '../NovaTarefa/components/BotaoVoltar'
@@ -40,10 +41,11 @@ const MES_INICIAL = { ano: Number(MAIS_RECENTE.slice(0, 4)), mes: Number(MAIS_RE
 const ANO_ATUAL = new Date().getFullYear()
 const ANOS = Array.from({ length: 4 }, (_, i) => String(ANO_ATUAL - i))
 
-// deixa a caixa do TextField no tamanho do Figma (46px, cantos de 12px) sem alterar o componente;
-// no mobile o texto fica centralizado, como no Figma
+// deixa a caixa do TextField no tamanho do Figma (46px, cantos de 12px) sem alterar o componente,
+// com a lupa (IconeBusca) à esquerda; no mobile o texto fica centralizado, como no Figma.
+// gap-2: com a lupa de 16px o texto começa a 41px da borda, a mesma posição do Figma
 const CAMPO_BUSCA =
-  '[&>div>div]:h-[46px] [&>div>div]:rounded-xl [&>div>div]:px-4 sm:[&>div>div]:pl-[41px] [&_input]:text-center [&_input]:text-[13px] [&_input]:placeholder:text-secundaria sm:[&_input]:text-left'
+  '[&>div>div]:h-[46px] [&>div>div]:gap-2 [&>div>div]:rounded-xl [&>div>div]:px-4 [&_input]:text-center [&_input]:text-[13px] [&_input]:placeholder:text-secundaria sm:[&_input]:text-left'
 
 function AcompanhamentoTarefas() {
   const navigate = useNavigate()
@@ -80,6 +82,7 @@ function AcompanhamentoTarefas() {
           <TextField
             label={<span className="sr-only">Buscar por nome da tarefa ou do paciente</span>}
             placeholder="Buscar por nome da tarefa ou do paciente..."
+            icone={<IconeBusca />}
             value={busca}
             aria-describedby={idContagem}
             onChange={(e) => setBusca(e.target.value)}
