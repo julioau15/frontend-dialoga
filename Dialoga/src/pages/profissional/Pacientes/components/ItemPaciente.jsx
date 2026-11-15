@@ -6,10 +6,13 @@
 // Desktop: "Próxima consulta" aparece à esquerda do status.
 // Mobile e Tablet (abaixo de 1024px): sem a próxima consulta (frame mobile do Figma)
 // e o nome quebra em no máximo 2 linhas quando falta espaço.
+// O cartão inteiro abre o perfil do paciente (/profissional/pacientes/:id); o ícone de
+// anotação fica por cima do link e abre o pop-up "Anotar — [nome]".
 // Props:
 //   paciente   -> item de PACIENTES_MOCK (ver pacientesMock.js)
-//   onAnotacao -> (paciente) => void, clique no ícone de anotação (opcional nesta etapa)
+//   onAnotacao -> (paciente) => void, clique no ícone de anotação
 // ============================================================
+import { Link } from 'react-router-dom'
 import AvatarIniciais from '../../../../components/AvatarIniciais'
 import Card from '../../../../components/Card'
 import Selo from '../../../../components/Selo'
@@ -32,7 +35,8 @@ export default function ItemPaciente({ paciente, onAnotacao }) {
   return (
     // gap-2 + mr-2 no avatar: 16px entre avatar e nome, e só 8px (mínimo) antes do status,
     // para sobrar mais espaço para o nome no celular
-    <Card as="li" className="flex items-center gap-2 p-[17px]">
+    // relative: base do link "esticado"; ao passar o mouse, o fundo fica lilás bem claro
+    <Card as="li" className="relative flex items-center gap-2 p-[17px] transition-colors duration-200 hover:bg-fundo-suave-2">
       {/* iniciais dos dois primeiros nomes, como no Figma ("João Pedro Alves" -> "JP") */}
       <div className={`mr-2 ${AJUSTE_AVATAR}`}>
         <AvatarIniciais nome={doisPrimeirosNomes(paciente.nome).join(' ')} />
@@ -46,7 +50,14 @@ export default function ItemPaciente({ paciente, onAnotacao }) {
               desce (flex-wrap) e o nome fica em no máximo 2 linhas (line-clamp-2); um nome
               maior que isso termina em "..." e o nome completo aparece ao passar o mouse (title) */}
           <p title={paciente.nome} className="line-clamp-2 break-words text-[14px] font-bold leading-5 text-texto">
-            {paciente.nome}
+            {/* link "esticado": o after:absolute cobre o cartão todo, então clicar em qualquer
+                parte do cartão abre o perfil (o leitor de tela lê só o nome como link) */}
+            <Link
+              to={`/profissional/pacientes/${paciente.id}`}
+              className="rounded-sm after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+            >
+              {paciente.nome}
+            </Link>
           </p>
           {paciente.origem === 'plataforma' && (
             <span className={`${AJUSTE_SELO} [&>span]:pl-1.5`}>
@@ -73,12 +84,12 @@ export default function ItemPaciente({ paciente, onAnotacao }) {
           <Selo tom={status.tom}>{status.rotulo}</Selo>
         </span>
 
-        {/* TODO: abrir as anotações do paciente (tela de outro card) */}
+        {/* relative z-10: fica por cima do link do cartão; abre o pop-up "Anotar — [nome]" */}
         <button
           type="button"
-          aria-label={`Anotações de ${paciente.nome}`}
+          aria-label={`Anotar sobre ${paciente.nome}`}
           onClick={() => onAnotacao?.(paciente)}
-          className="ml-[15px] grid h-8 w-8 cursor-pointer place-items-center rounded-lg text-secundaria transition-colors duration-200 hover:bg-fundo-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+          className="relative z-10 ml-[15px] grid h-8 w-8 cursor-pointer place-items-center rounded-lg text-secundaria transition-colors duration-200 hover:bg-fundo-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
         >
           <IconeAnotacao />
         </button>

@@ -2,7 +2,8 @@
 // pages/profissional/RespostaTarefa
 // Tela de resposta de uma tarefa enviada (RF297, RF298).
 // Só visual: dados fixos (mock), sem API. Rota: /profissional/tarefas/acompanhamento/:id
-//   - "Voltar ao acompanhamento";
+//   - "Voltar ao acompanhamento" (ou "Voltar ao perfil", quando aberta pelo Histórico de
+//     tarefas do perfil do paciente: volta para o perfil, na aba Histórico);
 //   - cartão do paciente: avatar, nome, e-mail, telefone, "Ver perfil do paciente" e status;
 //   - cartão da tarefa: nome, descrição e última modificação;
 //   - "Respostas (N)": perguntas e respostas (sem resposta = "Ainda não respondida").
@@ -20,7 +21,7 @@
 //     o selo de status desce para baixo do nome do paciente, o e-mail e o telefone ficam
 //     um embaixo do outro e "Ver perfil do paciente" vira um botão de largura total.
 // ============================================================
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Card from '../../../components/Card'
 import { Atividade } from '../../../components/Icones'
 import BotaoVoltar from '../NovaTarefa/components/BotaoVoltar'
@@ -34,20 +35,24 @@ const ROTA_ACOMPANHAMENTO = '/profissional/tarefas/acompanhamento'
 
 function RespostaTarefa() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id } = useParams()
   const item = buscarAcompanhamento(id)
-  const voltar = () => navigate(ROTA_ACOMPANHAMENTO)
+  // aberta pelo "Histórico de tarefas" do perfil do paciente: volta para o perfil, já na aba Histórico;
+  // aberta pelo Acompanhamento (ou pela lista de Tarefas): volta para o Acompanhamento
+  const voltarPara = location.state?.voltarPara
+  const voltar = () => (voltarPara ? navigate(voltarPara, { state: { aba: 'historico' } }) : navigate(ROTA_ACOMPANHAMENTO))
 
-  // TODO: trocar pela rota do perfil do paciente quando a tela de Pacientes existir
+  // "Ver perfil do paciente" (e a foto): abre o perfil do paciente (idPerfil = id na lista de Pacientes)
   function verPerfil() {
-    navigate('/profissional/pacientes', { state: { idPaciente: item.paciente.id } })
+    navigate(`/profissional/pacientes/${item.paciente.idPerfil}`)
   }
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
     <div className="-m-6 min-h-svh bg-fundo-suave">
       <div className="mx-auto flex w-full max-w-[768px] flex-col gap-4 px-6 pt-6 pb-10 sm:pb-12">
-        <BotaoVoltar onClick={voltar}>Voltar ao acompanhamento</BotaoVoltar>
+        <BotaoVoltar onClick={voltar}>{voltarPara ? 'Voltar ao perfil' : 'Voltar ao acompanhamento'}</BotaoVoltar>
 
         {!item ? (
           <Card as="section" className="mt-1 px-5 py-10 text-center">

@@ -1,7 +1,8 @@
 // ============================================================
 // SeletorPacientes
 // Campo "Paciente (opcional)" da Nova tarefa (RF277–RF279):
-//   - a lista suspensa oferece cada paciente e "Todos os pacientes";
+//   - a lista suspensa oferece cada paciente da plataforma e "Todos os pacientes"
+//     (pacientes externos, sem conta no app, não podem receber tarefas e ficam de fora);
 //   - ao escolher, abre o pop-up "Adicionar prazo?" (Sem prazo / Adicionar prazo);
 //   - cada paciente escolhido vira um cartão lilás com as iniciais, o nome,
 //     o prazo (quando tiver) e a lixeira para remover
@@ -19,7 +20,7 @@ import { Rotulo } from './campos'
 import { CAIXA } from './estilos'
 import { IconeChevronBaixo } from './iconesNovaTarefa'
 import ModalPrazo from './ModalPrazo'
-import { PACIENTES_MOCK } from './pacientesMock'
+import { PACIENTES_TAREFA } from './pacientesMock'
 
 // "Ana Beatriz Ferreira" -> "AB"
 function iniciais(nome) {
@@ -35,8 +36,9 @@ export default function SeletorPacientes({ selecionados, onMudar, erro }) {
   const idCampo = useId()
   // escolha aguardando o pop-up de prazo: 'todos' ou o id do paciente (null = fechado)
   const [pendente, setPendente] = useState(null)
-  // só oferece na lista quem ainda não foi escolhido
-  const disponiveis = PACIENTES_MOCK.filter((p) => !selecionados.some((s) => s.id === p.id))
+  // só oferece na lista quem ainda não foi escolhido; pacientes externos (sem conta no app)
+  // não aparecem, porque não podem receber nem responder tarefas
+  const disponiveis = PACIENTES_TAREFA.filter((p) => !selecionados.some((s) => s.id === p.id))
   const novos = pendente === 'todos' ? disponiveis : disponiveis.filter((p) => String(p.id) === pendente)
 
   // adiciona o(s) paciente(s) escolhido(s) com ou sem prazo e fecha o pop-up
