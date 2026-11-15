@@ -6,6 +6,7 @@
 //   em_andamento -> azul | pendente -> lilás | respondida -> verde | atrasada -> vermelho
 //   rascunho     -> cinza ("Rascunho")
 // Props: tarefa, onEditar(tarefa) (clique no lápis; quem decide a ação é a página Tarefas)
+// No mobile o selo fica abaixo do prazo; a partir de sm, ao lado do lápis.
 // ============================================================
 import { useId } from 'react'
 import Card from '../../../../components/Card'
@@ -37,10 +38,17 @@ export default function ItemTarefa({ tarefa, onEditar }) {
             {prazo ? `Prazo: ${formatarDataBR(prazo)}` : 'Sem prazo'}
           </span>
         </p>
+        {/* no mobile o selo fica abaixo do prazo, para o título ter a largura toda */}
+        <div className="mt-2 sm:hidden">
+          <Selo tom={config.tom}>{config.rotulo}</Selo>
+        </div>
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        <Selo tom={config.tom}>{config.rotulo}</Selo>
+        {/* a partir de sm (tablet/desktop) o selo fica ao lado do lápis */}
+        <div className="hidden sm:block">
+          <Selo tom={config.tom}>{config.rotulo}</Selo>
+        </div>
         {/* botão só com ícone: o aria-label diz para leitores de tela qual tarefa será editada */}
         <button
           type="button"
