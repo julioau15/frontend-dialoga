@@ -2,16 +2,22 @@
 // pages/profissional/Tarefas
 // Lista de tarefas (questionários) enviadas pelo profissional aos pacientes.
 // Só visual: dados fixos (mock), sem API. Rota: /profissional/tarefas
+// Frames: "Tarefas - Profissional", "Tarefas rascunho", "Tarefas enviado ao paciente"
+//         e "Tarefas profissional - mobile".
 // Cabeçalho: "Tarefas" + "Acompanhamento" e "+ Nova tarefa" (RF274, RF275).
-// Abas com contagem: "Enviadas" e "Rascunhos" (RF274).
+// Abas "Enviadas (n)" e "Rascunhos (n)" (RF274); aba sem tarefas mostra o estado vazio.
 // Cada item: nome, perguntas, prazo, selo de status e editar (RF290).
+// "+ Nova tarefa" abre /profissional/tarefas/nova; ao voltar de lá com um aviso
+// (ex.: "Questionário enviado ao(s) paciente(s)!"), a lista mostra o toast.
 // Desktop, Tablet e Mobile (403px): no mobile os botões descem para baixo do título.
 // ============================================================
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Button from '../../../components/Button'
-import AbasComContagem from '../../../components/AbasComContagem'
-import { Atividade } from '../../../components/Icones'
+import Toast from '../../../components/Toast'
+import { Usuarios } from '../../../components/Icones'
 import { IconeMais } from '../../../components/IconesAgenda'
+import AbasTarefas from './components/AbasTarefas'
 import ItemTarefa from './components/ItemTarefa'
 import { TAREFAS_MOCK } from './components/tarefasMock'
 
@@ -21,18 +27,29 @@ const ABAS = [
 ]
 const ID_PAINEL = 'lista-tarefas-profissional'
 
-// texto mostrado quando a aba não tem tarefas (TODO: confirmar texto no Figma)
-const TEXTO_VAZIO = {
-  enviadas: 'Nenhuma tarefa enviada.',
-  rascunhos: 'Nenhum rascunho salvo.',
+// estado vazio de cada aba (o de "Rascunhos" é o do Figma)
+const VAZIO = {
+  enviadas: { titulo: 'Nenhuma tarefa enviada', texto: 'Crie uma nova tarefa para enviar aos seus pacientes.' },
+  rascunhos: { titulo: 'Nenhum rascunho', texto: 'Salve tarefas como rascunho para enviar depois.' },
 }
 
-// botões do cabeçalho: largura total no mobile (lado a lado) e largura do conteúdo a partir de sm
-const BOTAO_CABECALHO = 'whitespace-nowrap rounded-xl! text-[14px]! shadow-sm sm:w-auto'
+// botões do cabeçalho (cantos 12px, texto 14px em negrito, como no Figma)
+const BOTAO_BASE = 'h-[42px]! rounded-xl! px-4! text-[14px]! font-bold! sm:px-[18px]!'
+const BOTAO_CLARO = `${BOTAO_BASE} border-2! border-borda! bg-fundo-suave-2!`
 
 function Tarefas() {
   const [tarefas] = useState(TAREFAS_MOCK)
   const [abaAtiva, setAbaAtiva] = useState('enviadas')
+  const navigate = useNavigate()
+  const location = useLocation()
+  // aviso enviado pela tela Nova tarefa ao salvar o rascunho ou enviar a tarefa
+  const [aviso, setAviso] = useState(() => ({ aberto: Boolean(location.state?.aviso), mensagem: location.state?.aviso ?? '' }))
+
+  // fecha o toast e limpa o aviso da navegação (para não voltar ao recarregar a página)
+  const fecharAviso = useCallback(() => {
+    setAviso((a) => ({ ...a, aberto: false }))
+    navigate(location.pathname, { replace: true, state: null })
+  }, [navigate, location.pathname])
 
   // separa as tarefas pela coluna is_rascunho (1 = rascunho)
   const grupos = useMemo(
@@ -47,49 +64,62 @@ function Tarefas() {
   const abas = ABAS.map((aba) => ({ ...aba, contagem: grupos[aba.id].length }))
   const visiveis = grupos[abaAtiva]
 
-  // TODO: ligar às telas de Acompanhamento, Nova tarefa e Editar tarefa (tasks próprias)
+  // TODO: ligar às telas de Acompanhamento e Editar tarefa (tasks próprias)
   function abrirAcompanhamento() {}
-  function novaTarefa() {}
   function editarTarefa() {}
+
+  // abre a tela de criação de tarefa
+  function novaTarefa() {
+    navigate('/profissional/tarefas/nova')
+  }
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
     <div className="-m-6 min-h-svh bg-fundo-suave">
-      <div className="mx-auto flex w-full max-w-[768px] flex-col gap-4 px-5 pt-6 pb-8 sm:gap-6 sm:px-6 sm:pt-14 sm:pb-12">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mx-auto flex w-full max-w-[768px] flex-col px-5 pt-6 pb-8 sm:px-6 sm:pt-14 sm:pb-12">
+        <header className="flex flex-col gap-3.5 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-[24px] font-extrabold text-texto">Tarefas</h1>
-            <p className="mt-0.5 text-[13px] leading-snug text-secundaria sm:text-[14px]">Questionários enviados aos pacientes</p>
+            <h1 className="text-[22px] font-extrabold leading-tight text-texto">Tarefas</h1>
+            <p className="mt-1 text-[13px] leading-snug text-secundaria">Questionários enviados aos pacientes</p>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
-            <Button type="button" variante="contorno" className={BOTAO_CABECALHO} onClick={abrirAcompanhamento}>
-              <Atividade className="h-3.5 w-3.5" />
+          <div className="flex flex-wrap gap-2 sm:shrink-0 sm:gap-[18px]">
+            <Button type="button" variante="suave" larguraAuto className={BOTAO_CLARO} onClick={abrirAcompanhamento}>
+              <Usuarios className="h-4 w-4 text-primaria" />
               Acompanhamento
             </Button>
-            <Button type="button" className={BOTAO_CABECALHO} onClick={novaTarefa}>
+            <Button type="button" larguraAuto className={`${BOTAO_BASE} shadow-sm`} onClick={novaTarefa}>
               <IconeMais tamanho={14} />
               Nova tarefa
             </Button>
           </div>
         </header>
 
-        <AbasComContagem
-          abas={abas}
-          ativa={abaAtiva}
-          onMudar={setAbaAtiva}
-          painel={ID_PAINEL}
-          rotulo="Tipo de tarefa"
-          className="-mx-5 px-5 sm:mx-0 sm:px-0"
-        />
+        <div className="mt-5 sm:mt-6">
+          <AbasTarefas abas={abas} ativa={abaAtiva} onMudar={setAbaAtiva} painel={ID_PAINEL} />
+        </div>
 
-        <div id={ID_PAINEL} role="tabpanel" aria-labelledby={`aba-${abaAtiva}`} className="flex flex-col gap-3">
+        <div id={ID_PAINEL} role="tabpanel" aria-labelledby={`aba-${abaAtiva}`} className="mt-5 flex flex-col gap-3.5">
           {visiveis.length > 0 ? (
-            visiveis.map((tarefa) => <ItemTarefa key={tarefa.id} tarefa={tarefa} onEditar={editarTarefa} />)
+            visiveis.map((tarefa) => (
+              <ItemTarefa key={tarefa.id} tarefa={tarefa} onEditar={editarTarefa} onAcompanhar={abrirAcompanhamento} />
+            ))
           ) : (
-            <p className="rounded-xl bg-branco px-4 py-8 text-center text-[13px] text-secundaria">{TEXTO_VAZIO[abaAtiva]}</p>
+            // estado vazio (frame "Tarefas rascunho")
+            <div className="flex flex-col items-center pt-16 text-center">
+              <span
+                aria-hidden="true"
+                className="grid h-16 w-16 place-items-center rounded-2xl border border-borda bg-fundo-suave-2 text-[26px] shadow-[0_2px_6px_var(--color-sombra)]"
+              >
+                📝
+              </span>
+              <p className="mt-5 text-[15px] font-bold text-texto">{VAZIO[abaAtiva].titulo}</p>
+              <p className="mt-2 text-[13px] text-secundaria">{VAZIO[abaAtiva].texto}</p>
+            </div>
           )}
         </div>
       </div>
+
+      <Toast aberto={aviso.aberto} mensagem={aviso.mensagem} onFechar={fecharAviso} />
     </div>
   )
 }
