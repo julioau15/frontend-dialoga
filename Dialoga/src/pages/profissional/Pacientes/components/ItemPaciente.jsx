@@ -5,7 +5,7 @@
 // "Desde [mês. de ano]", próxima consulta, selo de status e o ícone de anotação.
 // Desktop: "Próxima consulta" aparece à esquerda do status.
 // Mobile e Tablet (abaixo de 1024px): sem a próxima consulta (frame mobile do Figma)
-// e o nome quebra em mais de uma linha quando falta espaço.
+// e o nome quebra em no máximo 2 linhas quando falta espaço.
 // Props:
 //   paciente   -> item de PACIENTES_MOCK (ver pacientesMock.js)
 //   onAnotacao -> (paciente) => void, clique no ícone de anotação (opcional nesta etapa)
@@ -31,7 +31,7 @@ export default function ItemPaciente({ paciente, onAnotacao }) {
 
   return (
     // gap-2 + mr-2 no avatar: 16px entre avatar e nome, e só 8px (mínimo) antes do status,
-    // para o nome caber como no Figma mobile ("Mariana / Costa" em 2 linhas)
+    // para sobrar mais espaço para o nome no celular
     <Card as="li" className="flex items-center gap-2 p-[17px]">
       {/* iniciais dos dois primeiros nomes, como no Figma ("João Pedro Alves" -> "JP") */}
       <div className={`mr-2 ${AJUSTE_AVATAR}`}>
@@ -39,15 +39,13 @@ export default function ItemPaciente({ paciente, onAnotacao }) {
       </div>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-[9px]">
-          {/* sem min-w-0: o nome quebra entre as palavras, nunca no meio de uma palavra.
-              Celular (abaixo de 640px) com selo "Plataforma": uma palavra por linha numa caixa
-              de no mínimo 55px e o selo logo depois, como no Figma mobile ("Ana / Beatriz / Ferreira") */}
-          <p
-            className={`break-words text-[14px] font-bold leading-5 text-texto ${
-              paciente.origem === 'plataforma' ? 'max-sm:w-min max-sm:min-w-[55px]' : ''
-            }`}
-          >
+        {/* flex-wrap: no celular, quando nome + selo não cabem na mesma linha, o selo "Plataforma"
+            desce para baixo do nome em vez de ficar por cima do selo de status */}
+        <div className="flex flex-wrap items-center gap-x-[9px] gap-y-1">
+          {/* o nome usa a largura toda da linha: quando nome + selo não cabem juntos, o selo
+              desce (flex-wrap) e o nome fica em no máximo 2 linhas (line-clamp-2); um nome
+              maior que isso termina em "..." e o nome completo aparece ao passar o mouse (title) */}
+          <p title={paciente.nome} className="line-clamp-2 break-words text-[14px] font-bold leading-5 text-texto">
             {paciente.nome}
           </p>
           {paciente.origem === 'plataforma' && (
