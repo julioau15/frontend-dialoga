@@ -29,6 +29,8 @@ import NotificacoesPaciente from '../pages/paciente/Notificacoes'
 import PerfilPaciente from '../pages/paciente/Perfil'
 
 import ProfissionaisPaciente from '../pages/paciente/Profissionais'
+// Tela de um profissional do paciente (aberta pelo cartão da lista de Profissionais)
+import PerfilProfissionalPaciente from '../pages/paciente/PerfilProfissional'
 import RelatoriosPaciente from '../pages/paciente/Relatorios'
 import TarefasPaciente from '../pages/paciente/Tarefas'
 import TratamentosPaciente from '../pages/paciente/Tratamentos'
@@ -125,6 +127,7 @@ function AppRoutes() {
           <Route path="tarefas" element={<TarefasPaciente />} />
           <Route path="tratamentos" element={<TratamentosPaciente />} />
           <Route path="profissionais" element={<ProfissionaisPaciente />} />
+          <Route path="profissionais/:id" element={<PerfilProfissionalPaciente />} />
           <Route path="relatorios" element={<RelatoriosPaciente />} />
           <Route path="notificacoes" element={<NotificacoesPaciente />} />
           {/* Tela de configurações de notificação do paciente (Mobile) */}

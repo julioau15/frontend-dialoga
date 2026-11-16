@@ -7,7 +7,7 @@
 //   - ponto roxo embaixo dos dias com registro (branco no dia roxo);
 //   - início e fim em roxo, dias do meio em lilás;
 //   - período selecionado embaixo ("26/08/2026 – 01/09/2026") e a orientação fora do cartão
-//     (no desktop, a orientação termina na mesma linha do fim do cartão do gráfico).
+//     (no desktop, a orientação fica logo abaixo do calendário, como no Figma).
 // O CalendarioMes compartilhado seleciona só um dia, por isso este é local
 // (usa as mesmas funções de data de utils/datasAgenda).
 // Props:
@@ -120,7 +120,7 @@ export default function CalendarioPeriodo({ ano, mes, periodo, diasComRegistro, 
       </Card>
 
       {/* RNF057: orientação de uso */}
-      <p id={idOrientacao} className="mt-1 pr-[26px] pl-1 text-[11px] leading-4 text-secundaria xl:mt-auto xl:pt-[9px] xl:pr-1">
+      <p id={idOrientacao} className="mt-1 pr-[26px] pl-1 text-[11px] leading-4 text-secundaria xl:mt-[13px] xl:pr-1">
         {fim ? 'Toque no primeiro dia, depois no último para definir o período. Pontos roxos = registros.' : 'Agora toque no último dia do período. Pontos roxos = registros.'}
       </p>
     </section>

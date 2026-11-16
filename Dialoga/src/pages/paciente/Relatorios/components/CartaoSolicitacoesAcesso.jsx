@@ -8,7 +8,8 @@
 //   - clicar numa solicitação pendente abre o pop-up (ModalSolicitacaoAcesso);
 //   - "Aprovar" mostra o aviso verde "Acesso concedido ao profissional!" e o selo vira
 //     "Aprovado"; "Recusar" mostra o aviso vermelho "Solicitação recusada." e o selo vira
-//     "Recusado". A solicitação respondida fica mais clara e vai para o fim da lista.
+//     "Recusado". Mobile e tablet: a solicitação respondida fica mais clara e vai para o fim
+//     da lista; desktop (frame "Solicitação aprovada"): continua no mesmo lugar, sem clarear.
 // Só visual: dados fixos (mock) guardados no estado da tela, sem API.
 // ============================================================
 import { useCallback, useState } from 'react'
@@ -58,12 +59,12 @@ function Linha({ solicitacao }) {
   const pendente = status === 'pendente'
   return (
     <>
-      {/* respondida: avatar de 36px e tudo mais claro (Figma) */}
+      {/* respondida: avatar de 36px no mobile e no tablet (Figma) */}
       <span aria-hidden="true" className={pendente ? AVATAR_PENDENTE : AVATAR_RESPONDIDA}>
         {iniciaisSolicitacao(nome)}
       </span>
       <div className="min-w-0 flex-1 text-left">
-        <p className={`text-[14px] leading-5 text-texto ${pendente ? 'font-bold' : 'font-semibold'}`}>{nome}</p>
+        <p className={`text-[14px] leading-5 text-texto ${pendente ? 'font-bold' : 'font-semibold xl:font-bold'}`}>{nome}</p>
         <div className="flex items-center justify-between gap-2">
           <p className="min-w-0 text-[12px] leading-4 text-secundaria">{especialidade}</p>
           <SeloStatus status={status} className="-my-[3px] max-xl:hidden" />
@@ -81,8 +82,6 @@ export default function CartaoSolicitacoesAcesso() {
   const [aviso, setAviso] = useState(null)
 
   const pendentes = solicitacoes.filter((s) => s.status === 'pendente')
-  // pendentes primeiro; as respondidas vão para o fim, na ordem em que foram respondidas
-  const respondidas = solicitacoes.filter((s) => s.status !== 'pendente')
 
   // abre o pop-up de uma solicitação pendente
   function abrir(solicitacao) {
@@ -90,12 +89,11 @@ export default function CartaoSolicitacoesAcesso() {
     setAberta(solicitacao)
   }
 
-  // aprova ou recusa: muda o status, manda para o fim da lista e mostra o aviso
+  // aprova ou recusa: muda o status (a solicitação fica no mesmo lugar da lista) e mostra o aviso
   function responder(status, indicadores) {
-    setSolicitacoes((lista) => [
-      ...lista.filter((s) => s.id !== aberta.id),
-      { ...aberta, status, indicadores: indicadores ?? aberta.indicadores },
-    ])
+    setSolicitacoes((lista) =>
+      lista.map((s) => (s.id === aberta.id ? { ...s, status, indicadores: indicadores ?? s.indicadores } : s)),
+    )
     setAberta(null)
     setAviso(AVISOS[status])
   }
@@ -124,28 +122,27 @@ export default function CartaoSolicitacoesAcesso() {
         />
       </div>
 
-      <ul>
-        {pendentes.map((s) => (
-          <li key={s.id} className="border-t border-borda">
-            <button
-              type="button"
-              aria-haspopup="dialog"
-              aria-label={`Ver a solicitação de ${s.nome}`}
-              onClick={() => abrir(s)}
-              className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primaria xl:pr-6 xl:pl-5"
-            >
+      {/* lista na ordem original; no mobile e no tablet a respondida vai para o fim (order-last) */}
+      <ul className="flex flex-col">
+        {solicitacoes.map((s) =>
+          s.status === 'pendente' ? (
+            <li key={s.id} className="border-t border-borda">
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-label={`Ver a solicitação de ${s.nome}`}
+                onClick={() => abrir(s)}
+                className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primaria xl:pr-6 xl:pl-5"
+              >
+                <Linha solicitacao={s} />
+              </button>
+            </li>
+          ) : (
+            <li key={s.id} className="flex items-center gap-3 border-t border-borda px-4 py-4 max-xl:order-last max-xl:opacity-60 xl:pr-6 xl:pl-5">
               <Linha solicitacao={s} />
-            </button>
-          </li>
-        ))}
-        {respondidas.map((s, i) => (
-          <li
-            key={s.id}
-            className={`flex items-center gap-3 px-4 py-4 opacity-60 xl:pr-6 xl:pl-5 ${i === 0 && pendentes.length === 0 ? 'border-t border-borda' : ''}`}
-          >
-            <Linha solicitacao={s} />
-          </li>
-        ))}
+            </li>
+          ),
+        )}
       </ul>
 
       <ModalSolicitacaoAcesso

@@ -9,8 +9,10 @@
 //   - horas de sono com resumo (média, mínimo, máximo) e alerta (RF199–RF201, RN75);
 //   - solicitações de acesso dos profissionais, com o pop-up de aprovar/recusar e os avisos;
 //   - anotações do período;
-//   - tarefas deste período com prazo, status, progresso e "Ver todas" (RF208–RF210).
-// O botão "Exportar Relatório" fica para a Task 3.
+//   - tarefas deste período com prazo, status, progresso e "Ver todas" (RF208–RF210);
+//     só no desktop (os frames de Mobile terminam nas Anotações);
+//   - botão "Exportar Relatório" (RF211) ao lado do título: "📄 Exportar Relatório" no desktop
+//     e "📄 PDF" no mobile e no tablet. Só visual: ainda não gera o arquivo (sem integração).
 // Desktop (a partir de 1280px): calendário à esquerda (297px) e gráficos à direita (528px);
 // em 1440px as posições são as do frame. Tablet e Mobile: tudo em uma coluna, na ordem do Figma.
 // ============================================================
@@ -28,6 +30,25 @@ const [ANO_INICIAL, MES_INICIAL] = PERIODO_INICIAL.inicio.split('-').map(Number)
 
 // dias com registro (ponto no calendário)
 const DIAS_COM_REGISTRO = new Set(REGISTROS_MOCK.map((r) => r.data))
+
+// Botão "Exportar Relatório" (RF211), como no Figma: branco com borda lilás.
+// Desktop: "📄 Exportar Relatório" (42px de altura); mobile e tablet: "📄 PDF" (32px).
+// Só visual: ainda não gera o arquivo.
+function BotaoExportar() {
+  return (
+    <button
+      type="button"
+      aria-label="Exportar relatório"
+      className="inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-borda bg-branco px-3 text-[13px] font-semibold text-texto shadow-sm hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria xl:h-[42px] xl:rounded-xl xl:px-4 xl:text-[14px]"
+    >
+      <span aria-hidden="true" className="text-[12px] leading-none">
+        📄
+      </span>
+      <span className="xl:hidden">PDF</span>
+      <span className="max-xl:hidden">Exportar Relatório</span>
+    </button>
+  )
+}
 
 function Relatorios() {
   const [periodo, setPeriodo] = useState(PERIODO_INICIAL)
@@ -49,10 +70,13 @@ function Relatorios() {
     <div className="-m-6 min-h-svh bg-fundo-suave">
       {/* em 1440px: 874px de conteúdo a 141px do menu, como no frame */}
       <div className="mx-auto w-full max-w-[770px] px-[21px] pt-[17px] pb-12 sm:px-6 xl:max-w-[922px] xl:pt-[78px] min-[1440px]:max-w-[1184px]! min-[1440px]:pr-[169px]! min-[1440px]:pl-[141px]!">
-        {/* RF189 */}
-        <header className="xl:pl-[27px]">
-          <h1 className="text-[20px] font-extrabold leading-7 text-texto xl:text-[24px] xl:leading-[30px]">Relatórios</h1>
-          <p className="mt-0.5 text-[14px] leading-5 text-secundaria xl:mt-[5px]">Seu histórico de saúde emocional</p>
+        {/* RF189 e RF211: título à esquerda e "Exportar Relatório" à direita */}
+        <header className="flex items-start justify-between gap-3 xl:pl-[27px]">
+          <div className="min-w-0">
+            <h1 className="text-[20px] font-extrabold leading-7 text-texto xl:text-[24px] xl:leading-[30px]">Relatórios</h1>
+            <p className="mt-0.5 text-[14px] leading-5 text-secundaria xl:mt-[5px]">Seu histórico de saúde emocional</p>
+          </div>
+          <BotaoExportar />
         </header>
 
         {/* desktop: calendário | gráfico na 1ª linha; solicitações | sono na 2ª
@@ -80,7 +104,10 @@ function Relatorios() {
 
         <div className="mt-[18px] flex flex-col gap-[18px] xl:mt-4 xl:gap-[22px]">
           <CartaoAnotacoesPeriodo registros={registros} />
-          <CartaoTarefasPeriodo periodo={periodo} />
+          {/* os frames de Mobile não têm "Tarefas deste período" (tablet segue o mobile) */}
+          <div className="max-xl:hidden">
+            <CartaoTarefasPeriodo periodo={periodo} />
+          </div>
         </div>
       </div>
     </div>

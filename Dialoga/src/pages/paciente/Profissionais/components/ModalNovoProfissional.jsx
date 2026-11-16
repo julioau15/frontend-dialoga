@@ -101,7 +101,7 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
                 value={dados.cpf}
                 onChange={alterarCpf}
                 ajuda={encontrado ? undefined : 'O CPF é usado para verificar se o profissional tem cadastro na plataforma.'}
-                            />
+              />
             </div>
 
             {/* profissional da plataforma achado pelo CPF ("Novo profissional - Paciente-1") */}

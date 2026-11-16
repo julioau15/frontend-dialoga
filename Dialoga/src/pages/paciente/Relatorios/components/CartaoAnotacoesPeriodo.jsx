@@ -8,6 +8,7 @@
 //   - o texto da anotação e, no desktop, "Ver mais" (abre o texto inteiro quando é longo).
 // Props:
 //   registros -> registros do período (relatoriosMock); só os que têm anotação aparecem
+// Tablet segue o mobile: texto inteiro e sem "Ver mais"
 // ============================================================
 import { useId, useState } from 'react'
 import Card from '../../../../components/Card'
@@ -35,7 +36,7 @@ function ItemAnotacao({ registro }) {
   const humor = HUMOR_DO_DIA[faixaDe(INDICADOR_HUMOR.notas[registro.humor], notaMaxima(INDICADOR_HUMOR))]
 
   return (
-    <li className="flex gap-3 border-t border-borda px-5 pt-[17px] pb-4 sm:pr-10 sm:pl-[21px]">
+    <li className="flex gap-3 border-t border-borda px-5 pt-[17px] pb-4 xl:pr-10 xl:pl-[21px]">
       <div className="flex w-10 shrink-0 flex-col items-center">
         <span aria-hidden="true" className={`grid h-10 w-10 place-items-center rounded-xl text-[14px] ${humor.fundo}`}>
           {humor.emoji}
@@ -57,8 +58,8 @@ function ItemAnotacao({ registro }) {
             {registro.sono}h sono
           </li>
         </ul>
-        {/* no desktop o texto fica numa linha até abrir com "Ver mais"; no mobile aparece inteiro */}
-        <p id={idTexto} className={`mt-[9px] text-[14px] leading-[23px] text-texto sm:leading-5 xl:mt-[11px] ${aberto ? '' : 'sm:line-clamp-1'}`}>
+        {/* no desktop o texto fica numa linha até abrir com "Ver mais"; no mobile e tablet aparece inteiro */}
+        <p id={idTexto} className={`mt-[9px] text-[14px] leading-[23px] text-texto xl:mt-[11px] xl:leading-5 ${aberto ? '' : 'xl:line-clamp-1'}`}>
           {registro.anotacao}
         </p>
       </div>
@@ -68,7 +69,7 @@ function ItemAnotacao({ registro }) {
         aria-expanded={aberto}
         aria-controls={idTexto}
         onClick={() => setAberto((a) => !a)}
-        className="hidden shrink-0 cursor-pointer self-center rounded-sm text-[12px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria sm:block"
+        className="hidden shrink-0 cursor-pointer self-center rounded-sm text-[12px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria xl:block"
       >
         {aberto ? 'Ver menos' : 'Ver mais'}
       </button>
@@ -81,7 +82,7 @@ export default function CartaoAnotacoesPeriodo({ registros }) {
 
   return (
     <Card as="section" aria-label="Anotações" className="overflow-hidden rounded-2xl! shadow-[0_2px_4px_var(--color-borda)]!">
-      <div className="flex min-h-[52px] items-center px-5 py-3 sm:min-h-[50px] sm:pr-[22px] sm:pl-[21px] xl:min-h-[53px]">
+      <div className="flex min-h-[52px] items-center px-5 py-3 xl:min-h-[53px] xl:pr-[22px] xl:pl-[21px]">
         <div className="w-full">
           <CabecalhoCartao
             icone={<IconeAnotacao tamanho={16} className="text-primaria" />}
@@ -92,7 +93,7 @@ export default function CartaoAnotacoesPeriodo({ registros }) {
       </div>
 
       {anotacoes.length === 0 ? (
-        <p className="border-t border-borda px-5 py-6 text-center text-[13px] text-secundaria sm:px-[21px]">Nenhuma anotação no período.</p>
+        <p className="border-t border-borda px-5 py-6 text-center text-[13px] text-secundaria xl:px-[21px]">Nenhuma anotação no período.</p>
       ) : (
         <ul>
           {anotacoes.map((r) => (

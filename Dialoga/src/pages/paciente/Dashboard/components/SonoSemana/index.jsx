@@ -6,16 +6,19 @@
 //   ideal -> horas ideais de sono (linha pontilhada)
 // Gráfico desenhado em SVG (sem biblioteca). A largura acompanha o card
 // (hook useLargura); cores vêm dos tokens (fill-primaria, stroke-borda...).
+// O Grafico e a ALTURA também são usados pelo cartão "Horas de sono" da tela
+// Relatórios do paciente (mesmo desenho do Dashboard).
 // ============================================================
 import { useId } from 'react'
 import Card from '../../../../../components/Card'
 import { useLargura } from '../../../../../hooks/useLargura'
 
-const ALTURA = 240
+export const ALTURA = 240
 const MARGEM = { topo: 30, direita: 16, baixo: 34, esquerda: 52 }
 const Y_MIN = 4
 const Y_MAX = 10
 const GUIAS = [4, 6, 8, 10]
+const MAX_ROTULOS = 7 // com mais dias, os rótulos de baixo pulam e os valores somem
 
 // Curva suave que passa por todos os pontos (Catmull-Rom -> Bézier)
 function caminhoSuave(pontos) {
@@ -35,7 +38,13 @@ function caminhoSuave(pontos) {
   return d
 }
 
-function Grafico({ dias, ideal, largura }) {
+// Desenha o gráfico de linha.
+// Props:
+//   dias           -> [{ rotulo, horas }, ...]
+//   ideal          -> horas ideais (linha pontilhada)
+//   largura        -> largura do SVG em px (vem do useLargura)
+//   destacarUltimo -> true (padrão) destaca o último ponto como "hoje"
+export function Grafico({ dias, ideal, largura, destacarUltimo = true }) {
   const idGradiente = useId()
 
   const areaX = MARGEM.esquerda
@@ -49,7 +58,10 @@ function Grafico({ dias, ideal, largura }) {
   const pontos = dias.map((d, i) => ({ ...d, x: areaX + faixa * (i + 0.5), y: yDe(d.horas) }))
   const indiceHoje = pontos.length - 1
   const linha = caminhoSuave(pontos)
-  const area = `${linha} L ${pontos[indiceHoje].x} ${base} L ${pontos[0].x} ${base} Z`
+  // um dia só: não há linha nem área, aparece só o ponto
+  const area = linha && `${linha} L ${pontos[indiceHoje].x} ${base} L ${pontos[0].x} ${base} Z`
+  // períodos longos: mostra 1 rótulo a cada "passo" dias (7 dias = todos)
+  const passo = Math.ceil(dias.length / MAX_ROTULOS)
   const resumo = dias.map((d) => `${d.rotulo} ${d.horas}h`).join(', ')
 
   return (
@@ -93,12 +105,15 @@ function Grafico({ dias, ideal, largura }) {
       </text>
 
       {/* área e linha */}
-      <path d={area} fill={`url(#${idGradiente})`} />
-      <path d={linha} fill="none" className="stroke-primaria" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
-
+      {linha && (
+        <>
+          <path d={area} fill={`url(#${idGradiente})`} />
+          <path d={linha} fill="none" className="stroke-primaria" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+        </>
+      )}
       {/* pontos e valores */}
       {pontos.map((p, i) => {
-        const hoje = i === indiceHoje
+        const hoje = destacarUltimo && i === indiceHoje
         const abaixo = p.horas < ideal
         return (
           <g key={`${p.rotulo}-${i}`}>
@@ -118,19 +133,23 @@ function Grafico({ dias, ideal, largura }) {
             >
               <title>{`${p.rotulo}: ${p.horas}h dormidas`}</title>
             </circle>
-            <text x={p.x} y={p.y - 14} textAnchor="middle" className="fill-texto text-xs font-bold">
-              {p.horas}h
-            </text>
+            {passo === 1 && (
+              <text x={p.x} y={p.y - 14} textAnchor="middle" className="fill-texto text-xs font-bold">
+                {p.horas}h
+              </text>
+            )}
           </g>
         )
       })}
 
       {/* dias da semana */}
-      {pontos.map((p, i) => (
-        <text key={`x-${p.rotulo}-${i}`} x={p.x} y={ALTURA - 10} textAnchor="middle" className="fill-secundaria text-xs">
-          {p.rotulo}
-        </text>
-      ))}
+      {pontos.map((p, i) =>
+        i % passo === 0 ? (
+          <text key={`x-${p.rotulo}-${i}`} x={p.x} y={ALTURA - 10} textAnchor="middle" className="fill-secundaria text-xs">
+            {p.rotulo}
+          </text>
+        ) : null,
+      )}
     </svg>
   )
 }
