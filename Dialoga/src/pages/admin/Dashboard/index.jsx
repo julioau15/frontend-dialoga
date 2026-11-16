@@ -9,7 +9,9 @@
 // Fluxo: clicar na linha  -> ModalSolicitacao -> Aprovar/Recusar -> ModalConfirmarDecisao -> Toast
 //        clicar no ✓ / ✕  -> direto para o ModalConfirmarDecisao
 // ============================================================
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import Button from '../../../components/Button'
+import { useAuth } from '../../../contexts/AuthContext'
 import Toast from '../../../components/Toast'
 import useAprovacoes from '../../../hooks/useAprovacoes'
 import { textoParaBusca } from '../../../utils/formatadores'
@@ -20,18 +22,18 @@ import ModalSolicitacao from './components/ModalSolicitacao'
 import ResumoAprovacoes from './components/ResumoAprovacoes'
 
 const MENSAGENS_TOAST = {
-  aprovar: { tipo: 'sucesso', mensagem: 'Profissional aprovado. Um e-mail de confirmação foi enviado.' },
-  recusar: { tipo: 'erro', mensagem: 'Solicitação recusada. O profissional será notificado por e-mail.' },
+  aprovar: { tipo: 'sucesso', mensagem: 'Profissional aprovado com sucesso.' },
+  recusar: { tipo: 'sucesso', mensagem: 'Solicitação recusada com sucesso.' },
 }
 
-export default function DashboardAdmin() {
-  const { solicitacoes, carregando, erro, aprovar, recusar } = useAprovacoes()
+function ConteudoDashboardAdmin() {
+  const { solicitacoes, carregando, erro, enviando, recarregar, aprovar, recusar } = useAprovacoes()
 
   const [filtro, setFiltro] = useState('pendente') // 'pendente' | 'aprovado' | 'recusado' | 'todos'
   const [busca, setBusca] = useState('')
   const [detalhe, setDetalhe] = useState(null) // solicitação aberta no modal de detalhes
   const [decisao, setDecisao] = useState(null) // { tipo: 'aprovar' | 'recusar', solicitacao }
-  const [enviando, setEnviando] = useState(false)
+  const confirmandoRef = useRef(false)
   const [toast, setToast] = useState({ aberto: false, tipo: 'sucesso', mensagem: '' })
 
   const fecharToast = useCallback(() => setToast((t) => ({ ...t, aberto: false })), [])
@@ -41,6 +43,7 @@ export default function DashboardAdmin() {
     pendente: solicitacoes.filter((s) => s.status === 'pendente').length,
     aprovado: solicitacoes.filter((s) => s.status === 'aprovado').length,
     recusado: solicitacoes.filter((s) => s.status === 'recusado').length,
+    todos: solicitacoes.length,
   }), [solicitacoes])
 
   // Lista mostrada: aba ativa + busca por nome, e-mail ou especialidade
@@ -54,22 +57,54 @@ export default function DashboardAdmin() {
   }, [solicitacoes, filtro, busca])
 
   // Do modal de detalhes para a confirmação (um modal por vez, como no Figma)
+  // Abre somente uma confirmação válida e nunca durante outra decisão.
   function pedirConfirmacao(tipo, solicitacao) {
+    if (
+      confirmandoRef.current ||
+      enviando ||
+      !solicitacao ||
+      solicitacao.status !== 'pendente' ||
+      !['aprovar', 'recusar'].includes(tipo)
+    ) {
+      return
+    }
+
     setDetalhe(null)
     setDecisao({ tipo, solicitacao })
   }
 
+  // Permite fechar a confirmação apenas antes de iniciar o envio.
+  function cancelarDecisao() {
+    if (confirmandoRef.current || enviando) return
+    setDecisao(null)
+  }
+
+  // Mantém o modal aberto em falha para permitir nova tentativa.
   async function confirmar() {
+    if (!decisao || confirmandoRef.current || enviando) return
+
+    confirmandoRef.current = true
     const { tipo, solicitacao } = decisao
-    setEnviando(true)
+
     try {
-      await (tipo === 'aprovar' ? aprovar(solicitacao) : recusar(solicitacao))
-      setToast({ aberto: true, ...MENSAGENS_TOAST[tipo] })
-    } catch (e) {
-      setToast({ aberto: true, tipo: 'erro', mensagem: e.message })
-    } finally {
-      setEnviando(false)
+      const concluido = await (
+        tipo === 'aprovar'
+          ? aprovar(solicitacao)
+          : recusar(solicitacao)
+      )
+
+      if (!concluido) return
+
       setDecisao(null)
+      setToast({ aberto: true, ...MENSAGENS_TOAST[tipo] })
+    } catch (erroDecisao) {
+      setToast({
+        aberto: true,
+        tipo: 'erro',
+        mensagem: erroDecisao.message || 'Não foi possível registrar a decisão.',
+      })
+    } finally {
+      confirmandoRef.current = false
     }
   }
 
@@ -93,22 +128,31 @@ export default function DashboardAdmin() {
       </div>
 
       {carregando && <p role="status" className="mt-6 text-[12px] text-secundaria">Carregando solicitações...</p>}
-      {erro && <p role="alert" className="mt-6 text-[12px] text-erro">{erro}</p>}
+      {erro && (
+        <div role="alert" className="mt-6 flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-4">
+          <p className="text-[12px] text-erro">{erro}</p>
+          <Button type="button" variante="suave" larguraAuto onClick={recarregar}>
+            Tentar novamente
+          </Button>
+        </div>
+      )}
       {!carregando && !erro && visiveis.length === 0 && (
         <p className="mt-6 text-[12px] text-secundaria">Nenhuma solicitação encontrada.</p>
       )}
 
-      <ul className="flex flex-col gap-3 mt-4">
-        {visiveis.map((s) => (
-          <CartaoSolicitacao
-            key={s.id}
-            solicitacao={s}
-            onAbrir={() => setDetalhe(s)}
-            onAprovar={() => pedirConfirmacao('aprovar', s)}
-            onRecusar={() => pedirConfirmacao('recusar', s)}
-          />
-        ))}
-      </ul>
+      {!carregando && !erro && (
+        <ul className="flex flex-col gap-3 mt-4">
+          {visiveis.map((s) => (
+            <CartaoSolicitacao
+              key={s.id}
+              solicitacao={s}
+              onAbrir={() => setDetalhe(s)}
+              onAprovar={() => pedirConfirmacao('aprovar', s)}
+              onRecusar={() => pedirConfirmacao('recusar', s)}
+            />
+          ))}
+        </ul>
+      )}
 
       <ModalSolicitacao
         solicitacao={detalhe}
@@ -120,11 +164,17 @@ export default function DashboardAdmin() {
       <ModalConfirmarDecisao
         decisao={decisao}
         enviando={enviando}
-        onCancelar={() => setDecisao(null)}
+        onCancelar={cancelarDecisao}
         onConfirmar={confirmar}
       />
 
       <Toast aberto={toast.aberto} tipo={toast.tipo} mensagem={toast.mensagem} onFechar={fecharToast} />
     </section>
   )
+}
+
+// Reinicia modais e mensagens quando a credencial da sessão muda.
+export default function DashboardAdmin() {
+  const { auth } = useAuth()
+  return <ConteudoDashboardAdmin key={auth?.token ?? 'sem-sessao'} />
 }

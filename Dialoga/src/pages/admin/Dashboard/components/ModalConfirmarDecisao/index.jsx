@@ -15,8 +15,7 @@ const TEXTOS = {
   aprovar: {
     titulo: 'Confirmar aprovação',
     pergunta: 'Aprovar',
-    destaque: 'e-mail de boas-vindas',
-    depois: ' com as instruções de acesso à plataforma.',
+    descricao: 'Confirme a aprovação da solicitação de acesso à plataforma.',
     botao: 'Confirmar aprovação',
     variante: 'sucesso',
     Icone: IconeCheck,
@@ -25,8 +24,7 @@ const TEXTOS = {
   recusar: {
     titulo: 'Confirmar recusa',
     pergunta: 'Recusar',
-    destaque: 'e-mail de notificação',
-    depois: ' informando que a solicitação não foi aprovada.',
+    descricao: 'Confirme a recusa da solicitação de acesso à plataforma.',
     botao: 'Confirmar recusa',
     variante: 'perigo',
     Icone: IconeX,
@@ -42,13 +40,13 @@ export default function ModalConfirmarDecisao({ decisao, enviando = false, onCan
       <Button type="button" variante="suave" larguraAuto disabled={enviando} onClick={onCancelar}>Cancelar</Button>
       <Button type="button" variante={t.variante} larguraAuto carregando={enviando} onClick={onConfirmar}>
         <t.Icone tamanho={13} />
-        {t.botao}
+        {enviando ? 'Registrando...' : t.botao}
       </Button>
     </>
   )
 
   return (
-    <Modal aberto={!!decisao} titulo={t.titulo} onFechar={onCancelar} comDivisores rodape={rodape}>
+    <Modal aberto={!!decisao} titulo={t.titulo} onFechar={onCancelar} bloquearFechamento={enviando} comDivisores rodape={rodape}>
       <div className="flex flex-col items-center text-center">
         <span className={`grid place-items-center w-[60px] h-[60px] border rounded-xl ${t.classesIcone}`}>
           <t.Icone tamanho={24} />
@@ -57,7 +55,7 @@ export default function ModalConfirmarDecisao({ decisao, enviando = false, onCan
           {t.pergunta} {decisao?.solicitacao.nome}?
         </p>
         <p className="mt-1.5 text-[12px] text-secundaria">
-          O profissional receberá um <strong className="font-bold">{t.destaque}</strong>{t.depois}
+          {t.descricao}
         </p>
       </div>
     </Modal>

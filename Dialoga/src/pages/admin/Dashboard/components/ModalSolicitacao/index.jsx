@@ -71,7 +71,7 @@ export default function ModalSolicitacao({ solicitacao, onFechar, onAprovar, onR
           {pendente && (
             <p className="flex items-start gap-2 mt-4 p-3 bg-alerta-fundo border border-alerta-borda-suave rounded-lg text-[11px] text-alerta-escura">
               <IconeAlerta tamanho={13} className="mt-px shrink-0" />
-              Ao aprovar ou recusar, o profissional será notificado automaticamente por e-mail.
+              Confira os dados do profissional antes de aprovar ou recusar a solicitação.
             </p>
           )}
         </>
