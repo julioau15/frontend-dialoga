@@ -13,7 +13,13 @@
 // Uso: const notificacoes = useNotificacoes('paciente')
 //   perfil -> 'paciente' | 'profissional' (escolhe o destino do "Ver →" do vínculo)
 // ============================================================
-import { useCallback, useEffect, useMemo, useState } from 'react'
+// ============================================================
+// hooks/useNotificacoes.js
+// Carrega notificações e controla abas, contadores e leitura.
+// Serializa as alterações para evitar rollback conflitante.
+// Respostas de uma sessão encerrada não atualizam a sessão atual.
+// ============================================================
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -24,113 +30,249 @@ import {
 import { converterNotificacoes } from '../utils/notificacoesRecebidas'
 
 const TOAST_FECHADO = { aberto: false, tipo: 'sucesso', mensagem: '' }
-const REMOTO_INICIAL = { carregado: false, erro: '' }
 
+// Compartilha a lógica de notificações dos dois perfis.
 export function useNotificacoes(perfil) {
   const location = useLocation()
   const navigate = useNavigate()
   const { auth } = useAuth()
   const token = auth?.token
 
-  const [notificacoes, setNotificacoes] = useState([])
-  // Situação da busca na API (carregado / mensagem de erro)
-  const [remoto, setRemoto] = useState(REMOTO_INICIAL)
-  // Muda para buscar de novo ("Tentar novamente")
+  // Identifica o conjunto de dados sem expor a credencial na interface.
+  const chave = `${perfil}:${token ?? ''}`
+
+  const [remoto, setRemoto] = useState({
+    chave: null,
+    tentativa: -1,
+    lista: [],
+    carregado: false,
+    erro: '',
+    salvando: false,
+  })
   const [tentativa, setTentativa] = useState(0)
   const [aba, setAba] = useState('nao-lidas')
-  // Abre o aviso de preferências salvas quando a página é aberta logo depois de salvar
   const [toast, setToast] = useState(() =>
     location.state?.preferenciasSalvas
-      ? { aberto: true, tipo: 'sucesso', mensagem: 'Preferências salvas!' }
+      ? {
+          aberto: true,
+          tipo: 'sucesso',
+          mensagem: 'Preferências salvas!',
+        }
       : TOAST_FECHADO,
   )
 
-  // Busca as notificações do usuário logado
+  // A referência bloqueia cliques repetidos antes do próximo render.
+  const escopoRef = useRef(null)
+
   useEffect(() => {
     const controle = new AbortController()
+    const escopo = {
+      chave,
+      tentativa,
+      ativo: true,
+      ocupado: false,
+      carregado: false,
+    }
+    escopoRef.current = escopo
 
-    listarNotificacoesRequest(token, controle.signal)
-      .then(({ notificacoes: linhas, categorias }) => {
-        setNotificacoes(converterNotificacoes(linhas, categorias, perfil))
-        setRemoto({ carregado: true, erro: '' })
-      })
-      .catch((erro) => {
-        if (controle.signal.aborted) return // saiu da tela antes da resposta
-        setRemoto({ carregado: false, erro: erro.message })
-      })
+    // Carrega somente dados da sessão associada a este efeito.
+    async function carregar() {
+      try {
+        const { notificacoes, categorias } =
+          await listarNotificacoesRequest(token, controle.signal)
 
-    // cancela se a pessoa sair da tela antes da resposta chegar
-    return () => controle.abort()
-  }, [token, perfil, tentativa])
+        if (!escopo.ativo) return
 
-  // Tenta buscar as notificações de novo depois de uma falha
-  const recarregar = useCallback(() => {
-    setRemoto(REMOTO_INICIAL)
-    setTentativa((valor) => valor + 1)
-  }, [])
+        const lista = converterNotificacoes(
+          notificacoes,
+          categorias,
+          perfil,
+        )
 
-  // Separa as notificações não lidas das lidas, mantendo a ordem da mais nova para a mais antiga
-  const naoLidas = useMemo(() => notificacoes.filter((item) => !item.lida), [notificacoes])
-  const lidas = useMemo(() => notificacoes.filter((item) => item.lida), [notificacoes])
+        escopo.carregado = true
+        setRemoto({
+          chave,
+          tentativa,
+          lista,
+          carregado: true,
+          erro: '',
+          salvando: false,
+        })
+      } catch (erro) {
+        if (!escopo.ativo || controle.signal.aborted) return
 
-  // Abas com a contagem calculada de cada uma
-  const abas = [
-    { id: 'nao-lidas', rotulo: 'Não lidas', contagem: naoLidas.length },
-    { id: 'historico', rotulo: 'Histórico', contagem: lidas.length },
-  ]
+        setRemoto({
+          chave,
+          tentativa,
+          lista: [],
+          carregado: false,
+          erro: erro.message || 'Não foi possível carregar suas notificações.',
+          salvando: false,
+        })
+      }
+    }
 
-  // Muda o "lida" das notificações com os ids informados
-  function definirLida(ids, lida) {
-    setNotificacoes((lista) => lista.map((item) => (ids.includes(item.id) ? { ...item, lida } : item)))
-  }
+    carregar()
 
-  // Exibe um aviso, substituindo o que estiver aberto
+    // Também invalida respostas de PUT que terminem após sair da tela.
+    return () => {
+      escopo.ativo = false
+      controle.abort()
+    }
+  }, [token, perfil, chave, tentativa])
+
+  const dadosAtuais =
+    remoto.chave === chave && remoto.tentativa === tentativa
+
+  const notificacoes = useMemo(
+    () => (dadosAtuais ? remoto.lista : []),
+    [dadosAtuais, remoto.lista],
+  )
+
+  const naoLidas = useMemo(
+    () => notificacoes.filter((item) => !item.lida),
+    [notificacoes],
+  )
+  const lidas = useMemo(
+    () => notificacoes.filter((item) => item.lida),
+    [notificacoes],
+  )
+
+  const salvando = dadosAtuais && remoto.salvando
+  const erroCarregar = dadosAtuais ? remoto.erro : ''
+  const carregando = !dadosAtuais || (!remoto.carregado && !remoto.erro)
+
+  // Exibe apenas um aviso por vez.
   function mostrarToast(mensagem, tipo = 'sucesso') {
     setToast({ aberto: true, tipo, mensagem })
   }
 
-  // Marca uma notificação como lida (ela sai de "Não lidas" e vai para o "Histórico")
-  async function marcarComoLida(id) {
-    definirLida([id], true)
+  // Atualiza apenas o estado ainda associado à operação original.
+  function atualizarEscopo(escopo, atualizar) {
+    if (!escopo.ativo || escopoRef.current !== escopo) return
+
+    setRemoto((atual) => {
+      if (
+        atual.chave !== escopo.chave ||
+        atual.tentativa !== escopo.tentativa
+      ) {
+        return atual
+      }
+
+      return atualizar(atual)
+    })
+  }
+
+  // Executa uma alteração por vez e desfaz somente os IDs envolvidos.
+  async function executarMarcacao(ids, enviar, mensagemSucesso) {
+    const escopo = escopoRef.current
+    if (
+      !token ||
+      !escopo?.ativo ||
+      escopo.chave !== chave ||
+      escopo.tentativa !== tentativa ||
+      !escopo.carregado ||
+      escopo.ocupado ||
+      ids.length === 0
+    ) {
+      return
+    }
+
+    escopo.ocupado = true
+    const idsAlterados = new Set(ids)
+
+    atualizarEscopo(escopo, (atual) => ({
+      ...atual,
+      salvando: true,
+      lista: atual.lista.map((item) =>
+        idsAlterados.has(item.id) ? { ...item, lida: true } : item,
+      ),
+    }))
+
     try {
-      await marcarNotificacaoLidaRequest(token, id)
+      await enviar()
+
+      if (!escopo.ativo || escopoRef.current !== escopo) return
+      mostrarToast(mensagemSucesso)
     } catch (erro) {
-      definirLida([id], false)
-      mostrarToast(erro.message, 'erro')
+      if (!escopo.ativo || escopoRef.current !== escopo) return
+
+      atualizarEscopo(escopo, (atual) => ({
+        ...atual,
+        lista: atual.lista.map((item) =>
+          idsAlterados.has(item.id) ? { ...item, lida: false } : item,
+        ),
+      }))
+
+      mostrarToast(
+        erro.message || 'Não foi possível atualizar a leitura.',
+        'erro',
+      )
+    } finally {
+      escopo.ocupado = false
+      atualizarEscopo(escopo, (atual) => ({
+        ...atual,
+        salvando: false,
+      }))
     }
   }
 
-  // Marca todas como lidas e exibe o aviso
-  async function marcarTodas() {
-    const ids = naoLidas.map((item) => item.id)
-    if (ids.length === 0) return
-    definirLida(ids, true)
-    try {
-      await marcarTodasLidasRequest(token)
-      mostrarToast('Todas marcadas como lidas.')
-    } catch (erro) {
-      definirLida(ids, false)
-      mostrarToast(erro.message, 'erro')
-    }
+  // Aceita somente uma notificação não lida da listagem autenticada.
+  function marcarComoLida(id) {
+    const item = naoLidas.find((notificacao) => notificacao.id === id)
+    if (!item) return
+
+    return executarMarcacao(
+      [item.id],
+      () => marcarNotificacaoLidaRequest(token, item.id),
+      'Notificação marcada como lida.',
+    )
   }
 
-  // Fecha o aviso e limpa o estado da navegação, para o aviso não voltar ao recarregar a página;
-  // estável para o tempo do Toast não reiniciar a cada render
+  // Marca toda a lista carregada, inclusive itens de outras páginas locais.
+  function marcarTodas() {
+    return executarMarcacao(
+      naoLidas.map((item) => item.id),
+      () => marcarTodasLidasRequest(token),
+      'Todas marcadas como lidas.',
+    )
+  }
+
+  // Não permite iniciar uma nova busca durante uma alteração de leitura.
+  const recarregar = useCallback(() => {
+    if (escopoRef.current?.ocupado) return
+    setTentativa((valor) => valor + 1)
+  }, [])
+
+  // Trocar de aba também fecha mensagens ligadas à interação anterior.
+  function mudarAba(proximaAba) {
+    setAba(proximaAba)
+    setToast(TOAST_FECHADO)
+  }
+
   const temEstadoNavegacao = location.state != null
   const { pathname } = location
+
+  // Limpa o aviso de preferências para ele não reaparecer ao atualizar.
   const fecharToast = useCallback(() => {
     setToast(TOAST_FECHADO)
-    if (temEstadoNavegacao) navigate(pathname, { replace: true, state: null })
+    if (temEstadoNavegacao) {
+      navigate(pathname, { replace: true, state: null })
+    }
   }, [temEstadoNavegacao, pathname, navigate])
 
   return {
-    abas,
+    abas: [
+      { id: 'nao-lidas', rotulo: 'Não lidas', contagem: naoLidas.length },
+      { id: 'historico', rotulo: 'Histórico', contagem: lidas.length },
+    ],
     aba,
-    mudarAba: setAba,
+    mudarAba,
     itens: aba === 'nao-lidas' ? naoLidas : lidas,
     totalNaoLidas: naoLidas.length,
-    carregando: !remoto.carregado && !remoto.erro,
-    erroCarregar: remoto.erro,
+    carregando,
+    erroCarregar,
+    salvando,
     recarregar,
     marcarComoLida,
     marcarTodas,

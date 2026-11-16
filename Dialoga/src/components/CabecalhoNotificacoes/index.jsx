@@ -5,6 +5,7 @@
 // Props:
 //   naoLidas          -> quantidade de notificações não lidas
 //   onMarcarTodas     -> chamado ao clicar em "Marcar todas"
+//   salvando          -> bloqueia o envio e informa a alteração de leitura em andamento
 //   rotaConfiguracoes -> rota da tela de configurações de notificação
 //   onAbrirModal      -> opcional; quando informado, a engrenagem abre o modal
 //                        a partir de 768px e leva à tela de configurações abaixo disso
@@ -28,7 +29,7 @@ function IconeEngrenagem() {
 }
 
 // Exibe o cabeçalho da página de Notificações
-export default function CabecalhoNotificacoes({ naoLidas, onMarcarTodas, rotaConfiguracoes, onAbrirModal }) {
+export default function CabecalhoNotificacoes({ naoLidas, onMarcarTodas, rotaConfiguracoes, onAbrirModal, salvando = false }) {
   return (
     <header className="flex items-start justify-between gap-3">
       <div className="min-w-0">
@@ -45,11 +46,12 @@ export default function CabecalhoNotificacoes({ naoLidas, onMarcarTodas, rotaCon
             type="button"
             variante="suave"
             larguraAuto
+            carregando={salvando}
             onClick={onMarcarTodas}
             className="h-9! gap-1.5! px-3! text-[11px]! text-primaria!"
           >
             <IconeCheck tamanho={12} />
-            Marcar todas
+            {salvando ? 'Salvando...' : 'Marcar todas'}
           </Button>
         )}
 
