@@ -3,20 +3,20 @@
 // Página de Notificações do profissional: cabeçalho com "N não lidas",
 // "Marcar todas" e engrenagem (leva à tela de configurações), abas
 // "Não lidas" e "Histórico" (só as lidas), cartões com chip e "Ver →"
-// e o estado vazio "Tudo em dia!". Dados fixos, sem integração.
+// e o estado vazio "Tudo em dia!". Carrega as notificações na API e marca como lidas (GET/PUT /notificacoes).
 // Rota: /profissional/notificacoes
 // ============================================================
 import AbasNotificacoes from '../../../components/AbasNotificacoes'
+import Button from '../../../components/Button'
 import CabecalhoNotificacoes from '../../../components/CabecalhoNotificacoes'
 import CartaoNotificacao from '../../../components/CartaoNotificacao'
 import NotificacoesVazias from '../../../components/NotificacoesVazias'
 import Toast from '../../../components/Toast'
 import { useNotificacoes } from '../../../hooks/useNotificacoes'
-import { NOTIFICACOES_PROFISSIONAL } from '../../../services/notificacoesRecebidasExemplo'
 
 // Exibe a página de Notificações do profissional
 function Notificacoes() {
-  const notificacoes = useNotificacoes(NOTIFICACOES_PROFISSIONAL)
+  const notificacoes = useNotificacoes('profissional')
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
@@ -30,7 +30,20 @@ function Notificacoes() {
 
         <div className="mt-5">
           <AbasNotificacoes abas={notificacoes.abas} ativa={notificacoes.aba} onMudar={notificacoes.mudarAba}>
-            {notificacoes.itens.length > 0 ? (
+            {notificacoes.carregando ? (
+              // Enquanto as notificações chegam da API
+              <p role="status" className="py-6 text-center text-[13px] text-secundaria">
+                Carregando notificações...
+              </p>
+            ) : notificacoes.erroCarregar ? (
+              // Falha ao buscar: mostra o erro e permite tentar de novo
+              <div role="alert" className="flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-5">
+                <p className="text-[14px] text-erro">{notificacoes.erroCarregar}</p>
+                <Button type="button" variante="suave" larguraAuto className="h-10" onClick={notificacoes.recarregar}>
+                  Tentar novamente
+                </Button>
+              </div>
+            ) : notificacoes.itens.length > 0 ? (
               <div className="flex flex-col gap-3">
                 {notificacoes.itens.map((item) => (
                   <CartaoNotificacao key={item.id} notificacao={item} prefixoRota="/profissional" acao="ver" />
@@ -44,7 +57,12 @@ function Notificacoes() {
           </AbasNotificacoes>
         </div>
 
-        <Toast aberto={notificacoes.toast.aberto} mensagem={notificacoes.toast.mensagem} onFechar={notificacoes.fecharToast} />
+        <Toast
+          aberto={notificacoes.toast.aberto}
+          tipo={notificacoes.toast.tipo}
+          mensagem={notificacoes.toast.mensagem}
+          onFechar={notificacoes.fecharToast}
+        />
       </section>
     </div>
   )
