@@ -4,13 +4,12 @@
 // do Figma. O Selo compartilhado não muda: o contêiner só ajusta.
 // ============================================================
 
-// avatar das solicitações (mesmas cores do AvatarIniciais lilás): 40px com as iniciais de 15px;
-// respondida: 36px e 13px no mobile e no tablet; no desktop fica igual à pendente. É local
-// porque o Figma usa as duas primeiras palavras ("DP" de "Dra. Patrícia") e o AvatarIniciais
-// compartilhado usa a primeira e a última, sem o título.
-const AVATAR = 'grid shrink-0 place-items-center rounded-full bg-borda-forte font-semibold text-primaria'
-export const AVATAR_PENDENTE = `${AVATAR} h-10 w-10 text-[15px]`
-export const AVATAR_RESPONDIDA = `${AVATAR} h-9 w-9 text-[13px] xl:h-10 xl:w-10 xl:text-[15px]`
+// contêiner do AvatarIniciais compartilhado (o componente não muda, só as medidas do Figma):
+// 40px com as iniciais de 15px; respondida: 36px e 13px no mobile e no tablet
+// (no desktop fica igual à pendente)
+const AJUSTE_AVATAR = 'shrink-0 [&>div]:h-10 [&>div]:w-10 [&>div]:text-[15px]'
+export const AVATAR_PENDENTE = AJUSTE_AVATAR
+export const AVATAR_RESPONDIDA = `${AJUSTE_AVATAR} max-xl:[&>div]:h-9 max-xl:[&>div]:w-9 max-xl:[&>div]:text-[13px]`
 
 // selo do Figma: 22px de altura, texto de 13px seminegrito e 8px nas laterais
 const AJUSTE_SELO = 'inline-flex shrink-0 [&>span]:h-[22px] [&>span]:px-2 [&>span]:py-0 [&>span]:text-[13px]'

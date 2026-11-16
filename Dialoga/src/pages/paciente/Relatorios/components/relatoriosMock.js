@@ -111,6 +111,10 @@ export const iniciaisSolicitacao = (nome) =>
     .join('')
     .toUpperCase()
 
+// nome que vai para o AvatarIniciais compartilhado. Ele junta a 1ª e a última palavra e
+// ignora "Dra."; passando as duas letras separadas ("D P"), ele mostra "DP", como no Figma
+export const nomeAvatarSolicitacao = (nome) => iniciaisSolicitacao(nome).split('').join(' ')
+
 // opções do pop-up "Solicitação de acesso", na ordem do Figma
 export const INDICADORES_ACESSO = [
   { id: 'sentimento', rotulo: 'Sentimento' },
