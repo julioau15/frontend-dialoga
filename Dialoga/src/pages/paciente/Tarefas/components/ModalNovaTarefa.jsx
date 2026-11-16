@@ -2,8 +2,10 @@
 // ModalNovaTarefa
 // Pop-up "Nova tarefa" (frame "1 - Adicionar tarefa - Paciente").
 // Campos: Título (obrigatório), Data de entrega (obrigatória, DD/MM/AAAA)
-// e Arquivo (opcional). Só guarda o nome do arquivo (sem upload por enquanto).
-// Props: aberto, onFechar(), onCriar({ titulo, prazo, arquivo })
+// e Arquivo (opcional, enviado junto com a tarefa).
+// Props: aberto, onFechar(), onCriar({ titulo, prazo: 'DD/MM/AAAA', arquivo: File | null })
+//   onCriar pode ser assíncrona: enquanto espera, o botão fica bloqueado;
+//   se lançar erro, a mensagem aparece no pop-up e o formulário é mantido.
 // ============================================================
 import { useRef, useState } from 'react'
 import Button from '../../../../components/Button'
@@ -47,6 +49,8 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
   const [prazo, setPrazo] = useState('')
   const [arquivo, setArquivo] = useState(null)
   const [erros, setErros] = useState({})
+  const [enviando, setEnviando] = useState(false)
+  const [erroApi, setErroApi] = useState('')
   const inputArquivo = useRef(null)
 
   function limpar() {
@@ -54,6 +58,7 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
     setPrazo('')
     setArquivo(null)
     setErros({})
+    setErroApi('')
     if (inputArquivo.current) inputArquivo.current.value = ''
   }
 
@@ -63,7 +68,7 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
     onFechar()
   }
 
-  function criar() {
+  async function criar() {
     const novos = {}
     if (!titulo.trim()) novos.titulo = 'Informe o título da tarefa.'
     if (!prazo) novos.prazo = 'Informe a data de entrega.'
@@ -72,8 +77,16 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
     setErros(novos)
     if (Object.keys(novos).length > 0) return
 
-    onCriar({ titulo: titulo.trim(), prazo, arquivo: arquivo?.name ?? null })
-    limpar()
+    setEnviando(true)
+    setErroApi('')
+    try {
+      await onCriar({ titulo: titulo.trim(), prazo, arquivo })
+      limpar()
+    } catch (e) {
+      setErroApi(e.message)
+    } finally {
+      setEnviando(false)
+    }
   }
 
   return (
@@ -85,8 +98,8 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
       largura="max-w-[384px]"
       rodape={
         <>
-          <Button type="button" variante="suave" larguraAuto className="px-4 rounded-xl! text-[14px]!" onClick={fechar}>Cancelar</Button>
-          <Button type="button" larguraAuto className="px-4 rounded-xl! text-[14px]!" onClick={criar}>Criar</Button>
+          <Button type="button" variante="suave" larguraAuto className="px-4 rounded-xl! text-[14px]!" disabled={enviando} onClick={fechar}>Cancelar</Button>
+          <Button type="button" larguraAuto className="px-4 rounded-xl! text-[14px]!" carregando={enviando} onClick={criar}>{enviando ? 'Criando...' : 'Criar'}</Button>
         </>
       }
     >
@@ -131,6 +144,8 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
             <span className="truncate">{arquivo ? arquivo.name : '+ Anexar arquivo'}</span>
           </button>
         </div>
+
+        {erroApi && <p role="alert" className="text-[12px] text-erro">{erroApi}</p>}
       </div>
     </Modal>
   )

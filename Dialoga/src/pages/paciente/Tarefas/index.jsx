@@ -1,11 +1,11 @@
 // ============================================================
 // pages/paciente/Tarefas
-// Tarefas do paciente (dados fixos, sem API). Rota: /paciente/tarefas
+// Tarefas do paciente, ligadas à API (hook useTarefasPaciente). Rota: /paciente/tarefas
 // A página troca entre três telas sem mudar a URL:
 //   lista     -> frames "Tarefas todas / pendentes / em andamento / concluídas / em atraso"
 //   preencher -> "Abrir tarefa" / "Continuar" (frame "Preencher tarefa") + modal "Confirmar envio"
 //   ver       -> "Ver respostas" (frame "Ver Resposta")
-// "Adicionar tarefa" abre o pop-up "Nova tarefa" e cria uma autotarefa.
+// "Adicionar tarefa" abre o pop-up "Nova tarefa" e cria uma autotarefa (POST /tarefas).
 // Os avisos (toasts) são "Atividade enviada com sucesso!" e "Tarefa criada com sucesso!".
 // ============================================================
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -16,8 +16,7 @@ import CartaoTarefa from './components/CartaoTarefa'
 import FormularioTarefa from './components/FormularioTarefa'
 import ModalNovaTarefa from './components/ModalNovaTarefa'
 import { IconeMais } from './components/iconesTarefas'
-import { RESPOSTAS_EXEMPLO, RESPOSTAS_VAZIAS, calcularProgresso } from './components/perguntasMock'
-import { TAREFAS_MOCK } from './components/tarefasMock'
+import { useTarefasPaciente } from '../../../hooks/useTarefasPaciente'
 
 const ABAS = [
   { id: 'todas', rotulo: 'Todas' },
@@ -29,11 +28,13 @@ const ABAS = [
 const ID_PAINEL = 'lista-tarefas'
 
 function Tarefas() {
-  const [tarefas, setTarefas] = useState(TAREFAS_MOCK)
+  const { tarefas, carregando, erro, recarregar, criar, concluirAutotarefa, carregarRespostas, salvarRascunho, enviar } = useTarefasPaciente()
   const [abaAtiva, setAbaAtiva] = useState('todas')
-  const [tela, setTela] = useState({ tipo: 'lista' }) // { tipo: 'lista' | 'preencher' | 'ver', id }
+  const [tela, setTela] = useState({ tipo: 'lista' }) // { tipo: 'lista' | 'preencher' | 'ver', id, respostas }
+  const [abrindo, setAbrindo] = useState(false) // buscando as respostas salvas da tarefa
+  const [salvando, setSalvando] = useState(false) // rascunho ou envio em andamento
   const [modalNova, setModalNova] = useState(false)
-  const [aviso, setAviso] = useState({ aberto: false, mensagem: '' })
+  const [aviso, setAviso] = useState({ aberto: false, mensagem: '', tipo: 'sucesso' })
   const fecharAviso = useCallback(() => setAviso((a) => ({ ...a, aberto: false })), [])
 
   // ao trocar de tela, volta ao topo da página
@@ -41,40 +42,65 @@ function Tarefas() {
     window.scrollTo({ top: 0 })
   }, [tela])
 
-  const atualizar = (id, mudancas) => setTarefas((lista) => lista.map((t) => (t.id === id ? { ...t, ...mudancas } : t)))
-  const avisar = (mensagem) => setAviso({ aberto: true, mensagem })
+  const avisar = (mensagem, tipo = 'sucesso') => setAviso({ aberto: true, mensagem, tipo })
   const voltarLista = () => setTela({ tipo: 'lista' })
 
   // botão do cartão: cada status leva para uma tela
-  function aoAcionar(tarefa) {
-    if (tarefa.status === 'concluida') return setTela({ tipo: 'ver', id: tarefa.id })
-    if (tarefa.autotarefa) {
-      atualizar(tarefa.id, { status: 'concluida', progresso: 100 })
-      return avisar('Tarefa concluída com sucesso!')
+  async function aoAcionar(tarefa) {
+    if (abrindo) return
+    if (tarefa.autotarefa && tarefa.status !== 'concluida') {
+      setAbrindo(true)
+      try {
+        await concluirAutotarefa(tarefa)
+        avisar('Tarefa concluída com sucesso!')
+      } catch (e) {
+        avisar(e.message, 'erro')
+      } finally {
+        setAbrindo(false)
+      }
+      return
     }
-    setTela({ tipo: 'preencher', id: tarefa.id })
+    // concluída -> "ver"; as demais -> "preencher". Em ambos buscamos as respostas já salvas.
+    setAbrindo(true)
+    try {
+      const respostas = await carregarRespostas(tarefa)
+      setTela({ tipo: tarefa.status === 'concluida' ? 'ver' : 'preencher', id: tarefa.id, respostas })
+    } catch (e) {
+      avisar(e.message, 'erro')
+    } finally {
+      setAbrindo(false)
+    }
   }
 
-  function criarTarefa({ titulo, prazo, arquivo }) {
-    const id = Math.max(0, ...tarefas.map((t) => t.id)) + 1
-    setTarefas((lista) => [{ id, titulo, autotarefa: true, prazo, arquivo, status: 'pendente', progresso: 0 }, ...lista])
+  async function criarTarefa(dados) {
+    await criar(dados) // se falhar, o erro aparece dentro do pop-up
     setModalNova(false)
     avisar('Tarefa criada com sucesso!')
   }
 
-  function salvarRascunho(id, respostas) {
-    const tarefa = tarefas.find((t) => t.id === id)
-    const progresso = calcularProgresso(respostas)
-    // pendente que ganhou resposta passa a "Em andamento"; atrasada continua atrasada
-    const status = tarefa.status === 'pendente' && progresso > 0 ? 'andamento' : tarefa.status
-    atualizar(id, { respostas, progresso, status })
-    avisar('Rascunho salvo com sucesso!')
+  async function aoSalvarRascunho(tarefa, respostas) {
+    setSalvando(true)
+    try {
+      await salvarRascunho(tarefa, respostas)
+      avisar('Rascunho salvo com sucesso!')
+    } catch (e) {
+      avisar(e.message, 'erro')
+    } finally {
+      setSalvando(false)
+    }
   }
 
-  function enviarRespostas(id, respostas) {
-    atualizar(id, { respostas, status: 'concluida', progresso: 100 })
-    voltarLista()
-    avisar('Atividade enviada com sucesso!')
+  async function aoEnviar(tarefa, respostas) {
+    setSalvando(true)
+    try {
+      await enviar(tarefa, respostas)
+      voltarLista()
+      avisar('Atividade enviada com sucesso!')
+    } catch (e) {
+      avisar(e.message, 'erro')
+    } finally {
+      setSalvando(false)
+    }
   }
 
   const tarefaAberta = tela.tipo === 'lista' ? null : tarefas.find((t) => t.id === tela.id)
@@ -98,10 +124,11 @@ function Tarefas() {
             key={`${tela.tipo}-${tarefaAberta.id}`}
             tarefa={tarefaAberta}
             somenteLeitura={tela.tipo === 'ver'}
-            respostasIniciais={tarefaAberta.respostas ?? (tela.tipo === 'ver' ? RESPOSTAS_EXEMPLO : RESPOSTAS_VAZIAS)}
+            respostasIniciais={tela.respostas}
+            salvando={salvando}
             onVoltar={voltarLista}
-            onSalvarRascunho={(respostas) => salvarRascunho(tarefaAberta.id, respostas)}
-            onEnviar={(respostas) => enviarRespostas(tarefaAberta.id, respostas)}
+            onSalvarRascunho={(respostas) => aoSalvarRascunho(tarefaAberta, respostas)}
+            onEnviar={(respostas) => aoEnviar(tarefaAberta, respostas)}
           />
         ) : (
         <>
@@ -120,7 +147,14 @@ function Tarefas() {
         <AbasComContagem abas={abas} ativa={abaAtiva} onMudar={setAbaAtiva} painel={ID_PAINEL} className="-mx-5 px-5 sm:mx-0 sm:px-0" />
 
         <div id={ID_PAINEL} role="tabpanel" aria-labelledby={`aba-${abaAtiva}`} className="flex flex-col gap-3">
-          {visiveis.length > 0 ? (
+          {carregando ? (
+            <p role="status" className="rounded-xl bg-branco px-4 py-8 text-center text-[13px] text-secundaria">Carregando tarefas...</p>
+          ) : erro ? (
+            <div role="alert" className="flex flex-col items-center gap-3 rounded-xl bg-branco px-4 py-8 text-center">
+              <p className="text-[13px] text-erro">{erro}</p>
+              <Button type="button" variante="suave" larguraAuto className="px-4 rounded-xl! text-[14px]!" onClick={recarregar}>Tentar novamente</Button>
+            </div>
+          ) : visiveis.length > 0 ? (
             visiveis.map((tarefa) => <CartaoTarefa key={tarefa.id} tarefa={tarefa} onAcao={aoAcionar} />)
           ) : (
             <p className="rounded-xl bg-branco px-4 py-8 text-center text-[13px] text-secundaria">Nenhuma tarefa nesta aba.</p>
@@ -131,7 +165,7 @@ function Tarefas() {
       </div>
 
       <ModalNovaTarefa aberto={modalNova} onFechar={() => setModalNova(false)} onCriar={criarTarefa} />
-      <Toast aberto={aviso.aberto} mensagem={aviso.mensagem} onFechar={fecharAviso} />
+      <Toast aberto={aviso.aberto} tipo={aviso.tipo} mensagem={aviso.mensagem} onFechar={fecharAviso} />
     </div>
   )
 }

@@ -4,8 +4,10 @@
 //   - preencher (frame "Preencher tarefa"): "Salvar rascunho" e "Enviar resposta".
 //     Ao enviar, valida os campos obrigatórios e abre o modal "Confirmar envio".
 //   - somenteLeitura (frame "Ver Resposta"): campos travados com as respostas.
-// Props: tarefa, respostasIniciais, somenteLeitura,
+// As perguntas vêm da própria tarefa (tarefa.perguntas, carregadas da API).
+// Props: tarefa, respostasIniciais, somenteLeitura, salvando,
 //        onVoltar(), onSalvarRascunho(respostas), onEnviar(respostas)
+// Tipos de pergunta: emocoes | unica | multipla | texto | escala
 // ============================================================
 import { useId, useState } from 'react'
 import Button from '../../../../components/Button'
@@ -15,7 +17,7 @@ import OpcaoSelecionavel from '../../../../components/OpcaoSelecionavel'
 import ModalConfirmarEnvio from './ModalConfirmarEnvio'
 import { STATUS } from './statusTarefa'
 import { IconeEnviar, IconeRelogio, IconeSalvar, IconeSetaEsquerda } from './iconesTarefas'
-import { PERGUNTAS, respondida } from './perguntasMock'
+import { respondida } from './tarefasUtils'
 
 const MSG_OBRIGATORIA = 'Responda esta pergunta para enviar.'
 
@@ -31,7 +33,7 @@ function Pergunta({ numero, pergunta, valor, erro, somenteLeitura, onChange }) {
         {obrigatoria && <span className="sr-only"> (obrigatória)</span>}
       </h2>
 
-      {tipo === 'escolha' && (
+      {tipo === 'emocoes' && (
         <div role="radiogroup" aria-labelledby={idTitulo} className="grid grid-cols-3 gap-3">
           {pergunta.opcoes.map((op) => (
             <OpcaoSelecionavel
@@ -49,21 +51,40 @@ function Pergunta({ numero, pergunta, valor, erro, somenteLeitura, onChange }) {
         </div>
       )}
 
+      {tipo === 'unica' && (
+        <div role="radiogroup" aria-labelledby={idTitulo} className="flex flex-col gap-3">
+          {pergunta.opcoes.map((op) => (
+            <label key={op.id} className={`flex items-center gap-2 text-[12px] text-texto ${somenteLeitura ? '' : 'cursor-pointer'}`}>
+              <input
+                type="radio"
+                name={`pergunta-${pergunta.id}`}
+                className="h-4 w-4 accent-primaria"
+                checked={valor === op.id}
+                aria-disabled={somenteLeitura || undefined}
+                onClick={(e) => { if (somenteLeitura) e.preventDefault() }}
+                onChange={() => { if (!somenteLeitura) onChange(op.id) }}
+              />
+              {op.rotulo}
+            </label>
+          ))}
+        </div>
+      )}
+
       {tipo === 'multipla' && (
         <div role="group" aria-labelledby={idTitulo} className="flex flex-col gap-3">
           {pergunta.opcoes.map((op) => {
-            const marcado = valor.includes(op)
+            const marcado = valor.includes(op.id)
             return (
-              <label key={op} className={`flex items-center gap-2 text-[12px] text-texto ${somenteLeitura ? '' : 'cursor-pointer'}`}>
+              <label key={op.id} className={`flex items-center gap-2 text-[12px] text-texto ${somenteLeitura ? '' : 'cursor-pointer'}`}>
                 <input
                   type="checkbox"
                   className="h-4 w-4 accent-primaria"
                   checked={marcado}
                   aria-disabled={somenteLeitura || undefined}
                   onClick={(e) => { if (somenteLeitura) e.preventDefault() }}
-                  onChange={() => { if (!somenteLeitura) onChange(marcado ? valor.filter((v) => v !== op) : [...valor, op]) }}
+                  onChange={() => { if (!somenteLeitura) onChange(marcado ? valor.filter((v) => v !== op.id) : [...valor, op.id]) }}
                 />
-                {op}
+                {op.rotulo}
               </label>
             )
           })}
@@ -114,7 +135,8 @@ function Pergunta({ numero, pergunta, valor, erro, somenteLeitura, onChange }) {
   )
 }
 
-export default function FormularioTarefa({ tarefa, respostasIniciais, somenteLeitura = false, onVoltar, onSalvarRascunho, onEnviar }) {
+export default function FormularioTarefa({ tarefa, respostasIniciais, somenteLeitura = false, salvando = false, onVoltar, onSalvarRascunho, onEnviar }) {
+  const perguntas = tarefa.perguntas
   const [respostas, setRespostas] = useState(respostasIniciais)
   const [erros, setErros] = useState({})
   const [confirmando, setConfirmando] = useState(false)
@@ -127,7 +149,7 @@ export default function FormularioTarefa({ tarefa, respostasIniciais, somenteLei
 
   // valida os obrigatórios; se faltar algum, mostra o erro e leva a tela até o primeiro
   function aoEnviar() {
-    const faltando = PERGUNTAS.filter((p) => p.obrigatoria && !respondida(p, respostas))
+    const faltando = perguntas.filter((p) => p.obrigatoria && !respondida(p, respostas))
     if (faltando.length > 0) {
       setErros(Object.fromEntries(faltando.map((p) => [p.id, true])))
       document.querySelector(`[data-pergunta="${faltando[0].id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -159,7 +181,17 @@ export default function FormularioTarefa({ tarefa, respostasIniciais, somenteLei
         <Selo tom={config.tom}>{config.rotulo}</Selo>
       </Card>
 
-      {PERGUNTAS.map((pergunta, i) => (
+      {tarefa.instrucoes && (
+        <Card as="section" className="p-5">
+          <p className="whitespace-pre-line text-[12px] leading-normal text-texto">{tarefa.instrucoes}</p>
+        </Card>
+      )}
+
+      {perguntas.length === 0 && (
+        <p className="rounded-xl bg-branco px-4 py-8 text-center text-[13px] text-secundaria">Esta tarefa não tem perguntas.</p>
+      )}
+
+      {perguntas.map((pergunta, i) => (
         <Pergunta
           key={pergunta.id}
           numero={i + 1}
@@ -181,11 +213,11 @@ export default function FormularioTarefa({ tarefa, respostasIniciais, somenteLei
         </div>
       ) : (
         <div className="flex flex-wrap gap-3">
-          <Button type="button" variante="suave" larguraAuto className="px-4" onClick={() => onSalvarRascunho(respostas)}>
+          <Button type="button" variante="suave" larguraAuto carregando={salvando} className="px-4" onClick={() => onSalvarRascunho(respostas)}>
             <IconeSalvar tamanho={13} />
             Salvar rascunho
           </Button>
-          <Button type="button" larguraAuto className="px-4" onClick={aoEnviar}>
+          <Button type="button" larguraAuto carregando={salvando} className="px-4" onClick={aoEnviar}>
             <IconeEnviar tamanho={13} />
             Enviar resposta
           </Button>

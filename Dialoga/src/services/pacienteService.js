@@ -127,14 +127,16 @@ export async function requisicao(caminho, { token, method = 'GET', body, signal,
 
     // IMPORTANTE: o back compara o Content-Type exatamente com "application/json".
     // Não acrescente "; charset=utf-8", senão a API responde 415.
-    if (body !== undefined) headers['Content-Type'] = 'application/json'
+    // Com FormData (upload de arquivo) o navegador define o Content-Type sozinho, com o boundary.
+    const ehFormData = typeof FormData !== 'undefined' && body instanceof FormData
+    if (body !== undefined && !ehFormData) headers['Content-Type'] = 'application/json'
 
     let resposta
     try {
         resposta = await fetch(`${API_URL}${caminho}`, {
             method,
             headers,
-            body: body !== undefined ? JSON.stringify(body) : undefined,
+            body: body === undefined ? undefined : ehFormData ? body : JSON.stringify(body),
             signal,
         })
     } catch (erro) {
