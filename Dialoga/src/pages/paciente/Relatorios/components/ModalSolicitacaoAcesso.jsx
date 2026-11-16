@@ -20,12 +20,13 @@
 // Para recomeçar com as marcações da solicitação, o pai troca a "key" ao abrir.
 // ============================================================
 import { useState } from 'react'
+import AvatarIniciais from '../../../../components/AvatarIniciais'
 import Button from '../../../../components/Button'
 import { IconeCheck } from '../../../../components/Icones'
 import Modal from '../../../../components/Modal'
 import Selo from '../../../../components/Selo'
 import { AJUSTE_SELO_PENDENTE, AVATAR_PENDENTE } from './estilosRelatorios'
-import { INDICADORES_ACESSO, iniciaisSolicitacao } from './relatoriosMock'
+import { INDICADORES_ACESSO, nomeAvatarSolicitacao } from './relatoriosMock'
 
 // medidas do Figma: 351px no mobile, cabeçalho de 63px com título de 16px e X de 18px,
 // corpo com 12px nas laterais e rodapé com os dois botões dividindo a largura.
@@ -81,9 +82,9 @@ export default function ModalSolicitacaoAcesso({ aberto, solicitacao, onFechar, 
           <>
             {/* profissional */}
             <div className="flex items-center gap-3 pr-px">
-              <span aria-hidden="true" className={AVATAR_PENDENTE}>
-                {iniciaisSolicitacao(solicitacao.nome)}
-              </span>
+              <div className={AVATAR_PENDENTE}>
+                <AvatarIniciais nome={nomeAvatarSolicitacao(solicitacao.nome)} />
+              </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[14px] font-bold leading-5 text-texto">{solicitacao.nome}</p>
                 <p className="text-[12px] leading-4 text-secundaria">{solicitacao.especialidade}</p>

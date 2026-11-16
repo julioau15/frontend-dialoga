@@ -13,6 +13,7 @@
 // Só visual: dados fixos (mock) guardados no estado da tela, sem API.
 // ============================================================
 import { useCallback, useState } from 'react'
+import AvatarIniciais from '../../../../components/AvatarIniciais'
 import Card from '../../../../components/Card'
 import Selo from '../../../../components/Selo'
 import Toast from '../../../../components/Toast'
@@ -20,7 +21,7 @@ import CabecalhoCartao from '../../../profissional/PerfilPaciente/components/Cab
 import ModalSolicitacaoAcesso from './ModalSolicitacaoAcesso'
 import { AJUSTE_SELO_DECIDIDO, AJUSTE_SELO_PENDENTE, AJUSTE_TOAST, AVATAR_PENDENTE, AVATAR_RESPONDIDA } from './estilosRelatorios'
 import { IconeTarefa } from './iconesRelatorios'
-import { SOLICITACOES_MOCK, iniciaisSolicitacao } from './relatoriosMock'
+import { SOLICITACOES_MOCK, nomeAvatarSolicitacao } from './relatoriosMock'
 
 // avisos depois de responder
 const AVISOS = {
@@ -60,9 +61,9 @@ function Linha({ solicitacao }) {
   return (
     <>
       {/* respondida: avatar de 36px no mobile e no tablet (Figma) */}
-      <span aria-hidden="true" className={pendente ? AVATAR_PENDENTE : AVATAR_RESPONDIDA}>
-        {iniciaisSolicitacao(nome)}
-      </span>
+      <div className={pendente ? AVATAR_PENDENTE : AVATAR_RESPONDIDA}>
+        <AvatarIniciais nome={nomeAvatarSolicitacao(nome)} />
+      </div>
       <div className="min-w-0 flex-1 text-left">
         <p className={`text-[14px] leading-5 text-texto ${pendente ? 'font-bold' : 'font-semibold xl:font-bold'}`}>{nome}</p>
         <div className="flex items-center justify-between gap-2">
