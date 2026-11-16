@@ -18,7 +18,8 @@ import { CATEGORIAS_NOTIFICACAO } from '../../services/notificacoesRecebidasExem
 
 // Exibe uma notificação recebida
 export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 'ver', onMarcarLida }) {
-  const categoria = CATEGORIAS_NOTIFICACAO[notificacao.categoria]
+  // categoria desconhecida usa a aparência de "Sistema"
+  const categoria = CATEGORIAS_NOTIFICACAO[notificacao.categoria] ?? CATEGORIAS_NOTIFICACAO.sistema
 
   return (
     <Card as="article" className={`relative flex gap-3 p-4 ${notificacao.lida ? '' : 'border-borda-forte!'}`}>
@@ -49,7 +50,7 @@ export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 've
           {categoria.rotulo}
         </span>
 
-        <p className="mt-1.5 text-[12px] text-secundaria">{notificacao.descricao}</p>
+        {notificacao.descricao && <p className="mt-1.5 text-[12px] text-secundaria">{notificacao.descricao}</p>}
 
         {/* Rodapé com a data e as ações */}
         <div className="mt-2 flex items-center justify-between gap-3">

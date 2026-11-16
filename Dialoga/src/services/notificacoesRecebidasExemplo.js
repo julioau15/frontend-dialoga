@@ -1,8 +1,10 @@
 // ============================================================
 // services/notificacoesRecebidasExemplo.js
 // Dados fixos das notificações recebidas pelo paciente e pelo profissional
-// (sem integração). Cada item tem { id, categoria, titulo, descricao, data, lida };
+// (exemplos do layout). Cada item tem { id, categoria, titulo, descricao, data, lida };
 // a data já vem formatada como texto.
+// As páginas de Notificações usam a API (services/notificacoesService.js);
+// daqui elas aproveitam só o CATEGORIAS_NOTIFICACAO.
 // ============================================================
 
 // Aparência e destino de cada categoria de notificação:
@@ -13,6 +15,10 @@ export const CATEGORIAS_NOTIFICACAO = {
   agenda: { rotulo: 'Agenda', emoji: '📅', fundo: 'bg-info-fundo', rota: 'agenda' },
   paciente: { rotulo: 'Paciente', emoji: '👤', fundo: 'bg-sucesso-fundo', rota: 'pacientes' },
   tratamento: { rotulo: 'Tratamento', emoji: '💊', fundo: 'bg-alerta-fundo', rota: 'tratamentos' },
+  // vínculo recebido pelo paciente
+  profissional: { rotulo: 'Profissional', emoji: '👤', fundo: 'bg-sucesso-fundo', rota: 'profissionais' },
+  // avisos gerais e categorias sem tela própria
+  sistema: { rotulo: 'Sistema', emoji: '🔔', fundo: 'bg-fundo-suave', rota: 'dashboard' },
 }
 
 // Notificações recebidas pelo paciente, da mais nova para a mais antiga

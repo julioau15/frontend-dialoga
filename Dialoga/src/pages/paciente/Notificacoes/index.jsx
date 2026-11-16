@@ -6,22 +6,22 @@
 // Os cartões têm chip e "Ver →" em todas as larguras. A partir de 768px a
 // engrenagem abre o modal de configurações e cada cartão não lido ganha
 // também "Marcar como lida"; abaixo disso a engrenagem leva à tela de configurações.
-// Dados fixos, sem integração.
+// Carrega as notificações na API e marca como lidas (GET/PUT /notificacoes).
 // Rota: /paciente/notificacoes
 // ============================================================
 import { useState } from 'react'
 import AbasNotificacoes from '../../../components/AbasNotificacoes'
+import Button from '../../../components/Button'
 import CabecalhoNotificacoes from '../../../components/CabecalhoNotificacoes'
 import CartaoNotificacao from '../../../components/CartaoNotificacao'
 import NotificacoesVazias from '../../../components/NotificacoesVazias'
 import Toast from '../../../components/Toast'
 import { useNotificacoes } from '../../../hooks/useNotificacoes'
-import { NOTIFICACOES_PACIENTE } from '../../../services/notificacoesRecebidasExemplo'
 import ModalConfiguracoesNotificacao from './components/ModalConfiguracoesNotificacao'
 
 // Exibe a página de Notificações do paciente
 function Notificacoes() {
-  const notificacoes = useNotificacoes(NOTIFICACOES_PACIENTE)
+  const notificacoes = useNotificacoes('paciente')
   // Abertura do modal de configurações (Desktop e Tablet)
   const [modalAberto, setModalAberto] = useState(false)
 
@@ -43,7 +43,20 @@ function Notificacoes() {
             onMudar={notificacoes.mudarAba}
             parentesesNoDesktop
           >
-            {notificacoes.itens.length > 0 ? (
+            {notificacoes.carregando ? (
+              // Enquanto as notificações chegam da API
+              <p role="status" className="py-6 text-center text-[13px] text-secundaria">
+                Carregando notificações...
+              </p>
+            ) : notificacoes.erroCarregar ? (
+              // Falha ao buscar: mostra o erro e permite tentar de novo
+              <div role="alert" className="flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-5">
+                <p className="text-[14px] text-erro">{notificacoes.erroCarregar}</p>
+                <Button type="button" variante="suave" larguraAuto className="h-10" onClick={notificacoes.recarregar}>
+                  Tentar novamente
+                </Button>
+              </div>
+            ) : notificacoes.itens.length > 0 ? (
               <div className="flex flex-col gap-3">
                 {notificacoes.itens.map((item) => (
                   <CartaoNotificacao
@@ -70,7 +83,12 @@ function Notificacoes() {
           onSalvar={() => notificacoes.mostrarToast('Preferências salvas!')}
         />
 
-        <Toast aberto={notificacoes.toast.aberto} mensagem={notificacoes.toast.mensagem} onFechar={notificacoes.fecharToast} />
+        <Toast
+          aberto={notificacoes.toast.aberto}
+          tipo={notificacoes.toast.tipo}
+          mensagem={notificacoes.toast.mensagem}
+          onFechar={notificacoes.fecharToast}
+        />
       </section>
     </div>
   )
