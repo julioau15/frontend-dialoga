@@ -10,6 +10,9 @@
 //     profissional fora da plataforma entra no acompanhamento atual com o toast "Profissional
 //     adicionado!"; achado pelo CPF, o vínculo é pedido na API, abre o pop-up "Profissional
 //     encontrado" e ele aparece como "Pendente" até confirmar (RN100);
+//   - solicitação recebida (o profissional convidou o paciente): aparece primeiro no acompanhamento
+//     atual, com o selo "Solicitação recebida" e os botões "Aceitar" (vira Ativo, toast verde
+//     "Solicitação aceita!") e "Recusar" (vai para o Histórico, toast vermelho "Solicitação recusada.");
 //   - lixeira abre o pop-up de exclusão; ao confirmar, o vínculo vira "Inativo" (não é apagado,
 //     RN101), o profissional vai para o Histórico e aparece o toast "Profissional removido do
 //     acompanhamento atual." (RF326, RF327); falha da API mostra o toast vermelho;
@@ -42,12 +45,13 @@ const TOAST_FECHADO = { aberto: false, tipo: 'sucesso', mensagem: '' }
 
 function Profissionais() {
   // lista da API (e os fora da plataforma) e as ações; o hook fala com o service
-  const { profissionais, carregando, erro, recarregar, buscarPorCpf, adicionarExterno, vincular, remover } =
+  const { profissionais, carregando, erro, recarregar, buscarPorCpf, adicionarExterno, vincular, remover, aceitar, recusar } =
     useProfissionaisPaciente()
   // pop-up aberto: null | { tipo: 'novo', chave } | { tipo: 'encontrado', profissional } | { tipo: 'excluir', profissional }
   const [modal, setModal] = useState(null)
   const [toast, setToast] = useState(TOAST_FECHADO)
   const [excluindo, setExcluindo] = useState(false)
+  const [respondendo, setRespondendo] = useState(null) // id do profissional cuja solicitação está sendo respondida
 
   // O Toast usa esta função dentro de um useEffect. Com o useCallback ela
   // não muda a cada render, e o tempo de 4 s do aviso não reinicia sem motivo.
@@ -58,8 +62,9 @@ function Profissionais() {
   // mostra o aviso (verde de sucesso, como no Figma, ou vermelho de erro)
   const avisar = (mensagem, tipo = 'sucesso') => setToast({ aberto: true, tipo, mensagem })
 
-  // acompanhamento atual: ativos e pendentes (aguardando o profissional confirmar)
-  const atuais = profissionais.filter((p) => p.status !== 'inativo')
+  // acompanhamento atual: solicitações recebidas primeiro, depois ativos e pendentes
+  const naoInativos = profissionais.filter((p) => p.status !== 'inativo')
+  const atuais = [...naoInativos.filter((p) => p.recebida), ...naoInativos.filter((p) => !p.recebida)]
   const historico = profissionais.filter((p) => p.status === 'inativo')
 
   // ids da plataforma que já estão no acompanhamento (o pop-up não deixa adicionar de novo)
@@ -89,6 +94,24 @@ function Profissionais() {
     } finally {
       setExcluindo(false)
       fecharModal()
+    }
+  }
+
+  // responde a solicitação recebida: aceitar (vira Ativo) ou recusar (vai para o Histórico)
+  async function responder(profissional, aceitou) {
+    setRespondendo(profissional.id)
+    try {
+      if (aceitou) {
+        await aceitar(profissional)
+        avisar('Solicitação aceita!')
+      } else {
+        await recusar(profissional)
+        avisar('Solicitação recusada.', 'erro') // vermelho, como o "Solicitação recusada." dos Relatórios
+      }
+    } catch (e) {
+      avisar(e.message, 'erro')
+    } finally {
+      setRespondendo(null)
     }
   }
 
@@ -140,7 +163,14 @@ function Profissionais() {
             </h2>
             <div className="mt-3 flex flex-col gap-2.5 lg:mt-[13px] lg:gap-3.5">
               {atuais.map((p) => (
-                <CartaoProfissional key={p.id} profissional={p} onExcluir={(prof) => setModal({ tipo: 'excluir', profissional: prof })} />
+                <CartaoProfissional
+                  key={p.id}
+                  profissional={p}
+                  onExcluir={(prof) => setModal({ tipo: 'excluir', profissional: prof })}
+                  onAceitar={(prof) => responder(prof, true)}
+                  onRecusar={(prof) => responder(prof, false)}
+                  respondendo={respondendo === p.id}
+                />
               ))}
             </div>
           </section>

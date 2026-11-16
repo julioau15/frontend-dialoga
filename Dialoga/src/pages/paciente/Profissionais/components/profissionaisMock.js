@@ -3,7 +3,7 @@
 // Constantes e funções de texto da tela Profissionais do paciente.
 // Os profissionais vêm da API (services/profissionaisPacienteService.js); aqui ficam só:
 //   PROFISSIONAL_VAZIO  -> formulário vazio do pop-up "Novo profissional"
-//   STATUS_PROFISSIONAL -> texto e tom do selo de cada status (Ativo, Pendente, Inativo)
+//   STATUS_PROFISSIONAL -> texto e tom do selo de cada status (Ativo, Pendente, Solicitação recebida, Inativo)
 //   mascararCpf, formatarDesde, mesAtual -> formatações usadas nos cartões e no pop-up
 // ============================================================
 
@@ -12,9 +12,11 @@ export const PROFISSIONAL_VAZIO = { cpf: '', nome: '', email: '', especialidade:
 
 // status do cartão (tom do componente Selo)
 // pendente: o paciente pediu o vínculo e o profissional ainda não confirmou (RN100)
+// recebida: o profissional convidou o paciente e ele ainda não respondeu (Aceitar/Recusar)
 export const STATUS_PROFISSIONAL = {
   ativo: { rotulo: 'Ativo', tom: 'sucesso' },
   pendente: { rotulo: 'Pendente', tom: 'alerta' },
+  recebida: { rotulo: 'Solicitação recebida', tom: 'alerta' },
   inativo: { rotulo: 'Inativo', tom: 'neutro' },
 }
 

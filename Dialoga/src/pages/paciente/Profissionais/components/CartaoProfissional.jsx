@@ -2,19 +2,26 @@
 // CartaoProfissional
 // Item das seções "Acompanhamento atual" e "Histórico" (RF319), como no Figma:
 //   - avatar com as iniciais (48px), nome;
-//   - selo verde "Na plataforma" (só quem tem conta no Dialoga) e selo do status (Ativo / Inativo);
+//   - selo verde "Na plataforma" (só quem tem conta no Dialoga) e selo do status
+//     (Ativo / Pendente / Solicitação recebida / Inativo);
 //   - especialidade; "Desde [mês] de [ano]" e "Próx. [data]" (só com consulta marcada);
-//   - lixeira no canto direito, só no acompanhamento atual (RF326).
+//   - lixeira no canto direito, só no acompanhamento atual (RF326);
+//   - solicitação recebida (o profissional convidou o paciente): no lugar da lixeira, os botões
+//     "Aceitar" (verde) e "Recusar" (contorno vermelho) embaixo, na largura do cartão.
+//     Mobile e tablet: os dois botões dividem a largura; desktop: à direita, com 160px cada.
 // No mobile, os selos descem para baixo do nome quando não cabem e o "Próx." vai para a linha de baixo.
 // No tablet o texto tem a mesma largura do mobile (205px), para quebrar igual ao frame mobile.
 // O cartão inteiro abre a tela do profissional (/paciente/profissionais/:id); a lixeira fica por cima do link.
 // Props:
-//   profissional -> { id, nome, especialidade, status, naPlataforma, desde, proximaConsulta }
+//   profissional -> { id, nome, especialidade, status, recebida, naPlataforma, desde, proximaConsulta }
 //   onExcluir(profissional) -> abre o pop-up "Excluir profissional" (sem a prop, a lixeira some)
+//   onAceitar(profissional), onRecusar(profissional) -> respostas da solicitação recebida
+//   respondendo -> true enquanto a API responde (os dois botões ficam desabilitados)
 // ============================================================
 import { useId } from 'react'
 import { Link } from 'react-router-dom'
 import AvatarIniciais from '../../../../components/AvatarIniciais'
+import Button from '../../../../components/Button'
 import Card from '../../../../components/Card'
 import { IconeLixeira } from '../../../../components/Icones'
 import Selo from '../../../../components/Selo'
@@ -31,17 +38,21 @@ const BOTAO_ICONE =
   'relative z-10 mt-px mr-0.5 ml-auto grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-lg text-secundaria transition-colors duration-200 ' +
   'hover:bg-erro-fundo hover:text-erro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
-export default function CartaoProfissional({ profissional, onExcluir }) {
+// botões "Aceitar" e "Recusar": 44px de altura, cantos de 12px e texto de 14px em negrito
+// (mesma medida dos botões dos pop-ups desta tela); ficam por cima do link do cartão (z-10)
+const BOTAO_RESPOSTA = 'relative z-10 h-11! rounded-xl! text-[14px]! font-bold! lg:w-40!'
+
+export default function CartaoProfissional({ profissional, onExcluir, onAceitar, onRecusar, respondendo = false }) {
   const idTitulo = useId()
-  const { nome, especialidade, status, naPlataforma, desde, proximaConsulta } = profissional
-  const statusInfo = STATUS_PROFISSIONAL[status] ?? STATUS_PROFISSIONAL.inativo
+  const { nome, especialidade, status, recebida, naPlataforma, desde, proximaConsulta } = profissional
+  const statusInfo = STATUS_PROFISSIONAL[recebida ? 'recebida' : status] ?? STATUS_PROFISSIONAL.inativo
 
   return (
     // relative: base do link "esticado"; ao passar o mouse, o fundo fica lilás bem claro
     <Card
       as="article"
       aria-labelledby={idTitulo}
-      className="relative flex items-start gap-4 px-5 pt-5 pb-[23px] transition-colors duration-200 hover:bg-fundo-suave-2 lg:pt-[19px] lg:pb-5"
+      className="relative flex flex-wrap items-start gap-4 px-5 pt-5 pb-[23px] transition-colors duration-200 hover:bg-fundo-suave-2 lg:pt-[19px] lg:pb-5"
     >
       {/* iniciais dos dois primeiros nomes, sem o título, como no Figma ("Carlos Eduardo Mendes" -> "CE") */}
       <div className={AJUSTE_AVATAR}>
@@ -88,11 +99,38 @@ export default function CartaoProfissional({ profissional, onExcluir }) {
         </p>
       </div>
 
-      {/* RF326: lixeira só nos profissionais do acompanhamento atual */}
-      {onExcluir && (
+      {/* RF326: lixeira só nos profissionais do acompanhamento atual (na solicitação recebida
+          quem responde são os botões Aceitar/Recusar) */}
+      {onExcluir && !recebida && (
         <button type="button" aria-label={`Excluir ${nome}`} onClick={() => onExcluir(profissional)} className={BOTAO_ICONE}>
           <IconeLixeira tamanho={16} className="[stroke-width:1.8]" />
         </button>
+      )}
+
+      {/* solicitação recebida: o paciente aceita ou recusa o convite do profissional */}
+      {recebida && onAceitar && onRecusar && (
+        <div className="grid basis-full grid-cols-2 gap-3 lg:flex lg:justify-end">
+          <Button
+            type="button"
+            variante="sucesso"
+            carregando={respondendo}
+            aria-label={`Aceitar a solicitação de ${nome}`}
+            className={BOTAO_RESPOSTA}
+            onClick={() => onAceitar(profissional)}
+          >
+            Aceitar
+          </Button>
+          <Button
+            type="button"
+            variante="perigo-contorno"
+            carregando={respondendo}
+            aria-label={`Recusar a solicitação de ${nome}`}
+            className={BOTAO_RESPOSTA}
+            onClick={() => onRecusar(profissional)}
+          >
+            Recusar
+          </Button>
+        </div>
       )}
     </Card>
   )
