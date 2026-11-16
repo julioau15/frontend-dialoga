@@ -14,9 +14,14 @@ const chaveExternos = (idUsuario) => `dialoga:profissionais-externos:${idUsuario
 
 export function lerExternos(idUsuario) {
   if (idUsuario == null) throw new Error('Não foi possível identificar o paciente.')
-  const lista = JSON.parse(localStorage.getItem(chaveExternos(idUsuario)) ?? '[]')
-  if (!Array.isArray(lista)) throw new Error('Não foi possível carregar os profissionais deste navegador.')
-  return lista
+  try {
+    const lista = JSON.parse(localStorage.getItem(chaveExternos(idUsuario)) ?? '[]')
+    // só aproveita itens com id e nome; o resto é descartado sem quebrar a tela
+    return Array.isArray(lista) ? lista.filter((p) => p && typeof p === 'object' && p.id != null && p.nome) : []
+  } catch {
+    // dado corrompido ou armazenamento bloqueado: ignora os externos em vez de quebrar a tela
+    return []
+  }
 }
 
 export function salvarExternos(idUsuario, lista) {
