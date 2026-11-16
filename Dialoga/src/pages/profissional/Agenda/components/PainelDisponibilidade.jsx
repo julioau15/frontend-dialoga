@@ -15,6 +15,7 @@ import { faixaDeHorario, siglaDoDia } from '../../../../utils/disponibilidade'
 const SELOS = {
   semanal: { texto: 'Semanal', tom: 'sucesso' },
   unica: { texto: 'Única vez', tom: 'alerta' },
+  periodo: { texto: 'Período', tom: 'alerta' },
 }
 
 export default function PainelDisponibilidade({ itens, onAdicionar, onRemover }) {

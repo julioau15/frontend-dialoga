@@ -1,6 +1,6 @@
 // ============================================================
 // pages/profissional/Agenda
-// Agenda do profissional (só visual, dados fixos e estado local).
+// Agenda do profissional, integrada à API (consultas, pacientes e disponibilidade).
 // Frames: Agenda - Profissional | Nova consulta | Detalhes da consulta |
 //         Editar consulta | Excluir consulta | Consulta excluída |
 //         Disponibilidade - Profissional | Adicionar disponibilidade |
@@ -9,6 +9,8 @@
 // Rota: /profissional/agenda
 // ============================================================
 import { useCallback, useMemo, useState } from 'react'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useAgendaProfissional } from '../../../hooks/useAgendaProfissional'
 import Button from '../../../components/Button'
 import Toast from '../../../components/Toast'
 import TextField from '../../../components/TextField'
@@ -18,25 +20,23 @@ import AbasSegmentadas from '../../../components/AbasSegmentadas'
 import CalendarioMes from '../../../components/CalendarioMes'
 import CartaoConsulta from '../../../components/CartaoConsulta'
 import { IconeCalendarioPequeno, IconeMais, IconeRelogioPequeno } from '../../../components/IconesAgenda'
-import { dataPorExtenso, normalizar } from '../../../utils/datasAgenda'
-import { semanaDe } from '../../../utils/datasAgendaPaciente'
+import { dataPorExtenso, hojeNoBrasil, normalizar } from '../../../utils/datasAgenda'
+import { anoEMes, semanaDe } from '../../../utils/datasAgendaPaciente'
 import FiltroPeriodo from './components/FiltroPeriodo'
 import {
   acharConflito,
+  proximaData,
   diasComDisponibilidade,
   ordenarDisponibilidades,
-  proximaData,
   siglaDoDia,
   faixaDeHorario,
 } from '../../../utils/disponibilidade'
-import { CONSULTAS_MOCK, HOJE } from './components/consultasMock'
 import ModalConsulta from './components/ModalConsulta'
 import ModalDetalhes from './components/ModalDetalhes'
 import ModalExcluir from './components/ModalExcluir'
 import ModalDisponibilidade from './components/ModalDisponibilidade'
 import ModalRemoverDisponibilidade from './components/ModalRemoverDisponibilidade'
 import PainelDisponibilidade from './components/PainelDisponibilidade'
-import { DISPONIBILIDADES_MOCK } from './components/disponibilidadesMock'
 
 const ABAS = [
   { id: 'eventos', rotulo: 'Eventos', icone: <IconeCalendarioPequeno tamanho={12} /> },
@@ -52,15 +52,17 @@ const SEM_CONSULTAS = new Set() // na aba Disponibilidade o calendário não mos
 const ordenar = (lista) => [...lista].sort((a, b) => `${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`))
 
 function Agenda() {
-  const [consultas, setConsultas] = useState(CONSULTAS_MOCK)
+  const { auth } = useAuth()
+  const agenda = useAgendaProfissional(auth?.token)
+  const { consultas, pacientes, disponibilidades } = agenda
+  const [hoje] = useState(hojeNoBrasil) // 'AAAA-MM-DD' de hoje (fuso de São Paulo, igual ao back)
   const [aba, setAba] = useState('eventos')
   const [busca, setBusca] = useState('')
   const [periodo, setPeriodo] = useState('hoje') // 'todos' | 'hoje' | 'semana'
-  const [mesVisivel, setMesVisivel] = useState({ ano: 2026, mes: 8 }) // mes de 0 a 11 (8 = setembro)
-  const [selecionado, setSelecionado] = useState(HOJE)
+  const [mesVisivel, setMesVisivel] = useState(() => anoEMes(hojeNoBrasil())) // mes de 0 a 11
+  const [selecionado, setSelecionado] = useState(hoje)
   // modal aberto: null | { tipo: 'nova' | 'detalhes' | 'editar' | 'excluir', consulta? }
   const [modal, setModal] = useState(null)
-  const [disponibilidades, setDisponibilidades] = useState(DISPONIBILIDADES_MOCK)
   const [modalDisponibilidade, setModalDisponibilidade] = useState(false)
   const [erroDisponibilidade, setErroDisponibilidade] = useState('')
   // disponibilidade aguardando confirmação no pop-up "Remover disponibilidade" (null = fechado)
@@ -89,7 +91,7 @@ function Agenda() {
   const varianteCartao = { todos: 'proxima', hoje: 'dia', semana: 'semana' }[periodo]
   // Próximos atendimentos: só o que ainda não aparece na lista do período acima
   const idsNoPeriodo = useMemo(() => new Set(doPeriodo.map((c) => c.id)), [doPeriodo])
-  const proximas = filtradas.filter((c) => c.data >= HOJE && !idsNoPeriodo.has(c.id))
+  const proximas = filtradas.filter((c) => c.data >= hoje && !idsNoPeriodo.has(c.id))
   const diasComConsulta = useMemo(() => new Set(consultas.map((c) => c.data)), [consultas])
   const listaDisponibilidade = useMemo(() => ordenarDisponibilidades(disponibilidades), [disponibilidades])
   const diasDisponiveis = useMemo(
@@ -105,21 +107,28 @@ function Agenda() {
     })
   }
 
-  // Salvar (nova ou editada): só altera a lista na tela, sem API
+  // Salvar (nova ou editada) na API. Devolve true/false para o pop-up saber se limpa o formulário.
   // continuar = true ("Adicionar +"): mantém o pop-up aberto para cadastrar outra
-  function salvar(dados, { continuar } = {}) {
-    if (modal.tipo === 'editar') {
-      setConsultas((lista) => lista.map((c) => (c.id === modal.consulta.id ? { ...c, ...dados } : c)))
-      mostrarToast('sucesso', 'Consulta atualizada!')
-    } else {
-      setConsultas((lista) => [...lista, { id: Date.now(), especialidade: 'Psicologia Clínica', ...dados }])
-      mostrarToast('sucesso', 'Consulta agendada!')
+  async function salvar(dados, { continuar } = {}) {
+    const editando = modal.tipo === 'editar'
+    try {
+      await agenda.salvarConsulta(dados, editando ? modal.consulta.id : undefined)
+    } catch (erro) {
+      mostrarToast('erro', erro.message)
+      return false
     }
+    mostrarToast('sucesso', editando ? 'Consulta atualizada!' : 'Consulta agendada!')
     if (!continuar) fecharModal()
+    return true
   }
 
-  function excluir() {
-    setConsultas((lista) => lista.filter((c) => c.id !== modal.consulta.id))
+  async function excluir() {
+    try {
+      await agenda.excluirConsulta(modal.consulta.id)
+    } catch (erro) {
+      mostrarToast('erro', erro.message)
+      return
+    }
     fecharModal()
     mostrarToast('erro', 'Consulta excluída!')
   }
@@ -131,17 +140,9 @@ function Agenda() {
 
   // Salvar: cria um item por dia escolhido. "Repetir semanalmente" desligado vira
   // "Única vez" na próxima data (hoje inclusive) que cai naquele dia da semana.
-  function salvarDisponibilidade({ dias, inicio, fim, repetir }) {
-    const base = Date.now()
-    const novas = dias.map((dia, i) => ({
-      id: base + i,
-      dia,
-      inicio,
-      fim,
-      tipo: repetir ? 'semanal' : 'unica',
-      ...(repetir ? {} : { data: proximaData(dia, HOJE) }),
-    }))
-
+  async function salvarDisponibilidade({ dias, inicio, fim, repetir }) {
+    // confere conflito na tela antes de chamar a API (o back não confere sobreposição)
+    const novas = dias.map((dia) => ({ dia, inicio, fim, tipo: repetir ? 'semanal' : 'unica', ...(repetir ? {} : { data: proximaData(dia, hoje) }) }))
     const conflito = acharConflito(novas, disponibilidades)
     if (conflito) {
       setErroDisponibilidade(
@@ -150,15 +151,24 @@ function Agenda() {
       return
     }
 
-    setDisponibilidades((lista) => [...lista, ...novas])
+    try {
+      await agenda.adicionarDisponibilidade({ dias, inicio, fim, repetir, hoje })
+    } catch (erro) {
+      setErroDisponibilidade(erro.message)
+      return
+    }
     fecharModalDisponibilidade()
     mostrarToast('sucesso', 'Disponibilidade adicionada!')
   }
 
   // Só remove depois da confirmação no pop-up (RF37, RF40)
-  function removerDisponibilidade() {
-    const { id } = disponibilidadeRemover
-    setDisponibilidades((lista) => lista.filter((d) => d.id !== id))
+  async function removerDisponibilidade() {
+    try {
+      await agenda.removerDisponibilidade(disponibilidadeRemover)
+    } catch (erro) {
+      mostrarToast('erro', erro.message)
+      return
+    }
     setDisponibilidadeRemover(null)
     mostrarToast('sucesso', 'Disponibilidade removida.')
   }
@@ -181,8 +191,21 @@ function Agenda() {
 
         <AbasSegmentadas abas={ABAS} ativa={aba} onMudar={setAba} />
 
+        {agenda.carregando && (
+          <Card as="p" role="status" className="px-4 py-6 text-center text-[12px] text-secundaria">
+            Carregando sua agenda...
+          </Card>
+        )}
+
+        {!agenda.carregando && agenda.erro && (
+          <Card role="alert" className="flex flex-col items-center gap-3 px-4 py-6 text-center">
+            <p className="text-[12px] text-erro">{agenda.erro}</p>
+            <Button type="button" larguraAuto variante="suave" onClick={agenda.recarregar}>Tentar novamente</Button>
+          </Card>
+        )}
+
         {/* Mobile: busca/filtro, calendário, lista. Tablet/desktop: calendário à esquerda, busca e lista à direita */}
-        <div className="grid items-start gap-x-5 gap-y-4 md:grid-cols-[256px_1fr] md:grid-rows-[auto_1fr] lg:grid-cols-[280px_1fr]">
+        <div className={`grid items-start gap-x-5 gap-y-4 md:grid-cols-[256px_1fr] md:grid-rows-[auto_1fr] lg:grid-cols-[280px_1fr] ${agenda.carregando || agenda.erro ? 'hidden' : ''}`}>
           <div className="md:col-start-1 md:row-span-2 md:row-start-1">
             <CalendarioMes
               ano={mesVisivel.ano}
@@ -259,9 +282,9 @@ function Agenda() {
         </div>
       </div>
 
-      {modal?.tipo === 'nova' && <ModalConsulta onFechar={fecharModal} onSalvar={salvar} />}
+      {modal?.tipo === 'nova' && <ModalConsulta pacientes={pacientes} hoje={hoje} onFechar={fecharModal} onSalvar={salvar} />}
       {modal?.tipo === 'editar' && (
-        <ModalConsulta modo="editar" consulta={modal.consulta} onFechar={fecharModal} onSalvar={salvar} />
+        <ModalConsulta modo="editar" consulta={modal.consulta} pacientes={pacientes} hoje={hoje} onFechar={fecharModal} onSalvar={salvar} />
       )}
       {modal?.tipo === 'detalhes' && (
         <ModalDetalhes

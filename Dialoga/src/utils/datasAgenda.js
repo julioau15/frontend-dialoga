@@ -56,3 +56,8 @@ export function celulasDoMes(ano, mes) {
 
 // Tira acentos e deixa minúsculo (busca por nome sem se importar com acentos)
 export const normalizar = (texto) => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
+// Data de hoje ('AAAA-MM-DD') no fuso de São Paulo, o mesmo que o back usa para validar "data futura"
+export function hojeNoBrasil() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+}

@@ -2,27 +2,26 @@
 // ModalConsulta
 // Pop-up "Nova consulta" e "Editar consulta" (mesmo formulário).
 // Props:
-//   modo     -> 'nova' | 'editar'
-//   consulta -> dados já preenchidos (só no modo 'editar')
-//   onFechar -> fecha o pop-up (X, fundo escuro, Esc ou Cancelar)
-//   onSalvar -> recebe ({ titulo, paciente, profissional, especialidade, data, hora, anotacoes, lembrete }, { continuar })
+//   modo      -> 'nova' | 'editar'
+//   consulta  -> dados já preenchidos (só no modo 'editar')
+//   pacientes -> pacientes vinculados e ativos [{ idVinculo, idPaciente, nome }]
+//   onFechar  -> fecha o pop-up (X, fundo escuro, Esc ou Cancelar)
+//   onSalvar  -> async ({ titulo, idVinculo, especialidade, data, hora }, { continuar }) => true | false
+//                (true = salvou; false = deu erro e a página já mostrou o aviso, então o formulário fica como está)
 // Rodapé: 'nova' -> [Adicionar +] [Salvar] | 'editar' -> [Cancelar] [Salvar alterações]
 // Obrigatórios: consulta, paciente, data e horário (marcados com *).
 // Paciente: campo com busca (BuscaPaciente); só aceita um nome da lista.
 // Nome do profissional vem do perfil logado e não pode ser editado.
+// Especialidade é opcional: vazia, o back usa a única especialidade do profissional.
+// Anotações e lembrete não estão neste pop-up porque a tbl_consulta ainda não tem essas colunas.
 // ============================================================
 import { useState } from 'react'
 import { useAuth } from '../../../../contexts/AuthContext'
 import Modal from '../../../../components/Modal'
 import Button from '../../../../components/Button'
 import TextField from '../../../../components/TextField'
-import TextAreaField from '../../../../components/TextAreaField'
-import Interruptor from '../../../../components/Interruptor'
-import { IconeMais, IconeSino } from '../../../../components/IconesAgenda'
+import { IconeMais } from '../../../../components/IconesAgenda'
 import BuscaPaciente from './BuscaPaciente'
-import { PACIENTES_MOCK } from './consultasMock'
-
-const ESPECIALIDADE_PADRAO = 'Psicologia Clínica'
 
 const obrigatorio = (texto) => (
   <>
@@ -30,50 +29,46 @@ const obrigatorio = (texto) => (
   </>
 )
 
-export default function ModalConsulta({ modo = 'nova', consulta, onFechar, onSalvar }) {
+export default function ModalConsulta({ modo = 'nova', consulta, pacientes, hoje, onFechar, onSalvar }) {
   const editando = modo === 'editar'
   const { perfil } = useAuth()
   const profissional = perfil?.nome ?? ''
+  const inicial = consulta ? pacientes.find((p) => p.idVinculo === consulta.idVinculo) ?? null : null
   const [titulo, setTitulo] = useState(consulta?.titulo ?? '')
-  const [especialidade, setEspecialidade] = useState(consulta?.especialidade ?? ESPECIALIDADE_PADRAO)
-  const [paciente, setPaciente] = useState(consulta?.paciente ?? '')
+  const [especialidade, setEspecialidade] = useState(consulta?.especialidade ?? '')
+  const [textoPaciente, setTextoPaciente] = useState(consulta?.paciente ?? '')
+  const [paciente, setPaciente] = useState(inicial) // paciente escolhido na lista (null = nenhum)
   const [data, setData] = useState(consulta?.data ?? '')
   const [hora, setHora] = useState(consulta?.hora ?? '')
-  const [anotacoes, setAnotacoes] = useState(consulta?.anotacoes ?? '')
-  const [lembrete, setLembrete] = useState(consulta?.lembrete ?? true)
   const [erros, setErros] = useState({})
+  const [salvando, setSalvando] = useState(false)
 
   // continuar = true ("Adicionar +"): salva, limpa o formulário e mantém o pop-up aberto
-  function salvar(continuar = false) {
+  async function salvar(continuar = false) {
     const encontrados = {}
     if (!titulo.trim()) encontrados.titulo = 'Informe a consulta.'
-    if (!paciente.trim()) encontrados.paciente = 'Informe o paciente.'
-    else if (!PACIENTES_MOCK.includes(paciente.trim())) encontrados.paciente = 'Selecione um paciente da lista.'
+    if (!textoPaciente.trim()) encontrados.paciente = 'Informe o paciente.'
+    else if (!paciente) encontrados.paciente = 'Selecione um paciente da lista.'
     if (!data) encontrados.data = 'Informe a data.'
+    else if (data < hoje) encontrados.data = 'A data não pode ser anterior a hoje.'
     if (!hora) encontrados.hora = 'Informe o horário.'
     setErros(encontrados)
     if (Object.keys(encontrados).length > 0) return
-    onSalvar(
-      {
-        titulo: titulo.trim(),
-        paciente: paciente.trim(),
-        profissional,
-        especialidade: especialidade.trim() || ESPECIALIDADE_PADRAO,
-        data,
-        hora,
-        anotacoes: anotacoes.trim(),
-        lembrete,
-      },
+
+    setSalvando(true)
+    const salvou = await onSalvar(
+      { titulo: titulo.trim(), idVinculo: paciente.idVinculo, especialidade: especialidade.trim(), data, hora },
       { continuar },
     )
-    if (continuar) {
+    setSalvando(false)
+
+    if (salvou && continuar) {
       setTitulo('')
-      setEspecialidade(ESPECIALIDADE_PADRAO)
-      setPaciente('')
+      setEspecialidade('')
+      setTextoPaciente('')
+      setPaciente(null)
       setData('')
       setHora('')
-      setAnotacoes('')
-      setLembrete(true)
     }
   }
 
@@ -87,16 +82,20 @@ export default function ModalConsulta({ modo = 'nova', consulta, onFechar, onSal
       rodape={
         editando ? (
           <>
-            <Button type="button" variante="suave" larguraAuto onClick={onFechar}>Cancelar</Button>
-            <Button type="button" larguraAuto onClick={() => salvar()}>Salvar alterações</Button>
+            <Button type="button" variante="suave" larguraAuto onClick={onFechar} disabled={salvando}>Cancelar</Button>
+            <Button type="button" larguraAuto onClick={() => salvar()} disabled={salvando}>
+              {salvando ? 'Salvando...' : 'Salvar alterações'}
+            </Button>
           </>
         ) : (
           <>
-            <Button type="button" variante="suave" larguraAuto onClick={() => salvar(true)}>
+            <Button type="button" variante="suave" larguraAuto onClick={() => salvar(true)} disabled={salvando}>
               Adicionar
               <IconeMais tamanho={14} />
             </Button>
-            <Button type="button" larguraAuto onClick={() => salvar()}>Salvar</Button>
+            <Button type="button" larguraAuto onClick={() => salvar()} disabled={salvando}>
+              {salvando ? 'Salvando...' : 'Salvar'}
+            </Button>
           </>
         )
       }
@@ -112,8 +111,16 @@ export default function ModalConsulta({ modo = 'nova', consulta, onFechar, onSal
 
         <BuscaPaciente
           label={obrigatorio('Paciente')}
-          value={paciente}
-          onChange={setPaciente}
+          value={textoPaciente}
+          pacientes={pacientes}
+          onChange={(texto) => {
+            setTextoPaciente(texto)
+            setPaciente(null)
+          }}
+          onEscolher={(p) => {
+            setTextoPaciente(p.nome)
+            setPaciente(p)
+          }}
           erro={erros.paciente}
         />
 
@@ -122,25 +129,17 @@ export default function ModalConsulta({ modo = 'nova', consulta, onFechar, onSal
           <div className="[&_input]:cursor-not-allowed [&_input]:text-secundaria">
             <TextField label="Nome do profissional" value={profissional} placeholder="Profissional" disabled readOnly />
           </div>
-          <TextField label="Especialidade" value={especialidade} onChange={(e) => setEspecialidade(e.target.value)} />
+          <TextField
+            label="Especialidade"
+            placeholder="Opcional"
+            value={especialidade}
+            onChange={(e) => setEspecialidade(e.target.value)}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <TextField label={obrigatorio('Data')} type="date" value={data} onChange={(e) => setData(e.target.value)} erro={erros.data} />
+          <TextField label={obrigatorio('Data')} type="date" min={hoje} value={data} onChange={(e) => setData(e.target.value)} erro={erros.data} />
           <TextField label={obrigatorio('Horário')} type="time" value={hora} onChange={(e) => setHora(e.target.value)} erro={erros.hora} />
-        </div>
-
-        <TextAreaField
-          label={<>Anotações <span className="font-normal text-secundaria">(opcional)</span></>}
-          placeholder="Observações sobre a consulta..."
-          value={anotacoes}
-          onChange={(e) => setAnotacoes(e.target.value)}
-        />
-
-        <div className="flex items-center gap-2">
-          <Interruptor ligado={lembrete} onAlternar={setLembrete} rotulo="Lembrete" />
-          <IconeSino tamanho={12} className="text-secundaria" />
-          <span className="text-[11px] font-bold text-texto">Lembrete</span>
         </div>
       </div>
     </Modal>

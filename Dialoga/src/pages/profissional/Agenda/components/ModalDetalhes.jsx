@@ -50,7 +50,7 @@ export default function ModalDetalhes({ consulta, onFechar, onEditar, onExcluir 
           <div className="flex min-w-0 flex-col">
             {titulo && <span className="truncate text-[10px] font-semibold text-primaria">{titulo}</span>}
             <span className="truncate text-[13px] font-extrabold text-texto">{paciente}</span>
-            <span className="text-[10px] text-secundaria">{especialidade}</span>
+            {especialidade && <span className="text-[10px] text-secundaria">{especialidade}</span>}
           </div>
         </div>
 
@@ -59,14 +59,19 @@ export default function ModalDetalhes({ consulta, onFechar, onEditar, onExcluir 
           <Informacao icone={<IconeRelogioPequeno tamanho={10} />} rotulo="Horário">{hora}</Informacao>
         </div>
 
-        <p className="rounded-xl border border-borda px-3 py-4 text-center text-[10px] text-secundaria">
-          {anotacoes || 'Sem anotações para esta consulta.'}
-        </p>
+        {/* anotações e lembrete ainda não existem na tbl_consulta: só aparecem se a consulta trouxer esses campos */}
+        {anotacoes !== undefined && (
+          <p className="rounded-xl border border-borda px-3 py-4 text-center text-[10px] text-secundaria">
+            {anotacoes || 'Sem anotações para esta consulta.'}
+          </p>
+        )}
 
-        <p className="flex items-center gap-1.5 text-[10px] text-secundaria">
-          <IconeSino tamanho={11} className="text-primaria" />
-          {lembrete ? 'Lembrete ativado' : 'Lembrete desativado'}
-        </p>
+        {lembrete !== undefined && (
+          <p className="flex items-center gap-1.5 text-[10px] text-secundaria">
+            <IconeSino tamanho={11} className="text-primaria" />
+            {lembrete ? 'Lembrete ativado' : 'Lembrete desativado'}
+          </p>
+        )}
       </div>
     </Modal>
   )

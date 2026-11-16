@@ -1,21 +1,21 @@
 // ============================================================
 // BuscaPaciente
 // Campo "Paciente" do pop-up Nova/Editar consulta, com busca:
-// ao digitar, mostra até 5 pacientes (mock) cujo nome contém o texto
+// ao digitar, mostra até 5 pacientes vinculados (vindos da API) cujo nome contém o texto
 // (sem diferenciar maiúsculas/acentos). Clique ou Enter escolhe o paciente.
 // Teclado: ↑/↓ navegam, Enter escolhe, Esc fecha só a lista.
-// Props: label, value, onChange(nome), erro
-// TODO: trocar PACIENTES_MOCK pelo useBuscaPaciente quando houver integração.
+// Props: label, value (texto do campo), pacientes ([{ idVinculo, nome }]),
+//        onChange(texto) -> o usuário digitou (a escolha anterior deixa de valer),
+//        onEscolher(paciente) -> o usuário escolheu um da lista, erro
 // ============================================================
 import { useId, useMemo, useState } from 'react'
 import TextField from '../../../../components/TextField'
 import IconeBusca from '../../../../components/IconeBusca'
 import { normalizar } from '../../../../utils/datasAgenda'
-import { PACIENTES_MOCK } from './consultasMock'
 
 const MAX_SUGESTOES = 5
 
-export default function BuscaPaciente({ label, value, onChange, erro }) {
+export default function BuscaPaciente({ label, value, pacientes, onChange, onEscolher, erro }) {
   const idLista = useId()
   const [aberta, setAberta] = useState(false)
   const [ativa, setAtiva] = useState(-1)
@@ -24,15 +24,15 @@ export default function BuscaPaciente({ label, value, onChange, erro }) {
   const sugestoes = useMemo(
     () =>
       termo
-        ? PACIENTES_MOCK.filter((nome) => nome !== value && normalizar(nome).includes(termo)).slice(0, MAX_SUGESTOES)
+        ? pacientes.filter((p) => p.nome !== value && normalizar(p.nome).includes(termo)).slice(0, MAX_SUGESTOES)
         : [],
-    [termo, value],
+    [termo, value, pacientes],
   )
-  const semResultado = aberta && termo && sugestoes.length === 0 && !PACIENTES_MOCK.includes(value)
+  const semResultado = aberta && termo && sugestoes.length === 0 && !pacientes.some((p) => p.nome === value)
   const mostrarLista = aberta && sugestoes.length > 0
 
-  function escolher(nome) {
-    onChange(nome)
+  function escolher(paciente) {
+    onEscolher(paciente)
     setAberta(false)
     setAtiva(-1)
   }
@@ -85,21 +85,21 @@ export default function BuscaPaciente({ label, value, onChange, erro }) {
           aria-label="Pacientes encontrados"
           className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-borda bg-branco py-1 shadow-[0_4px_12px_var(--color-sombra-media)]"
         >
-          {sugestoes.map((nome, i) => (
+          {sugestoes.map((paciente, i) => (
             <li
-              key={nome}
+              key={paciente.idVinculo}
               id={`${idLista}-${i}`}
               role="option"
               aria-selected={i === ativa}
               // mousedown + preventDefault: escolhe antes do blur fechar a lista
               onMouseDown={(e) => {
                 e.preventDefault()
-                escolher(nome)
+                escolher(paciente)
               }}
               onMouseEnter={() => setAtiva(i)}
               className={`cursor-pointer px-3 py-2 text-[12px] text-texto ${i === ativa ? 'bg-fundo-suave-2' : ''}`}
             >
-              {nome}
+              {paciente.nome}
             </li>
           ))}
         </ul>

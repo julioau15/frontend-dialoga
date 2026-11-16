@@ -4,7 +4,7 @@
 // Cada item da lista é UM dia da semana + horário:
 //   { id, dia, inicio, fim, tipo, data }
 //   dia    -> 0 a 6 (0 = domingo), igual ao Date.getUTCDay()
-//   tipo   -> 'semanal' (repete toda semana) | 'unica' (uma data só)
+//   tipo   -> 'semanal' (repete toda semana) | 'unica' (uma data só) | 'periodo' (semanal entre data e dataFinal)
 //   data   -> 'AAAA-MM-DD' (só no tipo 'unica')
 // Ligação com o back (tbl_dias_da_semana: 1 = Dom ... 7 = Sáb): id_dias_da_semana = dia + 1,
 // tipo_repeticao = 'semanal' | 'unica' e, na data única, data_inicial = data_final = data.
@@ -27,7 +27,7 @@ export const siglaDoDia = (dia) => DIAS.find((d) => d.id === dia)?.sigla ?? ''
 // '08:00' + '12:00' -> '08:00 – 12:00'
 export const faixaDeHorario = (d) => `${d.inicio} – ${d.fim}`
 
-const diaDaSemana = (iso) => {
+export const diaDaSemana = (iso) => {
   const [a, m, d] = iso.split('-').map(Number)
   return new Date(Date.UTC(a, m - 1, d)).getUTCDay()
 }
@@ -53,7 +53,11 @@ export function diasComDisponibilidade(lista, ano, mes) {
   for (let dia = 1; dia <= total; dia++) {
     const iso = montarIso(ano, mes, dia)
     const semana = diaDaSemana(iso)
-    if (lista.some((d) => (d.tipo === 'unica' ? d.data === iso : d.dia === semana))) dias.add(iso)
+    const vale = (d) =>
+      d.tipo === 'unica'
+        ? d.data === iso
+        : d.dia === semana && (d.tipo !== 'periodo' || (iso >= d.data && iso <= d.dataFinal))
+    if (lista.some(vale)) dias.add(iso)
   }
   return dias
 }
