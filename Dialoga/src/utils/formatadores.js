@@ -5,6 +5,12 @@
 
 const PARTICULAS = ['de', 'da', 'do', 'das', 'dos', 'e']
 
+// Tira o título do começo do nome ("Dra. Ana Beatriz Souza" -> "Ana Beatriz Souza").
+// Usado antes do doisPrimeirosNomes, para as iniciais dos nomes da API saírem "AB" (e não "AN").
+export function semTitulo(nome = '') {
+  return nome.trim().replace(/^(dr|dra)\.?\s+/i, '')
+}
+
 export function doisPrimeirosNomes(nome = '') {
   return nome
     .trim()
