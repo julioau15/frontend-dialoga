@@ -18,7 +18,7 @@ import AvatarIniciais from '../../../../components/AvatarIniciais'
 import Card from '../../../../components/Card'
 import { IconeLixeira } from '../../../../components/Icones'
 import Selo from '../../../../components/Selo'
-import { doisPrimeirosNomes, formatarDataBR } from '../../../../utils/formatadores'
+import { doisPrimeirosNomes, formatarDataBR, semTitulo } from '../../../../utils/formatadores'
 import { AJUSTE_SELO } from './estilosProfissionais'
 import { IconeCalendario } from './iconesProfissionais'
 import { STATUS_PROFISSIONAL, formatarDesde } from './profissionaisMock'
@@ -43,9 +43,9 @@ export default function CartaoProfissional({ profissional, onExcluir }) {
       aria-labelledby={idTitulo}
       className="relative flex items-start gap-4 px-5 pt-5 pb-[23px] transition-colors duration-200 hover:bg-fundo-suave-2 lg:pt-[19px] lg:pb-5"
     >
-      {/* iniciais dos dois primeiros nomes, como no Figma ("Carlos Eduardo Mendes" -> "CE") */}
+      {/* iniciais dos dois primeiros nomes, sem o título, como no Figma ("Carlos Eduardo Mendes" -> "CE") */}
       <div className={AJUSTE_AVATAR}>
-        <AvatarIniciais nome={doisPrimeirosNomes(nome).join(' ')} />
+        <AvatarIniciais nome={doisPrimeirosNomes(semTitulo(nome)).join(' ')} />
       </div>
 
       {/* sm até lg (tablet): mesma largura de texto do mobile */}

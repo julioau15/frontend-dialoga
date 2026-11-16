@@ -274,3 +274,34 @@ export function validarNovoAdministrador({ nome, email}, emailsExistentes = []) 
   
   return erros
 }
+// Limites do pop-up "Novo profissional" (paciente)
+export const LIMITES_PROFISSIONAL = {
+  NOME: 100,
+  EMAIL: MAX_EMAIL,
+  ESPECIALIDADE: 100,
+}
+
+// Valido o pop-up "Novo profissional" do paciente (RF320, RF321).
+// CPF e e-mail são opcionais: só confiro o formato quando preenchidos.
+// Devolvo { campo: 'mensagem' }; objeto vazio = tudo certo.
+export function validarNovoProfissional({ cpf, nome, email, especialidade }) {
+  const erros = {}
+  const nomeLimpo = nome.trim()
+  const emailLimpo = email.trim()
+  const especialidadeLimpa = especialidade.trim()
+
+  if (soNumeros(cpf).length > 0 && !cpfValido(cpf)) erros.cpf = 'CPF inválido.'
+
+  if (!nomeLimpo) erros.nome = 'Informe o nome do profissional.'
+  else if (/\d/.test(nomeLimpo)) erros.nome = 'O nome não pode conter números.'
+  else if (nomeLimpo.length > LIMITES_PROFISSIONAL.NOME) erros.nome = `Use no máximo ${LIMITES_PROFISSIONAL.NOME} caracteres.`
+
+  if (emailLimpo && (!REGEX_EMAIL.test(emailLimpo) || emailLimpo.length > LIMITES_PROFISSIONAL.EMAIL))
+    erros.email = 'E-mail inválido.'
+
+  if (!especialidadeLimpa) erros.especialidade = 'Informe a especialidade.'
+  else if (especialidadeLimpa.length > LIMITES_PROFISSIONAL.ESPECIALIDADE)
+    erros.especialidade = `Use no máximo ${LIMITES_PROFISSIONAL.ESPECIALIDADE} caracteres.`
+
+  return erros
+}

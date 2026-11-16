@@ -60,12 +60,14 @@ const EXTRAS = {
 export function buscarPerfilProfissional(id) {
   const basico = buscarProfissional(id)
   if (!basico) return undefined
-  // profissional adicionado na tela (sem dados extras): só o que o paciente informou
-  const extras = EXTRAS[basico.id] ?? {
+  // Os ids agora vêm da API: os extras de exemplo só valem para os perfis de exemplo
+  // (basico.exemplo). Os demais mostram o que veio na lista da tela Profissionais.
+  // TODO: trocar pelos dados da API do perfil, tarefas e tratamentos na task do perfil.
+  const extras = (basico.exemplo && EXTRAS[basico.id]) || {
     nomeExibicao: basico.nome,
     registro: null,
     modalidades: [],
-    especialidades: [basico.especialidade],
+    especialidades: basico.especialidades?.length ? basico.especialidades : [basico.especialidade],
     proximaDisponivel: null,
     tarefas: [],
     tratamentos: [],

@@ -7,19 +7,20 @@
 //   profissional  -> profissional que será excluído (o nome aparece em negrito no texto)
 //   onFechar()    -> X, fundo escuro, Esc ou Cancelar
 //   onConfirmar() -> Excluir
+//   excluindo     -> true enquanto a API responde (o botão fica desabilitado, evita clique duplo)
 // ============================================================
 import Button from '../../../../components/Button'
 import Modal from '../../../../components/Modal'
 import { AJUSTE_MODAL, BOTAO_CLARO, BOTAO_PRINCIPAL } from './estilosProfissionais'
 
-export default function ModalExcluirProfissional({ profissional, onFechar, onConfirmar }) {
+export default function ModalExcluirProfissional({ profissional, onFechar, onConfirmar, excluindo = false }) {
   const rodape = (
     <>
       <Button type="button" variante="suave" larguraAuto className={BOTAO_CLARO} onClick={onFechar}>
         Cancelar
       </Button>
-      <Button type="button" variante="perigo" larguraAuto className={BOTAO_PRINCIPAL} onClick={onConfirmar}>
-        Excluir
+      <Button type="button" variante="perigo" larguraAuto carregando={excluindo} className={BOTAO_PRINCIPAL} onClick={onConfirmar}>
+        {excluindo ? 'Excluindo...' : 'Excluir'}
       </Button>
     </>
   )
