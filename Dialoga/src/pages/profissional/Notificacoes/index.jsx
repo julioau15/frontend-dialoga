@@ -4,12 +4,13 @@
 // "Marcar todas" e engrenagem (leva à tela de configurações), abas
 // "Não lidas" e "Histórico" (só as lidas), cartões com chip e "Ver →"
 // e o estado vazio "Tudo em dia!". Carrega as notificações na API e marca como lidas (GET/PUT /notificacoes).
+// Marcação individual disponível em todas as larguras; até 20 cartões por página local.
 // Rota: /profissional/notificacoes
 // ============================================================
 import AbasNotificacoes from '../../../components/AbasNotificacoes'
 import Button from '../../../components/Button'
 import CabecalhoNotificacoes from '../../../components/CabecalhoNotificacoes'
-import CartaoNotificacao from '../../../components/CartaoNotificacao'
+import ListaNotificacoes from '../../../components/ListaNotificacoes'
 import NotificacoesVazias from '../../../components/NotificacoesVazias'
 import Toast from '../../../components/Toast'
 import { useNotificacoes } from '../../../hooks/useNotificacoes'
@@ -25,6 +26,7 @@ function Notificacoes() {
         <CabecalhoNotificacoes
           naoLidas={notificacoes.totalNaoLidas}
           onMarcarTodas={notificacoes.marcarTodas}
+          salvando={notificacoes.salvando}
           rotaConfiguracoes="/profissional/notificacoes/configuracoes"
         />
 
@@ -44,11 +46,13 @@ function Notificacoes() {
                 </Button>
               </div>
             ) : notificacoes.itens.length > 0 ? (
-              <div className="flex flex-col gap-3">
-                {notificacoes.itens.map((item) => (
-                  <CartaoNotificacao key={item.id} notificacao={item} prefixoRota="/profissional" acao="ver" />
-                ))}
-              </div>
+              <ListaNotificacoes
+                key={notificacoes.aba}
+                itens={notificacoes.itens}
+                prefixoRota="/profissional"
+                onMarcarLida={notificacoes.marcarComoLida}
+                salvando={notificacoes.salvando}
+              />
             ) : notificacoes.aba === 'nao-lidas' ? (
               <NotificacoesVazias mensagem="Nenhuma notificação pendente." />
             ) : (

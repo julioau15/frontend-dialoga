@@ -9,15 +9,41 @@
 //   prefixoRota   -> início da rota do "Ver →" (ex.: '/profissional')
 //   acao          -> 'ver': chip e "Ver →" em todas as larguras
 //                    'ver-ou-marcar': chip e "Ver →" em todas as larguras e,
-//                    a partir de 768px, também "Marcar como lida" (só se não lida)
+//                    também "Marcar como lida" em todas as larguras (só se não lida)
 //   onMarcarLida  -> chamado com o id ao clicar em "Marcar como lida"
+//   desabilitado  -> bloqueia a marcação durante uma alteração de leitura
 // ============================================================
 import { Link } from 'react-router-dom'
 import Card from '../Card'
 import { CATEGORIAS_NOTIFICACAO } from '../../services/notificacoesRecebidasExemplo'
 
+const ROTAS_POR_PERFIL = {
+  '/paciente': new Set([
+    'dashboard',
+    'agenda',
+    'tarefas',
+    'tratamentos',
+    'profissionais',
+  ]),
+  '/profissional': new Set([
+    'dashboard',
+    'agenda',
+    'tarefas',
+    'pacientes',
+  ]),
+}
+
+// Usa somente telas existentes no perfil autenticado.
+function resolverDestino(prefixoRota, rota) {
+  const destino = ROTAS_POR_PERFIL[prefixoRota]?.has(rota)
+    ? rota
+    : 'dashboard'
+
+  return `${prefixoRota}/${destino}`
+}
+
 // Exibe uma notificação recebida
-export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 'ver', onMarcarLida }) {
+export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 'ver', onMarcarLida, desabilitado = false }) {
   // categoria desconhecida usa a aparência de "Sistema"
   const categoria = CATEGORIAS_NOTIFICACAO[notificacao.categoria] ?? CATEGORIAS_NOTIFICACAO.sistema
 
@@ -53,16 +79,17 @@ export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 've
         {notificacao.descricao && <p className="mt-1.5 text-[12px] text-secundaria">{notificacao.descricao}</p>}
 
         {/* Rodapé com a data e as ações */}
-        <div className="mt-2 flex items-center justify-between gap-3">
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <p className="text-[11px] text-secundaria">{notificacao.data}</p>
 
-          <div className="flex shrink-0 items-center gap-3">
-            {/* Marca só esta notificação como lida (paciente, a partir de 768px) */}
-            {acao === 'ver-ou-marcar' && !notificacao.lida && (
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {/* Marca só esta notificação como lida nos dois perfis e em todas as larguras. */}
+            {acao === 'ver-ou-marcar' && !notificacao.lida && typeof onMarcarLida === 'function' && (
               <button
                 type="button"
+                disabled={desabilitado}
                 onClick={() => onMarcarLida(notificacao.id)}
-                className="hidden cursor-pointer rounded text-[11px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria md:inline"
+                className="cursor-pointer rounded text-[11px] font-semibold text-primaria hover:underline disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
               >
                 Marcar como lida
               </button>
@@ -70,7 +97,7 @@ export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 've
 
             {/* Leva à tela da categoria */}
             <Link
-              to={`${prefixoRota}/${categoria.rota}`}
+              to={resolverDestino(prefixoRota, categoria.rota)}
               aria-label={`Ver ${notificacao.titulo}`}
               className="rounded text-[11px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
             >

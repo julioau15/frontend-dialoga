@@ -15,7 +15,13 @@ async function listar(token, caminho, chave, signal, mensagemErro) {
   try {
     const dados = await requisicao(caminho, { token, signal, mensagemErro })
     const lista = dados.response?.[chave]
-    return Array.isArray(lista) ? lista : []
+
+    // Uma resposta fora do contrato é erro de integração, não uma lista vazia.
+    if (!Array.isArray(lista)) {
+      throw new Error(mensagemErro || 'O servidor retornou uma lista inválida.')
+    }
+
+    return lista
   } catch (erro) {
     if (erro.status === 404) return []
     throw erro

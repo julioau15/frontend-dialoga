@@ -3,9 +3,9 @@
 // Página de Notificações do paciente: cabeçalho com "N não lidas",
 // "Marcar todas" e engrenagem, abas "Não lidas" e "Histórico" (só as lidas),
 // cartões de notificação e o estado vazio "Tudo em dia!".
-// Os cartões têm chip e "Ver →" em todas as larguras. A partir de 768px a
-// engrenagem abre o modal de configurações e cada cartão não lido ganha
-// também "Marcar como lida"; abaixo disso a engrenagem leva à tela de configurações.
+// Os cartões têm chip, "Ver →" e marcação individual em todas as larguras.
+// A partir de 768px a engrenagem abre o modal de configurações; abaixo disso
+// leva à tela de configurações. A lista pagina localmente em até 20 cartões.
 // Carrega as notificações na API e marca como lidas (GET/PUT /notificacoes).
 // Rota: /paciente/notificacoes
 // ============================================================
@@ -13,7 +13,7 @@ import { useState } from 'react'
 import AbasNotificacoes from '../../../components/AbasNotificacoes'
 import Button from '../../../components/Button'
 import CabecalhoNotificacoes from '../../../components/CabecalhoNotificacoes'
-import CartaoNotificacao from '../../../components/CartaoNotificacao'
+import ListaNotificacoes from '../../../components/ListaNotificacoes'
 import NotificacoesVazias from '../../../components/NotificacoesVazias'
 import Toast from '../../../components/Toast'
 import { useNotificacoes } from '../../../hooks/useNotificacoes'
@@ -32,6 +32,7 @@ function Notificacoes() {
         <CabecalhoNotificacoes
           naoLidas={notificacoes.totalNaoLidas}
           onMarcarTodas={notificacoes.marcarTodas}
+          salvando={notificacoes.salvando}
           rotaConfiguracoes="/paciente/notificacoes/configuracoes"
           onAbrirModal={() => setModalAberto(true)}
         />
@@ -57,17 +58,13 @@ function Notificacoes() {
                 </Button>
               </div>
             ) : notificacoes.itens.length > 0 ? (
-              <div className="flex flex-col gap-3">
-                {notificacoes.itens.map((item) => (
-                  <CartaoNotificacao
-                    key={item.id}
-                    notificacao={item}
-                    prefixoRota="/paciente"
-                    acao="ver-ou-marcar"
-                    onMarcarLida={notificacoes.marcarComoLida}
-                  />
-                ))}
-              </div>
+              <ListaNotificacoes
+                key={notificacoes.aba}
+                itens={notificacoes.itens}
+                prefixoRota="/paciente"
+                onMarcarLida={notificacoes.marcarComoLida}
+                salvando={notificacoes.salvando}
+              />
             ) : notificacoes.aba === 'nao-lidas' ? (
               <NotificacoesVazias mensagem="Nenhuma notificação pendente." />
             ) : (
