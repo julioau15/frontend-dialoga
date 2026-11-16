@@ -9,11 +9,12 @@
 //   children -> conteúdo do modal
 //   largura  -> classe de largura máxima (padrão 'max-w-[375px]')
 //   rodape   -> botões do rodapé (opcional; aparece com uma linha divisória em cima)
+//   bloquearFechamento -> impede X, fundo e Escape durante uma requisição (padrão false)
 //   comDivisores -> true coloca uma linha divisória embaixo do título (estilo do painel admin)
 // ============================================================
 import { useEffect, useId, useRef } from 'react'
 
-export default function Modal({ aberto, titulo, onFechar, children, largura = 'max-w-[375px]', rodape, comDivisores = false }) {
+export default function Modal({ aberto, titulo, onFechar, children, largura = 'max-w-[375px]', rodape, comDivisores = false, bloquearFechamento = false }) {
   const ref = useRef(null)
   const idTitulo = useId()
 
@@ -25,24 +26,33 @@ export default function Modal({ aberto, titulo, onFechar, children, largura = 'm
     if (!aberto && dialog.open) dialog.close()
   }, [aberto])
 
+  // Impede fechar uma confirmação enquanto sua requisição está em andamento.
+  function solicitarFechamento() {
+    if (!bloquearFechamento) onFechar()
+  }
+
   return (
     <dialog
       ref={ref}
       aria-labelledby={idTitulo}
       className={`m-auto w-[calc(100%-2rem)] ${largura} p-0 bg-branco text-texto border border-borda rounded-2xl shadow-[0_8px_24px_var(--color-sombra-media)] backdrop:bg-overlay backdrop:backdrop-blur-[3px]`}
-      onClose={onFechar}
+      onClose={solicitarFechamento}
+      onCancel={(evento) => {
+        if (bloquearFechamento) evento.preventDefault()
+      }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onFechar() // clique no fundo escuro
+        if (e.target === e.currentTarget) solicitarFechamento() // clique no fundo escuro
       }}
     >
       <div className={comDivisores ? 'text-left' : 'p-6 text-left'}>
         <div className={`flex justify-between gap-3 ${comDivisores ? 'items-center px-6 py-4 border-b border-borda' : 'items-start'}`}>
           <h2 className="text-[14px] font-extrabold text-texto" id={idTitulo}>{titulo}</h2>
           <button
-            className="grid place-items-center w-6 h-6 -mt-0.5 -mr-1 border-0 bg-transparent rounded-md text-secundaria cursor-pointer hover:bg-fundo-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+            className="grid place-items-center w-6 h-6 -mt-0.5 -mr-1 border-0 bg-transparent rounded-md text-secundaria cursor-pointer hover:bg-fundo-suave disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
             type="button"
             aria-label="Fechar"
-            onClick={onFechar}
+            onClick={solicitarFechamento}
+            disabled={bloquearFechamento}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
               strokeLinecap="round" aria-hidden="true">
