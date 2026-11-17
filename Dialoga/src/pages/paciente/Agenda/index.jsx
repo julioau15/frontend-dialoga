@@ -1,6 +1,8 @@
 // ============================================================
 // pages/paciente/Agenda
-// Agenda do paciente (só visual, dados fixos e estado local, sem API).
+// Agenda do paciente, ligada à API (hook useAgendaPaciente): consultas, busca de
+// profissional (vínculo ativo), horários livres, agendar e excluir.
+// Estados: carregando e erro (com "Tentar novamente").
 // Frames: Agenda inicial mês / semana / dia | Nova consulta |
 //         Agendamento realizado | Verificando dia agendado |
 //         Excluir consulta | Consulta excluída.
@@ -10,7 +12,8 @@ import { useCallback, useMemo, useState } from 'react'
 import Button from '../../../components/Button'
 import Toast from '../../../components/Toast'
 import { IconeMais } from '../../../components/IconesAgenda'
-import { tituloDoMes } from '../../../utils/datasAgenda'
+import { useAgendaPaciente } from '../../../hooks/useAgendaPaciente'
+import { hojeNoBrasil, tituloDoMes } from '../../../utils/datasAgenda'
 import {
   anoEMes, dataCompacta, intervaloDaSemana, primeiroDiaDoMes, semanaDe, somarDias,
 } from '../../../utils/datasAgendaPaciente'
@@ -19,12 +22,13 @@ import PainelDia from './components/PainelDia'
 import ProximasConsultas from './components/ProximasConsultas'
 import ModalNovaConsulta from './components/ModalNovaConsulta'
 import ModalExcluirConsulta from './components/ModalExcluirConsulta'
-import { CONSULTAS_MOCK, HOJE } from './components/consultasMock'
 
 const ordenar = (lista) => [...lista].sort((a, b) => `${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`))
 
 function Agenda() {
-  const [consultas, setConsultas] = useState(CONSULTAS_MOCK)
+  const agenda = useAgendaPaciente()
+  const { consultas } = agenda
+  const HOJE = useMemo(() => hojeNoBrasil(), []) // hoje no fuso do Brasil, o mesmo que o back usa
   const [visao, setVisao] = useState('mes') // 'mes' | 'semana' | 'dia'
   const [selecionado, setSelecionado] = useState(HOJE) // dia escolhido
   const [ancora, setAncora] = useState(HOJE) // qualquer dia do período mostrado (mês, semana ou dia)
@@ -36,7 +40,7 @@ function Agenda() {
   const { ano, mes } = anoEMes(ancora)
   const diasSemana = semanaDe(ancora)
   const diasComConsulta = useMemo(() => new Set(consultas.map((c) => c.data)), [consultas])
-  const proximas = useMemo(() => ordenar(consultas.filter((c) => c.data >= HOJE)), [consultas])
+  const proximas = useMemo(() => ordenar(consultas.filter((c) => c.data >= HOJE)), [consultas, HOJE])
   const doDia = ordenar(consultas.filter((c) => c.data === selecionado))
 
   const titulo = visao === 'mes' ? tituloDoMes(ano, mes) : visao === 'semana' ? intervaloDaSemana(diasSemana) : dataCompacta(ancora)
@@ -58,17 +62,23 @@ function Agenda() {
     setSelecionado(novo)
   }
 
-  // Salvar / Adicionar outra: só acrescenta na lista da tela, sem API
-  function salvar(dados, { continuar }) {
-    setConsultas((lista) => [...lista, { id: Date.now(), ...dados }])
+  // Salvar / Adicionar outra: grava na API; se ela recusar, o erro volta para o pop-up (que continua aberto)
+  async function salvar(dados, { continuar }) {
+    await agenda.agendar(dados)
     setToast({ aberto: true, tipo: 'sucesso', mensagem: 'Consulta agendada!' })
     if (!continuar) setNovaAberta(false)
   }
 
-  function excluir() {
-    setConsultas((lista) => lista.filter((c) => c.id !== consultaParaExcluir.id))
-    setConsultaParaExcluir(null)
-    setToast({ aberto: true, tipo: 'erro', mensagem: 'Consulta excluída!' })
+  async function excluir() {
+    const consulta = consultaParaExcluir
+    try {
+      await agenda.excluir(consulta)
+      setToast({ aberto: true, tipo: 'erro', mensagem: 'Consulta excluída!' })
+    } catch (e) {
+      setToast({ aberto: true, tipo: 'erro', mensagem: e.message })
+    } finally {
+      setConsultaParaExcluir(null)
+    }
   }
 
   return (
@@ -81,12 +91,20 @@ function Agenda() {
             <h1 className="text-[22px] font-extrabold text-texto">Agenda</h1>
             <p className="text-[12px] text-secundaria">Suas consultas e atendimentos</p>
           </div>
-          <Button type="button" larguraAuto onClick={() => setNovaAberta(true)}>
+          <Button type="button" larguraAuto onClick={() => setNovaAberta(true)} disabled={agenda.carregando || Boolean(agenda.erro)}>
             <IconeMais tamanho={14} />
             Nova consulta
           </Button>
         </header>
 
+        {agenda.carregando ? (
+          <p role="status" className="py-16 text-center text-[13px] text-secundaria">Carregando agenda...</p>
+        ) : agenda.erro ? (
+          <div role="alert" className="flex flex-col items-center gap-3 py-16 text-center">
+            <p className="text-[13px] text-erro">{agenda.erro}</p>
+            <Button type="button" variante="suave" larguraAuto onClick={agenda.recarregar}>Tentar novamente</Button>
+          </div>
+        ) : (
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_312px]">
           <CalendarioAgenda
             visao={visao}
@@ -108,9 +126,17 @@ function Agenda() {
             <ProximasConsultas consultas={proximas} onExcluir={setConsultaParaExcluir} />
           </div>
         </div>
+        )}
       </div>
 
-      {novaAberta && <ModalNovaConsulta onFechar={() => setNovaAberta(false)} onSalvar={salvar} />}
+      {novaAberta && (
+        <ModalNovaConsulta
+          profissionais={agenda.profissionais}
+          buscarHorarios={agenda.horarios}
+          onFechar={() => setNovaAberta(false)}
+          onSalvar={salvar}
+        />
+      )}
       {consultaParaExcluir && (
         <ModalExcluirConsulta consulta={consultaParaExcluir} onFechar={() => setConsultaParaExcluir(null)} onConfirmar={excluir} />
       )}
