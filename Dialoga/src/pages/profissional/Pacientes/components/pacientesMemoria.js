@@ -1,30 +1,23 @@
 // ============================================================
 // pacientesMemoria
-// Lista de pacientes do profissional guardada na memória do navegador
-// (mock, sem API), compartilhada pela lista de Pacientes e pelo perfil:
-//   - um paciente adicionado na lista abre no perfil;
-//   - um paciente removido no perfil sai da lista.
-// Ao recarregar a página, volta tudo ao PACIENTES_MOCK.
-// TODO: na integração, trocar por GET /profissionais/me/pacientes,
-//       POST e DELETE /profissionais/me/pacientes/:id.
+// Cópia da lista de pacientes do profissional guardada na memória do navegador.
+// Quem preenche é a tela Pacientes (hook usePacientesProfissional), depois de ler a API.
+// O perfil do paciente, que ainda não usa a API, lê daqui:
+//   - buscarPaciente(id)  -> dados básicos do paciente aberto pelo cartão da lista;
+//   - removerPaciente(id) -> tira o paciente da cópia ao removê-lo no perfil.
+// Ao recarregar a página a cópia fica vazia até a lista de Pacientes ser aberta de novo.
+// TODO: quando o perfil for integrado, ele busca direto na API e este arquivo deixa de existir.
 // ============================================================
-import { PACIENTES_MOCK } from './pacientesMock'
+let pacientes = []
 
-let pacientes = [...PACIENTES_MOCK]
-
-// cópia da lista atual (na ordem da tela)
-export function listarPacientes() {
-  return [...pacientes]
+// guarda a lista que veio da API (na ordem da tela)
+export function definirPacientes(lista) {
+  pacientes = [...lista]
 }
 
 // paciente pelo id da URL (texto ou número); undefined se não existe
 export function buscarPaciente(id) {
   return pacientes.find((p) => String(p.id) === String(id))
-}
-
-// coloca o paciente novo no topo da lista
-export function guardarPaciente(paciente) {
-  pacientes = [paciente, ...pacientes]
 }
 
 // tira o paciente da lista

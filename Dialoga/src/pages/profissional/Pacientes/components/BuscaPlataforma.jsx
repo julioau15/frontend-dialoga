@@ -13,6 +13,8 @@
 //   valor         -> texto digitado
 //   onMudarValor  -> (texto) => void, a cada tecla
 //   resultados    -> [{ id, nome, email }] já filtrados pelo pop-up
+//   aviso         -> texto no lugar de "Nenhum paciente encontrado" enquanto não há resultado
+//                    (ex.: "Buscando pacientes...", mensagem de erro); null = sem aviso
 //   selecionadoId -> id do paciente escolhido (ou null)
 //   onEscolher    -> (paciente) => void, ao clicar numa opção ou apertar Enter
 //   inputRef      -> ref do <input> (opcional, para o pop-up dar foco)
@@ -23,7 +25,7 @@ import { IconeCheck } from '../../../../components/Icones'
 import { doisPrimeirosNomes } from '../../../../utils/formatadores'
 import CampoPaciente from './CampoPaciente'
 
-export default function BuscaPlataforma({ rotulo, placeholder, valor, onMudarValor, resultados, selecionadoId, onEscolher, inputRef }) {
+export default function BuscaPlataforma({ rotulo, placeholder, valor, onMudarValor, resultados, aviso = null, selecionadoId, onEscolher, inputRef }) {
   const idLista = useId()
   const [aberta, setAberta] = useState(false)
   const [ativo, setAtivo] = useState(-1) // opção em destaque pelo teclado (-1 = nenhuma)
@@ -102,7 +104,7 @@ export default function BuscaPlataforma({ rotulo, placeholder, valor, onMudarVal
         >
           {resultados.length === 0 ? (
             <li role="option" aria-disabled="true" aria-selected="false" className="px-4 py-3 text-[12px] text-secundaria">
-              Nenhum paciente encontrado na plataforma.
+              {aviso ?? 'Nenhum paciente encontrado na plataforma.'}
             </li>
           ) : (
             resultados.map((p, indice) => {

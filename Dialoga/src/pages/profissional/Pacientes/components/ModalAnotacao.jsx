@@ -14,6 +14,8 @@
 //   anotacao     -> nota que está sendo editada, ou null para uma nota nova
 //   nomePaciente -> quando informado (lista de Pacientes), o título vira "Anotar — [nome]"
 //   onFechar     -> chamado no X, no fundo escuro, no Esc ou no "Cancelar"
+//   salvando     -> true enquanto a API grava a nota (desativa "Salvar nota", evita clique duplo)
+//   erro         -> mensagem da API quando não deu para salvar (aparece embaixo do conteúdo)
 //   onSalvar     -> ({ id?, titulo, conteudo }) => void, chamado em "Salvar nota"
 // ============================================================
 import { useId, useRef, useState } from 'react'
@@ -28,7 +30,7 @@ const LIMITE_CONTEUDO = 1000
 // rótulo dos campos: 14px seminegrito, como no Figma
 const ROTULO = 'mb-[5px] text-[14px] font-semibold leading-5 text-texto'
 
-export default function ModalAnotacao({ aberto, anotacao = null, nomePaciente, onFechar, onSalvar }) {
+export default function ModalAnotacao({ aberto, anotacao = null, nomePaciente, salvando = false, erro = '', onFechar, onSalvar }) {
   const idFormulario = useId() // ligo o botão "Salvar nota" (que fica no rodapé) ao formulário
   const idTitulo = useId()
   const idConteudo = useId()
@@ -55,8 +57,8 @@ export default function ModalAnotacao({ aberto, anotacao = null, nomePaciente, o
         Cancelar
       </Button>
       {/* O rodapé fica fora do <form>; com o atributo "form" o botão continua enviando o formulário */}
-      <Button type="submit" form={idFormulario} larguraAuto className={BOTAO_CONFIRMAR}>
-        Salvar nota
+      <Button type="submit" form={idFormulario} larguraAuto carregando={salvando} className={BOTAO_CONFIRMAR}>
+        {salvando ? 'Salvando...' : 'Salvar nota'}
       </Button>
     </>
   )
@@ -94,6 +96,11 @@ export default function ModalAnotacao({ aberto, anotacao = null, nomePaciente, o
             onChange={(e) => setConteudo(e.target.value)}
             className="h-[126px] w-full resize-none rounded-xl border-0 bg-branco px-[17px] py-[13px] text-[14px] leading-5 text-texto shadow-[0_0_0_1px_var(--color-borda)] outline-0 transition-shadow duration-200 placeholder:text-secundaria focus:shadow-[0_0_0_1px_var(--color-primaria),0_0_0_4px_var(--color-primaria-alfa-20)]"
           />
+          {erro && (
+            <p role="alert" className="mt-3 text-[12px] leading-4 font-semibold text-erro">
+              {erro}
+            </p>
+          )}
         </form>
       </Modal>
     </div>

@@ -1,19 +1,21 @@
-﻿// ============================================================
+// ============================================================
 // pages/profissional/Pacientes
-// Lista de pacientes do profissional e pop-up "Adicionar paciente".
-// Só visual: dados fixos (mock), sem API. Rota: /profissional/pacientes
+// Lista de pacientes do profissional e pop-up "Adicionar paciente", ligadas à API.
+// Rota: /profissional/pacientes
 // Frames: "Pacientes - Profissional", "Filtro ativo", "Filtro inativo", "Novo paciente"
 //         e os frames "Pacientes profissional - mobile" correspondentes.
 //   - título "Pacientes", total de ativos e botão "+ Novo paciente" (RF299, RF302);
 //   - busca por nome (sem diferenciar maiúsculas/acentos) e filtro Todos | Ativos | Inativos (RF300, RF301);
 //   - cartão do paciente com avatar, nome, selo "Plataforma", "Desde", próxima consulta,
 //     status e ícone de anotação (RF306);
-//   - pop-up "Adicionar paciente" (RF303, RF304): ao adicionar, abre o perfil do paciente
-//     novo com o toast "Paciente adicionado!" (RF227), como no Figma;
-//   - cartão abre o perfil do paciente; o ícone de anotação abre o pop-up "Anotar — [nome]"
-//     e mostra o toast "Nota adicionada!" (card 1.6.4.3.1.3);
+//   - pop-up "Adicionar paciente" (RF303, RF304): busca o paciente na plataforma e envia o pedido
+//     de vínculo. Na API o paciente precisa aceitar antes, então a tela continua na lista, com o
+//     toast "Solicitação enviada!" e o paciente aparece como "Pendente" (no Figma o perfil abria direto);
+//   - cartão abre o perfil do paciente; o ícone de anotação abre o pop-up "Anotar — [nome]",
+//     grava a nota na API e mostra o toast "Nota adicionada!" (card 1.6.4.3.1.3);
 //   - ao voltar do perfil depois de "Remover paciente", mostra o aviso "Paciente removido.".
-// A lista fica em pacientesMemoria (mock na memória), compartilhada com o perfil.
+// Os dados vêm do hook usePacientesProfissional; o perfil (ainda sem API) lê a cópia em pacientesMemoria.
+// Estados: carregando, erro (com "Tentar novamente") e lista vazia.
 // Busca e filtro valem juntos. Desktop (a partir de 1024px, com o menu lateral),
 // Tablet e Mobile (403px): Tablet segue o layout do mobile.
 // ============================================================
@@ -22,16 +24,14 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import Button from '../../../components/Button'
 import Toast from '../../../components/Toast'
 import { IconeMais } from '../../../components/IconesAgenda'
+import { useAuth } from '../../../contexts/AuthContext'
+import { usePacientesProfissional } from '../../../hooks/usePacientesProfissional'
 import { textoParaBusca } from '../../../utils/formatadores'
 import CampoPaciente from './components/CampoPaciente'
 import FiltroPilulas from './components/FiltroPilulas'
 import ItemPaciente from './components/ItemPaciente'
 import ModalAnotacao from './components/ModalAnotacao'
 import ModalNovoPaciente from './components/ModalNovoPaciente'
-import { salvarAnotacao } from './components/anotacoesMock'
-import { mesAtual } from './components/datasPacientes'
-import { PACIENTES_PLATAFORMA_MOCK } from './components/pacientesMock'
-import { guardarPaciente, listarPacientes } from './components/pacientesMemoria'
 import { FILTROS_STATUS } from './components/statusPaciente'
 
 // botão "+ Novo paciente": 40px de altura, cantos de 12px e texto de 14px em negrito
@@ -52,14 +52,19 @@ function textoAtivos(quantidade) {
 function Pacientes() {
   const navigate = useNavigate()
   const location = useLocation()
-  // lista guardada na memória: já sem o paciente removido no perfil
-  const [pacientes] = useState(listarPacientes)
+  const { auth } = useAuth()
+  // lista vinda da API (recarrega ao abrir a tela, então já vem sem o paciente removido)
+  const lista = usePacientesProfissional(auth?.token)
+  const { pacientes, carregando, erro } = lista
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState('todos')
   const [modalAberto, setModalAberto] = useState(false)
   const [chaveModal, setChaveModal] = useState(0) // troco a key do pop-up para ele abrir sempre limpo
   const [notaPara, setNotaPara] = useState(null) // paciente do pop-up "Anotar" (null = fechado)
   const [chaveNota, setChaveNota] = useState(0) // troco a key do pop-up para ele abrir sempre vazio
+  const [respondendoId, setRespondendoId] = useState(null) // paciente cujo pedido está sendo respondido
+  const [salvandoNota, setSalvandoNota] = useState(false) // nota sendo gravada na API
+  const [erroNota, setErroNota] = useState('') // mensagem da API mostrada dentro do pop-up
   // toast: começa aberto quando o perfil mandou um aviso (ex.: "Paciente removido.")
   const [toast, setToast] = useState(() => ({
     aberto: Boolean(location.state?.aviso),
@@ -92,32 +97,51 @@ function Pacientes() {
     setModalAberto(true)
   }
 
-  // guarda o novo paciente no topo da lista (só na memória, sem API) e abre o perfil dele,
-  // que mostra o toast "Paciente adicionado!" (como no Figma)
-  function adicionarPaciente(novo) {
-    const paciente = {
-      ...novo,
-      id: novo.id ?? `ext-${Date.now()}`,
-      desde: mesAtual(),
-      proximaConsulta: null,
-      status: 'ativo',
-    }
-    guardarPaciente(paciente)
+  // pop-up "Adicionar paciente": envia o pedido de vínculo à API e fecha o pop-up.
+  // Se a API recusar, o erro volta para o pop-up (ele mostra a mensagem e continua aberto).
+  async function adicionarPaciente(novo) {
+    await lista.adicionar(novo)
     setModalAberto(false)
-    navigate(`/profissional/pacientes/${paciente.id}`, { state: { aviso: 'Paciente adicionado!' } })
+    setToast({ aberto: true, tipo: 'sucesso', mensagem: 'Solicitação enviada! O paciente precisa aceitar o vínculo.' })
   }
 
   // ícone de anotação do cartão: abre o pop-up "Anotar — [nome]" daquele paciente
   function abrirNota(paciente) {
     setChaveNota((n) => n + 1)
+    setErroNota('')
     setNotaPara(paciente)
   }
 
-  // salva a nota (ela aparece no perfil do paciente), fecha o pop-up e mostra o toast
-  function salvarNota(dados) {
-    salvarAnotacao(notaPara.id, dados)
-    setNotaPara(null)
-    setToast({ aberto: true, tipo: 'sucesso', mensagem: 'Nota adicionada!' })
+  // Aceitar / Recusar o pedido que o paciente fez
+  async function responderPedido(paciente, aceitar) {
+    setRespondendoId(paciente.id)
+    try {
+      await lista.responderPedido(paciente, aceitar)
+      setToast(
+        aceitar
+          ? { aberto: true, tipo: 'sucesso', mensagem: `${paciente.nome} agora é seu paciente!` }
+          : { aberto: true, tipo: 'erro', mensagem: 'Pedido recusado.' },
+      )
+    } catch (e) {
+      setToast({ aberto: true, tipo: 'erro', mensagem: e.message })
+    } finally {
+      setRespondendoId(null)
+    }
+  }
+
+  // grava a nota na API, fecha o pop-up e mostra o toast; se falhar, o erro aparece no pop-up
+  async function salvarNota(dados) {
+    setSalvandoNota(true)
+    setErroNota('')
+    try {
+      await lista.salvarAnotacao(notaPara.id, dados)
+      setNotaPara(null)
+      setToast({ aberto: true, tipo: 'sucesso', mensagem: 'Nota adicionada!' })
+    } catch (e) {
+      setErroNota(e.message)
+    } finally {
+      setSalvandoNota(false)
+    }
   }
 
   return (
@@ -129,9 +153,9 @@ function Pacientes() {
         <header className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-[24px] font-extrabold leading-[30px] text-texto">Pacientes</h1>
-            <p className="mt-1 text-[14px] leading-5 text-secundaria">{textoAtivos(totalAtivos)}</p>
+            <p className="mt-1 min-h-5 text-[14px] leading-5 text-secundaria">{carregando || erro ? '' : textoAtivos(totalAtivos)}</p>
           </div>
-          <Button type="button" larguraAuto className={BOTAO_NOVO} onClick={abrirModal}>
+          <Button type="button" larguraAuto className={BOTAO_NOVO} onClick={abrirModal} disabled={carregando || Boolean(erro)}>
             <IconeMais tamanho={16} className="[stroke-width:1.8]" />
             Novo paciente
           </Button>
@@ -159,17 +183,40 @@ function Pacientes() {
 
         {/* contagem lida pelos leitores de tela a cada busca ou filtro */}
         <p aria-live="polite" className="sr-only">
-          {visiveis.length === 1 ? '1 paciente encontrado' : `${visiveis.length} pacientes encontrados`}
+          {carregando || erro
+            ? ''
+            : visiveis.length === 1
+              ? '1 paciente encontrado'
+              : `${visiveis.length} pacientes encontrados`}
         </p>
 
-        {visiveis.length > 0 ? (
+        {carregando ? (
+          <p role="status" className="pt-16 text-center text-[13px] text-secundaria">
+            Carregando pacientes...
+          </p>
+        ) : erro ? (
+          // a API não respondeu: mensagem do back (ou de conexão) e nova tentativa
+          <div role="alert" className="flex flex-col items-center pt-16 text-center">
+            <p className="text-[15px] font-bold text-texto">Não foi possível carregar os pacientes</p>
+            <p className="mt-2 text-[13px] text-secundaria">{erro}</p>
+            <Button type="button" variante="contorno" larguraAuto className="mt-5" onClick={lista.recarregar}>
+              Tentar novamente
+            </Button>
+          </div>
+        ) : visiveis.length > 0 ? (
           <ul aria-label="Lista de pacientes" className="mt-[15px] flex flex-col gap-2.5">
             {visiveis.map((paciente) => (
-              <ItemPaciente key={paciente.id} paciente={paciente} onAnotacao={abrirNota} />
+              <ItemPaciente
+                key={paciente.id}
+                paciente={paciente}
+                onAnotacao={abrirNota}
+                onResponder={responderPedido}
+                ocupado={respondendoId === paciente.id}
+              />
             ))}
           </ul>
         ) : (
-          // busca/filtro sem resultado (não há frame no Figma: segue o estado vazio da tela Tarefas)
+          // sem pacientes, ou busca/filtro sem resultado (não há frame no Figma: segue o estado vazio da tela Tarefas)
           <div className="flex flex-col items-center pt-16 text-center">
             <span
               aria-hidden="true"
@@ -177,8 +224,17 @@ function Pacientes() {
             >
               🔍
             </span>
-            <p className="mt-5 text-[15px] font-bold text-texto">Nenhum paciente encontrado</p>
-            <p className="mt-2 text-[13px] text-secundaria">Tente buscar por outro nome ou mudar o filtro.</p>
+            {pacientes.length === 0 ? (
+              <>
+                <p className="mt-5 text-[15px] font-bold text-texto">Você ainda não tem pacientes</p>
+                <p className="mt-2 text-[13px] text-secundaria">Use o botão &quot;Novo paciente&quot; para enviar um pedido de vínculo.</p>
+              </>
+            ) : (
+              <>
+                <p className="mt-5 text-[15px] font-bold text-texto">Nenhum paciente encontrado</p>
+                <p className="mt-2 text-[13px] text-secundaria">Tente buscar por outro nome ou mudar o filtro.</p>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -187,7 +243,7 @@ function Pacientes() {
       <ModalNovoPaciente
         key={chaveModal}
         aberto={modalAberto}
-        pacientesPlataforma={PACIENTES_PLATAFORMA_MOCK}
+        token={auth?.token}
         idsVinculados={idsVinculados}
         onFechar={() => setModalAberto(false)}
         onAdicionar={adicionarPaciente}
@@ -198,6 +254,8 @@ function Pacientes() {
         key={`nota-${chaveNota}`}
         aberto={notaPara !== null}
         nomePaciente={notaPara?.nome}
+        salvando={salvandoNota}
+        erro={erroNota}
         onFechar={() => setNotaPara(null)}
         onSalvar={salvarNota}
       />

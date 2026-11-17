@@ -14,9 +14,3 @@ export function formatarDesde(anoMes = '') {
   const nomeMes = MESES[Number(mes) - 1]
   return ano && nomeMes ? `${nomeMes} de ${ano}` : ''
 }
-
-// mês atual em 'AAAA-MM' (o "Desde" de um paciente recém-adicionado)
-export function mesAtual() {
-  const hoje = new Date()
-  return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`
-}

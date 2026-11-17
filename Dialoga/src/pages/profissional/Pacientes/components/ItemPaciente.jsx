@@ -8,9 +8,13 @@
 // e o nome quebra em no máximo 2 linhas quando falta espaço.
 // O cartão inteiro abre o perfil do paciente (/profissional/pacientes/:id); o ícone de
 // anotação fica por cima do link e abre o pop-up "Anotar — [nome]".
+// Paciente "Pendente" (vínculo ainda não aceito): o cartão não abre o perfil e o ícone de
+// anotação fica desativado, porque o back só libera perfil e anotações depois do aceite.
 // Props:
-//   paciente   -> item de PACIENTES_MOCK (ver pacientesMock.js)
+//   paciente   -> item da lista (ver pacientesProfissionalService.js)
 //   onAnotacao -> (paciente) => void, clique no ícone de anotação
+//   onResponder -> (paciente, aceitar) => void, botões Aceitar/Recusar do pedido feito pelo paciente
+//   ocupado    -> true enquanto a resposta do pedido está sendo enviada
 // ============================================================
 import { Link } from 'react-router-dom'
 import AvatarIniciais from '../../../../components/AvatarIniciais'
@@ -29,14 +33,22 @@ const AJUSTE_AVATAR = 'shrink-0 [&>div]:h-11 [&>div]:w-11 [&>div]:text-[14px] [&
 // selo com 20px de altura, texto de 12px e 8px de espaço nas laterais
 const AJUSTE_SELO = 'inline-flex shrink-0 [&>span]:h-5 [&>span]:gap-0.5 [&>span]:px-2 [&>span]:py-0 [&>span]:text-[12px]'
 
-export default function ItemPaciente({ paciente, onAnotacao }) {
+export default function ItemPaciente({ paciente, onAnotacao, onResponder, ocupado = false }) {
   const status = statusDe(paciente.status)
+  const pendente = paciente.status === 'pendente'
+  const pediuAcesso = pendente && paciente.pedidoPor === 'paciente' // só aqui o profissional decide
+  // subtítulo: "Desde mar. de 2025" ou, se o vínculo ainda não foi aceito, quem precisa aceitar
+  let subtitulo = paciente.desde ? `Desde ${formatarDesde(paciente.desde)}` : ''
+  if (pendente) subtitulo = paciente.pedidoPor === 'paciente' ? 'Pediu para ser seu paciente' : 'Aguardando o aceite do paciente'
 
   return (
     // gap-2 + mr-2 no avatar: 16px entre avatar e nome, e só 8px (mínimo) antes do status,
     // para sobrar mais espaço para o nome no celular
     // relative: base do link "esticado"; ao passar o mouse, o fundo fica lilás bem claro
-    <Card as="li" className="relative flex items-center gap-2 p-[17px] transition-colors duration-200 hover:bg-fundo-suave-2">
+    <Card
+      as="li"
+      className={`relative flex items-center gap-2 p-[17px] transition-colors duration-200 ${pendente ? '' : 'hover:bg-fundo-suave-2'}`}
+    >
       {/* iniciais dos dois primeiros nomes, como no Figma ("João Pedro Alves" -> "JP") */}
       <div className={`mr-2 ${AJUSTE_AVATAR}`}>
         <AvatarIniciais nome={doisPrimeirosNomes(paciente.nome).join(' ')} />
@@ -51,13 +63,18 @@ export default function ItemPaciente({ paciente, onAnotacao }) {
               maior que isso termina em "..." e o nome completo aparece ao passar o mouse (title) */}
           <p title={paciente.nome} className="line-clamp-2 break-words text-[14px] font-bold leading-5 text-texto">
             {/* link "esticado": o after:absolute cobre o cartão todo, então clicar em qualquer
-                parte do cartão abre o perfil (o leitor de tela lê só o nome como link) */}
-            <Link
-              to={`/profissional/pacientes/${paciente.id}`}
-              className="rounded-sm after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
-            >
-              {paciente.nome}
-            </Link>
+                parte do cartão abre o perfil (o leitor de tela lê só o nome como link).
+                Pendente: só o texto, sem link. */}
+            {pendente ? (
+              paciente.nome
+            ) : (
+              <Link
+                to={`/profissional/pacientes/${paciente.id}`}
+                className="rounded-sm after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+              >
+                {paciente.nome}
+              </Link>
+            )}
           </p>
           {paciente.origem === 'plataforma' && (
             <span className={`${AJUSTE_SELO} [&>span]:pl-1.5`}>
@@ -68,7 +85,7 @@ export default function ItemPaciente({ paciente, onAnotacao }) {
             </span>
           )}
         </div>
-        <p className="text-[12px] leading-4 text-secundaria">Desde {formatarDesde(paciente.desde)}</p>
+        {subtitulo && <p className="text-[12px] leading-4 text-secundaria">{subtitulo}</p>}
       </div>
 
       <div className="flex shrink-0 items-center">
@@ -80,16 +97,39 @@ export default function ItemPaciente({ paciente, onAnotacao }) {
           </div>
         )}
 
-        <span className={AJUSTE_SELO}>
-          <Selo tom={status.tom}>{status.rotulo}</Selo>
-        </span>
+        {pediuAcesso ? (
+          <div className="relative z-10 mr-1 flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={ocupado}
+              onClick={() => onResponder?.(paciente, false)}
+              className="h-8 cursor-pointer rounded-lg px-3 text-[12px] font-semibold text-erro shadow-[0_0_0_1px_var(--color-erro-borda)] transition-colors hover:bg-erro-fundo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Recusar
+            </button>
+            <button
+              type="button"
+              disabled={ocupado}
+              onClick={() => onResponder?.(paciente, true)}
+              className="h-8 cursor-pointer rounded-lg bg-primaria px-3 text-[12px] font-semibold text-branco transition-colors hover:bg-primaria-escura focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Aceitar
+            </button>
+          </div>
+        ) : (
+          <span className={AJUSTE_SELO}>
+            <Selo tom={status.tom}>{status.rotulo}</Selo>
+          </span>
+        )}
 
         {/* relative z-10: fica por cima do link do cartão; abre o pop-up "Anotar — [nome]" */}
         <button
           type="button"
           aria-label={`Anotar sobre ${paciente.nome}`}
+          title={pendente ? 'Disponível depois que o vínculo for aceito' : undefined}
+          disabled={pendente}
           onClick={() => onAnotacao?.(paciente)}
-          className="relative z-10 ml-[15px] grid h-8 w-8 cursor-pointer place-items-center rounded-lg text-secundaria transition-colors duration-200 hover:bg-fundo-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+          className="relative z-10 ml-[15px] grid h-8 w-8 cursor-pointer place-items-center rounded-lg text-secundaria transition-colors duration-200 hover:bg-fundo-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
         >
           <IconeAnotacao />
         </button>
