@@ -9,7 +9,7 @@
 // Rodapé:
 //   modo 'novo'   -> "Adicionar outro" (salva, mostra o toast e limpa o formulário) e "Salvar"
 //   modo 'editar' -> só "Salvar alterações" (o Figma não tem "Cancelar"; fecha pelo X)
-// O Figma não mostra erro de campo vazio: sem nome ou dosagem, o clique só leva o foco ao campo vazio.
+// Valida campos e horários sem descartar valores; o foco vai para o primeiro erro.
 // No mobile, o campo Nome cresce para 2 linhas quando o exemplo não cabe em uma (como no Figma).
 // Props:
 //   modo       -> 'novo' | 'editar'
@@ -17,9 +17,12 @@
 //   toast      -> { aberto, tipo, mensagem }: aviso mostrado por cima do pop-up ("Adicionar outro")
 //   onFecharToast() -> fecha esse aviso
 //   onFechar() -> fecha o pop-up
-//   onSalvar(dados, { continuar }) -> devolve { nome, dosagem, frequencia, horarios, lembrete }
+//   onSalvar(dados, { continuar }) -> async; true somente após gravação conferida
+//   processando / bloqueado -> envio em andamento / reconciliação pendente
+//   erroOperacao -> mensagem da operação exibida dentro do dialog
+//   onRecarregar -> consulta a lista antes de permitir novo envio
 // ============================================================
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import Button from '../../../../components/Button'
 import Interruptor from '../../../../components/Interruptor'
 import Modal from '../../../../components/Modal'
@@ -28,7 +31,7 @@ import TextField from '../../../../components/TextField'
 import Toast from '../../../../components/Toast'
 import { AJUSTE_MODAL, AJUSTE_TOAST, BOTAO_CLARO, BOTAO_PRINCIPAL } from './estilosTratamentos'
 import { IconeChevronBaixo, IconeRelogio, IconeSino } from './iconesTratamentos'
-import { FREQUENCIAS, TRATAMENTO_VAZIO, vezesDe } from './tratamentosMock'
+import { FREQUENCIAS, TRATAMENTO_VAZIO, validarTratamento, vezesDe } from '../../../../utils/tratamentos'
 
 const LIMITE_TEXTO = 150 // tamanho das colunas nome_medicamento e dosagem no banco
 
@@ -54,40 +57,67 @@ const Obrigatorio = ({ children }) => (
 
 // copia o tratamento para o formulário (editar) ou começa com os valores do Figma (novo)
 function estadoInicial(tratamento) {
-  if (!tratamento) return TRATAMENTO_VAZIO
-  const vezes = vezesDe(tratamento.frequencia)
+  if (!tratamento) return { ...TRATAMENTO_VAZIO, horarios: [...TRATAMENTO_VAZIO.horarios] }
+  // Preserva a sequência e todos os campos, com precisão de hora e minuto no formulário.
   return {
     nome: tratamento.nome,
     dosagem: tratamento.dosagem,
-    frequencia: tratamento.frequencia || TRATAMENTO_VAZIO.frequencia,
-    horarios: Array.from({ length: vezes }, (_, i) => tratamento.horarios[i] ?? ''),
+    frequencia: tratamento.frequencia,
+    horarios: tratamento.horarios.length ? tratamento.horarios.map((hora) => hora.slice(0, 5)) : [''],
     lembrete: tratamento.lembrete,
   }
 }
 
-// tira horários vazios e repetidos e deixa em ordem ("22:00", "08:00" -> "08:00", "22:00")
-function limparHorarios(horarios) {
-  return [...new Set(horarios.filter(Boolean))].sort()
-}
-
-export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFecharToast, onFechar, onSalvar }) {
+export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFecharToast, onFechar, onSalvar,
+  processando = false, bloqueado = false, erroOperacao = '', onRecarregar }) {
   const editando = modo === 'editar'
   const idFormulario = useId()
   const idFrequencia = useId()
   const idHorario = useId()
+  const idErroHorario = useId()
   const refNome = useRef(null)
   const refDosagem = useRef(null)
+  const refFrequencia = useRef(null)
+  const refPrimeiroHorario = useRef(null)
+  const envioRef = useRef(false)
+  const focoNomeRef = useRef(false)
   const [campos, setCampos] = useState(() => estadoInicial(tratamento))
+  const [erros, setErros] = useState(() => tratamento ? validarTratamento(estadoInicial(tratamento)) : {})
+  const [avisoHorarios, setAvisoHorarios] = useState('')
+  const desabilitado = processando || bloqueado
+
+  // Aguarda o campo ser habilitado no DOM antes de focar após "Adicionar outro".
+  useEffect(() => {
+    if (focoNomeRef.current && !desabilitado) {
+      focoNomeRef.current = false
+      refNome.current?.focus()
+    }
+  }, [campos, desabilitado])
 
   // atualiza um campo de texto
-  const alterar = (campo) => (e) => setCampos((c) => ({ ...c, [campo]: e.target.value }))
+  const alterar = (campo) => (e) => {
+    if (desabilitado || envioRef.current) return
+    setCampos((c) => ({ ...c, [campo]: e.target.value }))
+    setErros((anteriores) => ({ ...anteriores, [campo]: undefined }))
+  }
 
   // nome: o campo tem 2 linhas no mobile, mas não aceita quebra de linha (Enter ou texto colado)
-  const alterarNome = (e) => setCampos((c) => ({ ...c, nome: e.target.value.replace(/\s*\n\s*/g, ' ') }))
+  const alterarNome = (e) => {
+    if (desabilitado || envioRef.current) return
+    setCampos((c) => ({ ...c, nome: e.target.value.replace(/\s*\n\s*/g, ' ') }))
+    setErros((anteriores) => ({ ...anteriores, nome: undefined }))
+  }
 
   // troca a frequência e ajusta a quantidade de campos de horário (mantém os já preenchidos)
   function alterarFrequencia(e) {
+    if (desabilitado || envioRef.current) return
     const frequencia = e.target.value
+    if (campos.horarios.length > vezesDe(frequencia)) {
+      setAvisoHorarios('A frequência foi reduzida. Revise os horários restantes antes de salvar.')
+    } else {
+      setAvisoHorarios('')
+    }
+    setErros((anteriores) => ({ ...anteriores, frequencia: undefined, horarios: undefined }))
     setCampos((c) => ({
       ...c,
       frequencia,
@@ -95,44 +125,54 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
     }))
   }
 
-  // troca o valor do horário na posição "indice"
+  // Formata a digitação em HH:mm e mantém cada horário na sua posição.
   function alterarHorario(indice, valor) {
-    setCampos((c) => ({ ...c, horarios: c.horarios.map((h, i) => (i === indice ? valor : h)) }))
+    if (desabilitado || envioRef.current) return
+    const digitos = valor.replace(/\D/g, '').slice(0, 4)
+    const horario = digitos.length > 2 ? `${digitos.slice(0, 2)}:${digitos.slice(2)}` : digitos
+    setErros((anteriores) => ({ ...anteriores, horarios: undefined }))
+    setCampos((c) => ({ ...c, horarios: c.horarios.map((h, i) => (i === indice ? horario : h)) }))
   }
 
-  // confere os obrigatórios e devolve os dados para a página.
+  // Valida sem perder dados e só limpa após persistência confirmada.
   // continuar = true -> "Adicionar outro": limpa o formulário e mantém o pop-up aberto
-  function enviar(continuar) {
-    if (!campos.nome.trim()) return refNome.current?.focus()
-    if (!campos.dosagem.trim()) return refDosagem.current?.focus()
-
-    onSalvar(
-      {
-        nome: campos.nome.trim(),
-        dosagem: campos.dosagem.trim(),
-        frequencia: campos.frequencia,
-        horarios: limparHorarios(campos.horarios),
-        lembrete: campos.lembrete,
-      },
-      { continuar },
-    )
-    if (continuar) {
-      setCampos(TRATAMENTO_VAZIO)
-      refNome.current?.focus()
+  async function enviar(continuar) {
+    if (desabilitado || envioRef.current) return
+    const novosErros = validarTratamento(campos)
+    setErros(novosErros)
+    if (Object.keys(novosErros).length > 0) {
+      if (novosErros.nome) refNome.current?.focus()
+      else if (novosErros.dosagem) refDosagem.current?.focus()
+      else if (novosErros.frequencia) refFrequencia.current?.focus()
+      else if (novosErros.horarios) refPrimeiroHorario.current?.focus()
+      return
+    }
+    envioRef.current = true
+    try {
+      const sucesso = await onSalvar({ ...campos, nome: campos.nome.trim(),
+        dosagem: campos.dosagem.trim(), horarios: [...campos.horarios] }, { continuar })
+      if (sucesso && continuar) {
+        focoNomeRef.current = true
+        setCampos({ ...TRATAMENTO_VAZIO, horarios: [...TRATAMENTO_VAZIO.horarios] })
+        setErros({})
+        setAvisoHorarios('')
+      }
+    } finally {
+      envioRef.current = false
     }
   }
 
   const rodape = editando ? (
-    <Button type="submit" form={idFormulario} larguraAuto className={`${BOTAO_PRINCIPAL} ${BOTAO_MOBILE}`}>
+    <Button type="submit" form={idFormulario} larguraAuto disabled={desabilitado} className={`${BOTAO_PRINCIPAL} ${BOTAO_MOBILE}`}>
       Salvar alterações
     </Button>
   ) : (
     <>
-      <Button type="button" variante="suave" larguraAuto className={`${BOTAO_CLARO} ${BOTAO_MOBILE}`} onClick={() => enviar(true)}>
+      <Button type="button" variante="suave" larguraAuto className={`${BOTAO_CLARO} ${BOTAO_MOBILE}`} disabled={desabilitado} onClick={() => enviar(true)}>
         Adicionar outro
       </Button>
       {/* O rodapé fica fora do <form>; com o atributo "form" o botão continua enviando o formulário */}
-      <Button type="submit" form={idFormulario} larguraAuto className={`${BOTAO_PRINCIPAL} ${BOTAO_MOBILE}`}>
+      <Button type="submit" form={idFormulario} larguraAuto disabled={desabilitado} className={`${BOTAO_PRINCIPAL} ${BOTAO_MOBILE}`}>
         Salvar
       </Button>
     </>
@@ -146,6 +186,7 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
         largura="max-w-[448px]"
         titulo={editando ? 'Editar tratamento' : 'Novo tratamento'}
         onFechar={onFechar}
+        bloquearFechamento={processando}
         rodape={rodape}
       >
         {/* -my-1: o Modal tem 24px de respiro; no Figma são 20px em cima e embaixo */}
@@ -168,6 +209,8 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
               rows={1}
               required
               maxLength={LIMITE_TEXTO}
+              erro={erros.nome}
+              disabled={desabilitado}
               value={campos.nome}
               onChange={alterarNome}
               onKeyDown={(e) => {
@@ -187,6 +230,8 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
               required
               maxLength={LIMITE_TEXTO}
               autoComplete="off"
+              erro={erros.dosagem}
+              disabled={desabilitado}
               value={campos.dosagem}
               onChange={alterar('dosagem')}
             />
@@ -200,10 +245,17 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
             <div className="relative">
               <select
                 id={idFrequencia}
+                ref={refFrequencia}
+                disabled={desabilitado}
+                aria-invalid={!!erros.frequencia}
+                aria-describedby={erros.frequencia ? `${idFrequencia}-erro` : undefined}
                 value={campos.frequencia}
                 onChange={alterarFrequencia}
                 className="h-[46px] w-full cursor-pointer appearance-none rounded-xl border border-borda bg-branco pr-10 pl-5 text-[14px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
               >
+                {!FREQUENCIAS.some((f) => f.rotulo === campos.frequencia) && (
+                  <option value={campos.frequencia}>{campos.frequencia || 'Frequência não informada'}</option>
+                )}
                 {FREQUENCIAS.map((f) => (
                   <option key={f.rotulo} value={f.rotulo}>
                     {f.rotulo}
@@ -217,8 +269,10 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
             </div>
           </div>
 
+          {erros.frequencia && <p id={`${idFrequencia}-erro`} className="text-[12px] text-erro">{erros.frequencia}</p>}
+
           {/* Horário: um campo de hora para cada vez ao dia */}
-          <fieldset aria-describedby={idHorario}>
+          <fieldset disabled={desabilitado} aria-describedby={erros.horarios ? idErroHorario : undefined}>
             <legend id={idHorario} className="flex items-center gap-1.5 text-[14px] font-semibold leading-5 text-texto">
               <IconeRelogio tamanho={12} className="text-secundaria" />
               Horário
@@ -229,21 +283,26 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
                 return (
                   <label key={indice} className="flex items-center gap-[27px] text-[12px] text-secundaria">
                     <span className="min-w-[41px] shrink-0 whitespace-nowrap">{rotulo}</span>
-                    {/* vazio e sem foco, a caixa fica limpa como no Figma (sem o "--:--" e o relógio
-                        do navegador); clicar em qualquer parte abre o seletor de hora */}
+                    {/* Digitação direta com teclado numérico no celular, sem seletor nativo. */}
                     <input
-                      type="time"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      placeholder="hh:mm"
+                      maxLength={5}
+                      disabled={desabilitado}
+                      ref={indice === 0 ? refPrimeiroHorario : undefined}
+                      aria-invalid={!!erros.horarios}
                       value={hora}
                       onChange={(e) => alterarHorario(indice, e.target.value)}
-                      onClick={(e) => e.currentTarget.showPicker?.()}
-                      className={`h-[38px] w-24 cursor-pointer rounded-[10px] border border-borda bg-branco px-2 text-[14px] outline-0 transition-[border-color,box-shadow] duration-200 focus:border-primaria focus:text-texto focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] [&::-webkit-calendar-picker-indicator]:hidden ${
-                        hora ? 'text-texto' : 'text-transparent'
-                      }`}
+                      className="h-[38px] w-24 rounded-[10px] border border-borda bg-branco px-2 text-[14px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 placeholder:text-secundaria focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
                     />
                   </label>
                 )
               })}
             </div>
+            {erros.horarios && <p id={idErroHorario} className="mt-1.5 text-[12px] text-erro">{erros.horarios}</p>}
+            {avisoHorarios && <p role="status" className="mt-1.5 text-[12px] text-secundaria">{avisoHorarios}</p>}
           </fieldset>
 
           {/* lembrete: liga/desliga (RF346) */}
@@ -251,7 +310,8 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
             <span className={AJUSTE_INTERRUPTOR}>
               <Interruptor
                 ligado={campos.lembrete}
-                onAlternar={(ligado) => setCampos((c) => ({ ...c, lembrete: ligado }))}
+                desabilitado={desabilitado}
+                onAlternar={(ligado) => { if (!desabilitado && !envioRef.current) setCampos((c) => ({ ...c, lembrete: ligado })) }}
                 rotulo="Ativar lembretes e notificações"
               />
             </span>
@@ -260,6 +320,11 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
               Ativar lembretes e notificações
             </span>
           </div>
+          {erros.lembrete && <p className="text-[12px] text-erro">{erros.lembrete}</p>}
+          {erroOperacao && <p role="alert" className="text-[12px] text-erro">{erroOperacao}</p>}
+          {bloqueado && erroOperacao && onRecarregar && (
+            <Button type="button" variante="suave" larguraAuto disabled={processando} onClick={onRecarregar}>Atualizar lista</Button>
+          )}
         </form>
 
         {/* aviso do "Adicionar outro": fica dentro do pop-up para aparecer por cima do fundo escuro */}
