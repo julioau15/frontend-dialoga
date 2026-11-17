@@ -2,11 +2,14 @@
 // DadosGerais
 // Primeiro cartão da Nova tarefa (RF276): Nome da tarefa (obrigatório),
 // Instruções, Paciente e Anexar arquivo (opcionais), como no Figma.
-// O arquivo só guarda o nome (sem upload por enquanto).
+// O arquivo escolhido guarda o nome (arquivo, mostrado na tela) e o próprio File (arquivoFile, enviado à API).
+// Na edição, o anexo que já existe vem só com o nome (anexoUrl guarda o endereço dele).
 // Props:
-//   dados    -> { titulo, instrucoes, arquivo, pacientes }
-//   erros    -> { titulo, pacientes }
-//   onMudar  -> onMudar(campo, valor)
+//   dados      -> { titulo, instrucoes, arquivo, arquivoFile, anexoUrl, pacientes }
+//   erros      -> { titulo, pacientes }
+//   onMudar    -> onMudar(campo, valor)
+//   pacientes  -> pacientes que podem receber tarefa: [{ id, nome }] (ver SeletorPacientes)
+//   carregandoPacientes, erroPacientes -> estado da busca dessa lista
 // ============================================================
 import { useRef } from 'react'
 import Card from '../../../../components/Card'
@@ -16,12 +19,14 @@ import { CampoTexto, Rotulo } from './campos'
 import SeletorPacientes from './SeletorPacientes'
 import { IconeClipe } from './iconesNovaTarefa'
 
-export default function DadosGerais({ dados, erros, onMudar }) {
+export default function DadosGerais({ dados, erros, onMudar, pacientes, carregandoPacientes, erroPacientes }) {
   const inputArquivo = useRef(null)
 
   // limpa o arquivo escolhido (e o <input>, para poder escolher o mesmo arquivo de novo)
   function removerArquivo() {
     onMudar('arquivo', null)
+    onMudar('arquivoFile', null)
+    onMudar('anexoUrl', null)
     if (inputArquivo.current) inputArquivo.current.value = ''
   }
 
@@ -46,7 +51,14 @@ export default function DadosGerais({ dados, erros, onMudar }) {
         onChange={(e) => onMudar('instrucoes', e.target.value)}
       />
 
-      <SeletorPacientes selecionados={dados.pacientes} onMudar={(lista) => onMudar('pacientes', lista)} erro={erros.pacientes} />
+      <SeletorPacientes
+        pacientes={pacientes}
+        carregando={carregandoPacientes}
+        erroLista={erroPacientes}
+        selecionados={dados.pacientes}
+        onMudar={(lista) => onMudar('pacientes', lista)}
+        erro={erros.pacientes}
+      />
 
       <div className="flex flex-col gap-2">
         <Rotulo opcional>Anexar arquivo</Rotulo>
@@ -56,7 +68,12 @@ export default function DadosGerais({ dados, erros, onMudar }) {
           className="sr-only"
           tabIndex={-1}
           aria-label="Anexar arquivo"
-          onChange={(e) => onMudar('arquivo', e.target.files?.[0]?.name ?? null)}
+          onChange={(e) => {
+            const arquivo = e.target.files?.[0] ?? null
+            onMudar('arquivo', arquivo?.name ?? null)
+            onMudar('arquivoFile', arquivo)
+            onMudar('anexoUrl', null) // o arquivo novo substitui o anexo antigo
+          }}
         />
         {dados.arquivo ? (
           <div className="flex h-11 items-center gap-2 rounded-xl border border-borda-forte bg-fundo-card pl-4 pr-1.5 text-[13px] text-texto">

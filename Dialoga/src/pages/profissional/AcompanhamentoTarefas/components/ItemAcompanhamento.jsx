@@ -5,7 +5,7 @@
 // selo de status e a setinha ">".
 // No mobile o nome da tarefa é cortado com "…" e a data desce para a linha de baixo.
 // O cartão inteiro é um link para a tela de resposta (/profissional/tarefas/acompanhamento/:id).
-// Props: item (ver acompanhamentoMock.js)
+// Props: item ({ id, tarefa, paciente, status, ultimaModificacao }, ver utils/tarefasProfissional.js)
 // ============================================================
 import { Link } from 'react-router-dom'
 import Card from '../../../../components/Card'

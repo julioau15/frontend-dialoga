@@ -1,7 +1,7 @@
-﻿// ============================================================
+// ============================================================
 // pages/profissional/Tarefas
 // Lista de tarefas (questionários) enviadas pelo profissional aos pacientes.
-// Só visual: dados fixos (mock), sem API. Rota: /profissional/tarefas
+// Ligada à API (hook useTarefasProfissional). Rota: /profissional/tarefas
 // Frames: "Tarefas - Profissional", "Tarefas rascunho", "Tarefas enviado ao paciente"
 //         e "Tarefas profissional - mobile".
 // Cabeçalho: "Tarefas" + "Acompanhamento" e "+ Nova tarefa" (RF274, RF275).
@@ -12,6 +12,7 @@
 // "Acompanhamento" abre /profissional/tarefas/acompanhamento.
 // O ícone de atividade do item abre direto a tela de resposta daquela tarefa
 // (o envio mais recente); tarefa sem envios abre o acompanhamento já buscando por ela.
+// Estados: carregando, erro (com "Tentar novamente") e aba vazia.
 // O lápis do item abre /profissional/tarefas/:id/editar (tela Editar tarefa).
 // Desktop, Tablet e Mobile (403px): no mobile os botões descem para baixo do título.
 // ============================================================
@@ -21,10 +22,10 @@ import Button from '../../../components/Button'
 import Toast from '../../../components/Toast'
 import { Usuarios } from '../../../components/Icones'
 import { IconeMais } from '../../../components/IconesAgenda'
-import { respostaMaisRecente } from '../AcompanhamentoTarefas/components/acompanhamentoMock'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useTarefasProfissional } from '../../../hooks/useTarefasProfissional'
 import AbasTarefas from './components/AbasTarefas'
 import ItemTarefa from './components/ItemTarefa'
-import { TAREFAS_MOCK } from './components/tarefasMock'
 
 const ABAS = [
   { id: 'enviadas', rotulo: 'Enviadas' },
@@ -43,7 +44,8 @@ const BOTAO_BASE = 'h-[42px]! rounded-xl! px-4! text-[14px]! font-bold! sm:px-[1
 const BOTAO_CLARO = `${BOTAO_BASE} border-2! border-borda! bg-fundo-suave-2!`
 
 function Tarefas() {
-  const [tarefas] = useState(TAREFAS_MOCK)
+  const { auth } = useAuth()
+  const { tarefas, carregando, erro, recarregar } = useTarefasProfissional(auth?.token)
   const [abaAtiva, setAbaAtiva] = useState('enviadas')
   const navigate = useNavigate()
   const location = useLocation()
@@ -82,8 +84,7 @@ function Tarefas() {
   // ícone de atividade de uma tarefa: abre direto a tela de resposta dela;
   // sem envios, abre o acompanhamento já buscando pela tarefa
   function verRespostas(tarefa) {
-    const envio = respostaMaisRecente(tarefa.id)
-    if (envio) navigate(`/profissional/tarefas/acompanhamento/${envio.id}`)
+    if (tarefa.idEnvio) navigate(`/profissional/tarefas/acompanhamento/${tarefa.idEnvio}`)
     else navigate('/profissional/tarefas/acompanhamento', { state: { busca: tarefa.titulo } })
   }
 
@@ -118,7 +119,16 @@ function Tarefas() {
         </div>
 
         <div id={ID_PAINEL} role="tabpanel" aria-labelledby={`aba-${abaAtiva}`} className="mt-5 flex flex-col gap-3.5">
-          {visiveis.length > 0 ? (
+          {carregando ? (
+            <p role="status" className="pt-16 text-center text-[13px] text-secundaria">Carregando tarefas...</p>
+          ) : erro ? (
+            <div role="alert" className="flex flex-col items-center gap-3 pt-16 text-center">
+              <p className="text-[13px] text-erro">{erro}</p>
+              <Button type="button" variante="suave" larguraAuto className={BOTAO_CLARO} onClick={recarregar}>
+                Tentar novamente
+              </Button>
+            </div>
+          ) : visiveis.length > 0 ? (
             visiveis.map((tarefa) => (
               <ItemTarefa key={tarefa.id} tarefa={tarefa} onEditar={editarTarefa} onVerRespostas={verRespostas} />
             ))

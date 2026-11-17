@@ -1,13 +1,14 @@
 // ============================================================
 // pages/profissional/RespostaTarefa
 // Tela de resposta de uma tarefa enviada (RF297, RF298).
-// Só visual: dados fixos (mock), sem API. Rota: /profissional/tarefas/acompanhamento/:id
+// Ligada à API (hook useRespostaTarefa); o :id da rota é o id do envio (tbl_tarefa_destinatario).
+// Rota: /profissional/tarefas/acompanhamento/:id
 //   - "Voltar ao acompanhamento" (ou "Voltar ao perfil", quando aberta pelo Histórico de
 //     tarefas do perfil do paciente: volta para o perfil, na aba Histórico);
 //   - cartão do paciente: avatar, nome, e-mail, telefone, "Ver perfil do paciente" e status;
 //   - cartão da tarefa: nome, descrição e última modificação;
 //   - "Respostas (N)": perguntas e respostas (sem resposta = "Ainda não respondida").
-// id inexistente mostra o aviso "Resposta não encontrada".
+// id inexistente mostra o aviso "Resposta não encontrada"; falha na API mostra o erro com "Tentar novamente".
 //
 // Layout (o Figma só tem esta tela no desktop: "Respostas de tarefa - Profissional"):
 //   - Desktop (lg, ≥1024px): igual ao Figma, uma coluna de 720px com o cartão do paciente
@@ -22,11 +23,13 @@
 //     um embaixo do outro e "Ver perfil do paciente" vira um botão de largura total.
 // ============================================================
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import Button from '../../../components/Button'
 import Card from '../../../components/Card'
 import { Atividade } from '../../../components/Icones'
 import BotaoVoltar from '../NovaTarefa/components/BotaoVoltar'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useRespostaTarefa } from '../../../hooks/useAcompanhamentoTarefas'
 import { formatarDataBR } from '../../../utils/formatadores'
-import { buscarAcompanhamento } from '../AcompanhamentoTarefas/components/acompanhamentoMock'
 import { statusDe } from '../AcompanhamentoTarefas/components/statusAcompanhamento'
 import CartaoPaciente from './components/CartaoPaciente'
 import RespostaPergunta from './components/RespostaPergunta'
@@ -37,7 +40,8 @@ function RespostaTarefa() {
   const navigate = useNavigate()
   const location = useLocation()
   const { id } = useParams()
-  const item = buscarAcompanhamento(id)
+  const { auth } = useAuth()
+  const { item, carregando, erro, recarregar } = useRespostaTarefa(auth?.token, id)
   // aberta pelo "Histórico de tarefas" do perfil do paciente: volta para o perfil, já na aba Histórico;
   // aberta pelo Acompanhamento (ou pela lista de Tarefas): volta para o Acompanhamento
   const voltarPara = location.state?.voltarPara
@@ -45,7 +49,7 @@ function RespostaTarefa() {
 
   // "Ver perfil do paciente" (e a foto): abre o perfil do paciente (idPerfil = id na lista de Pacientes)
   function verPerfil() {
-    navigate(`/profissional/pacientes/${item.paciente.idPerfil}`)
+    if (item.paciente.idPerfil != null) navigate(`/profissional/pacientes/${item.paciente.idPerfil}`)
   }
 
   return (
@@ -54,7 +58,16 @@ function RespostaTarefa() {
       <div className="mx-auto flex w-full max-w-[768px] flex-col gap-4 px-6 pt-6 pb-10 sm:pb-12">
         <BotaoVoltar onClick={voltar}>{voltarPara ? 'Voltar ao perfil' : 'Voltar ao acompanhamento'}</BotaoVoltar>
 
-        {!item ? (
+        {carregando ? (
+          <p role="status" className="mt-1 py-10 text-center text-[13px] text-secundaria">Carregando resposta...</p>
+        ) : erro ? (
+          <Card as="section" role="alert" className="mt-1 flex flex-col items-center gap-3 px-5 py-10 text-center">
+            <p className="text-[13px] text-erro">{erro}</p>
+            <Button type="button" variante="suave" larguraAuto className="h-[42px]! rounded-xl! px-4! text-[14px]! font-bold!" onClick={recarregar}>
+              Tentar novamente
+            </Button>
+          </Card>
+        ) : !item ? (
           <Card as="section" className="mt-1 px-5 py-10 text-center">
             <h1 className="text-[16px] font-bold text-texto">Resposta não encontrada</h1>
             <p className="mt-2 text-[13px] text-secundaria">Essa tarefa não existe ou foi removida.</p>

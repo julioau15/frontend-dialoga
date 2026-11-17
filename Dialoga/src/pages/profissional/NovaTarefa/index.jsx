@@ -1,7 +1,7 @@
 // ============================================================
 // pages/profissional/NovaTarefa
 // Criação de tarefa (questionário) pelo profissional e pré-visualização.
-// Só visual: dados fixos (mock) e estado local, sem API. Rota: /profissional/tarefas/nova
+// Ligada à API (services/tarefaProfissionalService). Rota: /profissional/tarefas/nova
 // Frames: "Nova tarefa", "Nova tarefa dropdown", "Selecionar paciente para tarefa",
 //         "Nova tarefa paciente selecionado", "Excluir pergunta", "Enviar ao paciente",
 //         "Visualizar tarefa" (desktop) e "Tarefas profissional - mobile".
@@ -13,17 +13,25 @@
 // Pop-ups: "Excluir pergunta" (a lixeira da pergunta pede confirmação, RF287)
 //          e "Confirmar envio".
 // Ao excluir uma pergunta, mostra o aviso (toast) "Pergunta excluída.".
-// Ao salvar ou enviar, volta para a lista com o aviso (toast) de sucesso.
+// Ao salvar ou enviar, grava na API e volta para a lista com o aviso (toast) de sucesso;
+// se a API recusar, o erro aparece num toast vermelho e a tela continua como estava.
+// Rascunho guarda o nome, as instruções, o arquivo e as perguntas; os pacientes são escolhidos no envio
+// (o back avisa o paciente assim que a tarefa é criada com destinatários, e rascunho não deve avisar ninguém).
 // Também é usada pela tela Editar tarefa (frame "Editar tarefa - Profissional"):
 // com editando = true o título vira "Editar tarefa", os campos já vêm preenchidos
 // e ficam só o botão "Enviar ao paciente" (sem "Visualizar" e sem "Salvar rascunho").
-// Props (opcionais): editando (true/false), inicial ({ dados, perguntas } já preenchidos)
+// Props (opcionais): editando (true/false), inicial ({ dados, perguntas, original } já preenchidos, ver
+// useTarefaParaEdicao). Editando um rascunho, o botão "Salvar rascunho" também aparece.
 // Desktop, Tablet e Mobile (403px).
 // ============================================================
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Toast from '../../../components/Toast'
 import { IconeMais } from '../../../components/IconesAgenda'
+import { useAuth } from '../../../contexts/AuthContext'
+import { usePacientesParaTarefa } from '../../../hooks/useFormularioTarefa'
+import { criarTarefa, editarTarefa } from '../../../services/tarefaProfissionalService'
+import { paraBooleano } from '../../../utils/tarefasProfissional'
 import BlocoPergunta from './components/BlocoPergunta'
 import BotaoVoltar from './components/BotaoVoltar'
 import DadosGerais from './components/DadosGerais'
@@ -35,7 +43,9 @@ import { IconeEnviar, IconeSalvar } from './components/iconesNovaTarefa'
 import { criarPergunta, duplicarPergunta, erroDaPergunta } from './components/perguntas'
 
 const ROTA_LISTA = '/profissional/tarefas'
-const DADOS_INICIAIS = { titulo: '', instrucoes: '', arquivo: null, pacientes: [] }
+// arquivo = nome mostrado na tela | arquivoFile = File novo para enviar | anexoUrl = anexo que já existe (edição)
+const DADOS_INICIAIS = { titulo: '', instrucoes: '', arquivo: null, arquivoFile: null, anexoUrl: null, pacientes: [] }
+const BOTAO_DESATIVADO = 'disabled:cursor-not-allowed disabled:opacity-60'
 
 // confere tudo o que o envio exige e devolve os erros encontrados ({} = pode enviar)
 function validarEnvio(dados, perguntas) {
@@ -63,6 +73,11 @@ function rolarAteErro() {
 
 function NovaTarefa({ editando = false, inicial = null }) {
   const navigate = useNavigate()
+  const { auth } = useAuth()
+  const token = auth?.token
+  const lista = usePacientesParaTarefa(token)
+  // só o rascunho pode ser salvo de novo como rascunho; tarefa já enviada só pode ser reenviada
+  const permiteRascunho = !editando || paraBooleano(inicial?.original?.tarefa?.is_rascunho)
   // na edição os campos começam com os dados da tarefa; na criação, em branco
   const [dados, setDados] = useState(() => inicial?.dados ?? DADOS_INICIAIS)
   const [perguntas, setPerguntas] = useState(() => inicial?.perguntas ?? [criarPergunta()])
@@ -71,7 +86,8 @@ function NovaTarefa({ editando = false, inicial = null }) {
   const [confirmando, setConfirmando] = useState(false)
   const [idExcluir, setIdExcluir] = useState(null) // pergunta aguardando o pop-up "Excluir pergunta" (null = fechado)
   const [arraste, setArraste] = useState({ origem: null, alvo: null }) // ids das perguntas no arrastar
-  const [aviso, setAviso] = useState({ aberto: false, mensagem: '' })
+  const [salvando, setSalvando] = useState(false) // true enquanto a API grava (bloqueia os botões)
+  const [aviso, setAviso] = useState({ aberto: false, tipo: 'sucesso', mensagem: '' })
   const fecharAviso = useCallback(() => setAviso((a) => ({ ...a, aberto: false })), [])
 
   // ao trocar entre edição e pré-visualização, volta ao topo
@@ -120,7 +136,7 @@ function NovaTarefa({ editando = false, inicial = null }) {
     setPerguntas((lista) => lista.filter((p) => p.id !== idExcluir))
     limparErroPergunta(idExcluir)
     setIdExcluir(null)
-    setAviso({ aberto: true, mensagem: 'Pergunta excluída.' })
+    setAviso({ aberto: true, tipo: 'sucesso', mensagem: 'Pergunta excluída.' })
   }
 
   // "Cancelar", X, Esc ou clique fora: fecha o pop-up sem excluir
@@ -149,6 +165,37 @@ function NovaTarefa({ editando = false, inicial = null }) {
   }
 
   // ---------- salvar e enviar ----------
+  // Grava na API (criando ou editando) e volta para a lista com o aviso de sucesso.
+  // Se a API recusar, o erro vira um toast e a tela continua aberta com tudo o que foi preenchido.
+  async function gravar(rascunho) {
+    setSalvando(true)
+    const corpo = {
+      titulo: dados.titulo,
+      instrucoes: dados.instrucoes,
+      arquivo: dados.arquivoFile,
+      anexoUrl: dados.anexoUrl,
+      pacientes: dados.pacientes.map((p) => ({ id: p.id, prazo: p.comPrazo ? p.prazo : '' })),
+      perguntas,
+      rascunho,
+    }
+    try {
+      if (editando) await editarTarefa(token, inicial.original.tarefa.id, corpo, inicial.original)
+      else await criarTarefa(token, corpo)
+
+      let mensagem = 'Questionário enviado ao(s) paciente(s)!'
+      if (rascunho) {
+        mensagem = !editando && dados.pacientes.length > 0
+          ? 'Rascunho salvo! Escolha os pacientes quando for enviar.'
+          : 'Rascunho salvo com sucesso!'
+      }
+      navigate(ROTA_LISTA, { state: { aviso: mensagem } })
+    } catch (e) {
+      setConfirmando(false)
+      setAviso({ aberto: true, tipo: 'erro', mensagem: e.message })
+      setSalvando(false)
+    }
+  }
+
   // rascunho só exige o nome da tarefa
   function salvarRascunho() {
     if (!dados.titulo.trim()) {
@@ -156,7 +203,7 @@ function NovaTarefa({ editando = false, inicial = null }) {
       rolarAteErro()
       return
     }
-    navigate(ROTA_LISTA, { state: { aviso: 'Rascunho salvo com sucesso!' } })
+    gravar(true)
   }
 
   function aoEnviar() {
@@ -170,8 +217,7 @@ function NovaTarefa({ editando = false, inicial = null }) {
   }
 
   function confirmarEnvio() {
-    setConfirmando(false)
-    navigate(ROTA_LISTA, { state: { aviso: 'Questionário enviado ao(s) paciente(s)!' } })
+    gravar(false)
   }
 
   // número (1, 2, 3...) da pergunta que está no pop-up "Excluir pergunta" (null = fechado)
@@ -197,7 +243,14 @@ function NovaTarefa({ editando = false, inicial = null }) {
               )}
             </header>
 
-            <DadosGerais dados={dados} erros={erros} onMudar={mudarDado} />
+            <DadosGerais
+              dados={dados}
+              erros={erros}
+              onMudar={mudarDado}
+              pacientes={lista.pacientes}
+              carregandoPacientes={lista.carregando}
+              erroPacientes={lista.erro}
+            />
 
             <section aria-labelledby="titulo-perguntas" className="flex flex-col gap-5">
               <h2 id="titulo-perguntas" className="sr-only">Perguntas ({perguntas.length})</h2>
@@ -239,14 +292,14 @@ function NovaTarefa({ editando = false, inicial = null }) {
 
             {/* mobile: botões ocupando a largura (lado a lado na criação); desktop: alinhados à esquerda.
                 Na edição só existe "Enviar ao paciente", como no Figma. */}
-            <div className={`grid gap-3 sm:flex ${editando ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              {!editando && (
-                <button type="button" className={`${BOTAO_CLARO} h-12 px-3 sm:h-11 sm:px-5`} onClick={salvarRascunho}>
+            <div className={`grid gap-3 sm:flex ${permiteRascunho ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {permiteRascunho && (
+                <button type="button" className={`${BOTAO_CLARO} ${BOTAO_DESATIVADO} h-12 px-3 sm:h-11 sm:px-5`} onClick={salvarRascunho} disabled={salvando}>
                   <IconeSalvar tamanho={16} />
-                  Salvar rascunho
+                  {salvando ? 'Salvando...' : 'Salvar rascunho'}
                 </button>
               )}
-              <button type="button" className={`${BOTAO_PRIMARIO} h-12 px-3 sm:h-11 sm:px-5`} onClick={aoEnviar}>
+              <button type="button" className={`${BOTAO_PRIMARIO} ${BOTAO_DESATIVADO} h-12 px-3 sm:h-11 sm:px-5`} onClick={aoEnviar} disabled={salvando}>
                 <IconeEnviar tamanho={16} />
                 Enviar ao paciente
               </button>
@@ -260,10 +313,12 @@ function NovaTarefa({ editando = false, inicial = null }) {
         aberto={confirmando}
         titulo={dados.titulo.trim()}
         destinatarios={dados.pacientes}
+        totalPacientes={lista.pacientes.length + dados.pacientes.filter((s) => !lista.pacientes.some((p) => p.id === s.id)).length}
+        enviando={salvando}
         onCancelar={() => setConfirmando(false)}
         onConfirmar={confirmarEnvio}
       />
-      <Toast aberto={aviso.aberto} mensagem={aviso.mensagem} onFechar={fecharAviso} />
+      <Toast aberto={aviso.aberto} tipo={aviso.tipo} mensagem={aviso.mensagem} onFechar={fecharAviso} />
     </div>
   )
 }

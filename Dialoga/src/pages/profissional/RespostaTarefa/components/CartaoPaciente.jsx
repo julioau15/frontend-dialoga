@@ -4,6 +4,7 @@
 // "Respostas de tarefa - Profissional": avatar grande com anel lilás, nome e selo de status.
 // No lugar de "Psicologia Clínica / Toque na foto para ver o perfil" do Figma ficam
 // o e-mail, o telefone e o link "Ver perfil do paciente" (exigidos pela task).
+// E-mail e telefone só aparecem quando a API os devolve (depois que o vínculo é aceito).
 // A foto também abre o perfil.
 // Mobile: o selo desce para baixo do nome e "Ver perfil do paciente" vira um botão
 // de largura total no fim do cartão.
@@ -45,10 +46,14 @@ export default function CartaoPaciente({ paciente, status, onVerPerfil }) {
         <div className="min-w-0 flex-1">
           <h2 id="titulo-paciente" className="truncate text-[16px] font-bold leading-snug text-texto">{paciente.nome}</h2>
           <div className="mt-0.5 flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:gap-x-4">
-            <Contato href={`mailto:${paciente.email}`} icone={<IconeEmail tamanho={12} className="shrink-0" />}>{paciente.email}</Contato>
-            <Contato href={`tel:${paciente.telefone.replace(/\D/g, '')}`} icone={<IconeTelefone tamanho={12} className="shrink-0" />}>
-              {paciente.telefone}
-            </Contato>
+            {paciente.email && (
+              <Contato href={`mailto:${paciente.email}`} icone={<IconeEmail tamanho={12} className="shrink-0" />}>{paciente.email}</Contato>
+            )}
+            {paciente.telefone && (
+              <Contato href={`tel:${paciente.telefone.replace(/\D/g, '')}`} icone={<IconeTelefone tamanho={12} className="shrink-0" />}>
+                {paciente.telefone}
+              </Contato>
+            )}
           </div>
           <button
             type="button"

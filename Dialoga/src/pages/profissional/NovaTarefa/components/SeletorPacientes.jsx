@@ -8,6 +8,9 @@
 //     o prazo (quando tiver) e a lixeira para remover
 //     (frame "Nova tarefa paciente selecionado - Profissional").
 // Props:
+//   pacientes    -> pacientes que podem receber tarefa (vínculo aceito e ativos): [{ id, nome }]
+//   carregando   -> true enquanto a lista de pacientes é buscada na API
+//   erroLista    -> mensagem se a lista de pacientes não carregou
 //   selecionados -> [{ id, nome, comPrazo, prazo: 'AAAA-MM-DD' | '' }]
 //   onMudar      -> recebe a nova lista de selecionados
 //   erro         -> mensagem de erro do campo (ex.: nenhum paciente no envio)
@@ -20,7 +23,6 @@ import { Rotulo } from './campos'
 import { CAIXA } from './estilos'
 import { IconeChevronBaixo } from './iconesNovaTarefa'
 import ModalPrazo from './ModalPrazo'
-import { PACIENTES_TAREFA } from './pacientesMock'
 
 // "Ana Beatriz Ferreira" -> "AB"
 function iniciais(nome) {
@@ -32,13 +34,13 @@ function iniciais(nome) {
     .join('')
 }
 
-export default function SeletorPacientes({ selecionados, onMudar, erro }) {
+export default function SeletorPacientes({ pacientes = [], carregando = false, erroLista = '', selecionados, onMudar, erro }) {
   const idCampo = useId()
   // escolha aguardando o pop-up de prazo: 'todos' ou o id do paciente (null = fechado)
   const [pendente, setPendente] = useState(null)
   // só oferece na lista quem ainda não foi escolhido; pacientes externos (sem conta no app)
   // não aparecem, porque não podem receber nem responder tarefas
-  const disponiveis = PACIENTES_TAREFA.filter((p) => !selecionados.some((s) => s.id === p.id))
+  const disponiveis = pacientes.filter((p) => !selecionados.some((s) => s.id === p.id))
   const novos = pendente === 'todos' ? disponiveis : disponiveis.filter((p) => String(p.id) === pendente)
 
   // adiciona o(s) paciente(s) escolhido(s) com ou sem prazo e fecha o pop-up
@@ -58,13 +60,19 @@ export default function SeletorPacientes({ selecionados, onMudar, erro }) {
         <select
           id={idCampo}
           value=""
-          disabled={disponiveis.length === 0}
+          disabled={carregando || disponiveis.length === 0}
           aria-invalid={!!erro}
           onChange={(e) => setPendente(e.target.value)}
           className={`${CAIXA} h-[46px] cursor-pointer appearance-none pr-11 pl-5 disabled:cursor-not-allowed disabled:text-secundaria ${erro ? 'border-erro' : 'border-borda'}`}
         >
           <option value="" disabled>
-            {disponiveis.length ? 'Selecionar paciente...' : 'Todos os pacientes já foram selecionados'}
+            {carregando
+              ? 'Carregando pacientes...'
+              : disponiveis.length
+                ? 'Selecionar paciente...'
+                : pacientes.length
+                  ? 'Todos os pacientes já foram selecionados'
+                  : 'Nenhum paciente disponível'}
           </option>
           {disponiveis.length > 1 && <option value="todos">Todos os pacientes</option>}
           {disponiveis.map((p) => (
@@ -74,6 +82,7 @@ export default function SeletorPacientes({ selecionados, onMudar, erro }) {
         <IconeChevronBaixo tamanho={16} className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-texto" />
       </div>
       {erro && <span className="text-[11px] text-erro">{erro}</span>}
+      {erroLista && <span role="alert" className="text-[11px] text-erro">{erroLista}</span>}
 
       {selecionados.length > 0 && (
         <ul aria-label="Pacientes selecionados" className="mt-0.5 flex flex-col gap-2">
