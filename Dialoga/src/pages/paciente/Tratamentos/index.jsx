@@ -1,6 +1,6 @@
 // ============================================================
 // pages/paciente/Tratamentos
-// Tratamentos do paciente. Só visual: dados fixos (mock), sem API. Rota: /paciente/tratamentos
+// Tratamentos do paciente, integrados à API autenticada. Rota: /paciente/tratamentos
 // Frames: "Tratamento- Paciente", "Novo tratamento", "Editar tratamento", "Excluir tratamento",
 //         "Tratamento adicionado", "Tratamento editado", "Tratamento Excluido"
 //         e os frames "Tratamento - Mobile" correspondentes.
@@ -13,7 +13,9 @@
 // "Adicionar outro" mantém o pop-up aberto e mostra o toast por cima dele.
 // Desktop (com o menu lateral, a partir de 1024px), Tablet e Mobile (403px).
 // ============================================================
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useAuth } from '../../../contexts/AuthContext'
+import { criarTratamentoRequest, editarTratamentoRequest, excluirTratamentoRequest, listarTratamentosRequest } from '../../../services/tratamentoService'
 import Button from '../../../components/Button'
 import Toast from '../../../components/Toast'
 import CartaoTratamento from './components/CartaoTratamento'
@@ -21,7 +23,7 @@ import ModalExcluirTratamento from './components/ModalExcluirTratamento'
 import ModalTratamento from './components/ModalTratamento'
 import { AJUSTE_TOAST } from './components/estilosTratamentos'
 import { IconeMais } from './components/iconesTratamentos'
-import { TRATAMENTOS_MOCK, textoContagem } from './components/tratamentosMock'
+import { textoContagem, tratamentoConfere } from '../../../utils/tratamentos'
 
 // botão "+ Novo tratamento": 40px de altura, cantos de 12px e texto de 14px em negrito;
 // nunca quebra a linha (em celulares estreitos, quem desce é a contagem embaixo do título)
@@ -29,41 +31,162 @@ const BOTAO_NOVO = 'h-10! shrink-0 gap-2! whitespace-nowrap rounded-xl! px-4! te
 
 const TOAST_FECHADO = { aberto: false, tipo: 'sucesso', mensagem: '' }
 
-function Tratamentos() {
-  const [tratamentos, setTratamentos] = useState(TRATAMENTOS_MOCK)
+const ERRO_CONFERENCIA = 'A operação foi aceita, mas não foi possível confirmar os dados. Atualize a lista antes de tentar novamente.'
+
+// Mantém lista, modais e requisições vinculados à credencial desta sessão.
+function ConteudoTratamentos({ token }) {
+  const [tentativa, setTentativa] = useState(0)
+  const [remoto, setRemoto] = useState({
+    token: null, tentativa: -1, tratamentos: [], carregado: false,
+    erro: '', processando: false, bloqueado: false, erroOperacao: '',
+  })
+  const escopoRef = useRef(null)
   // pop-up aberto: null | { tipo: 'novo' } | { tipo: 'editar', tratamento } | { tipo: 'excluir', tratamento }
   const [modal, setModal] = useState(null)
   const [toast, setToast] = useState(TOAST_FECHADO)
+
+  useEffect(() => {
+    const controle = new AbortController()
+    const escopo = { token, tentativa, controle, ativo: true, ocupado: false, carregado: false, bloqueado: false }
+    escopoRef.current = escopo
+
+    // A listagem é a única fonte de dados, inclusive depois de uma reconciliação.
+    async function carregar() {
+      try {
+        const lista = await listarTratamentosRequest(token, controle.signal)
+        if (!escopo.ativo) return
+        escopo.carregado = true
+        setRemoto({ token, tentativa, tratamentos: lista, carregado: true,
+          erro: '', processando: false, bloqueado: false, erroOperacao: '' })
+      } catch (erro) {
+        if (!escopo.ativo || controle.signal.aborted) return
+        setRemoto({ token, tentativa, tratamentos: [], carregado: true,
+          erro: erro.message, processando: false, bloqueado: true, erroOperacao: erro.message })
+      }
+    }
+    carregar()
+    return () => {
+      escopo.ativo = false
+      controle.abort()
+    }
+  }, [token, tentativa])
+
+  const atual = remoto.token === token && remoto.tentativa === tentativa
+  const tratamentos = atual ? remoto.tratamentos : []
+  const carregando = !atual || !remoto.carregado
+  const erro = atual ? remoto.erro : ''
+  const processando = atual && remoto.processando
+  const bloqueado = carregando || !!erro || (atual && remoto.bloqueado)
+  const erroOperacao = atual ? remoto.erroOperacao : ''
+
+  // Só altera o estado se a operação ainda pertence à sessão e à carga atuais.
+  function atualizar(escopo, transformar) {
+    if (!escopo.ativo || escopoRef.current !== escopo) return
+    setRemoto((anterior) => anterior.token === escopo.token && anterior.tentativa === escopo.tentativa
+      ? transformar(anterior) : anterior)
+  }
 
   // O Toast usa esta função dentro de um useEffect. Com o useCallback ela
   // não muda a cada render, e o tempo de 4 s do aviso não reinicia sem motivo.
   const fecharToast = useCallback(() => setToast((t) => ({ ...t, aberto: false })), [])
 
-  const fecharModal = () => setModal(null)
+  // Impede novo envio antes mesmo do render que exibe o estado de carregamento.
+  const recarregar = useCallback(() => {
+    const escopo = escopoRef.current
+    if (escopo?.ocupado) return
+    if (escopo) escopo.carregado = false
+    setTentativa((valor) => valor + 1)
+  }, [])
+
+  // O formulário pode ser fechado após o envio, inclusive se a conferência falhou.
+  function fecharModal() {
+    if (escopoRef.current?.ocupado) return
+    setModal(null)
+  }
+
+  // Não oferece mutações durante carga, falha ou reconciliação pendente.
+  function abrirModal(proximo) {
+    const escopo = escopoRef.current
+    if (!escopo?.ativo || !escopo.carregado || escopo.ocupado || escopo.bloqueado) return
+    atualizar(escopo, (anterior) => ({ ...anterior, erroOperacao: '' }))
+    setToast(TOAST_FECHADO)
+    setModal(proximo)
+  }
 
   // mostra o aviso (tipo 'sucesso' = verde, 'erro' = vermelho)
   const avisar = (tipo, mensagem) => setToast({ aberto: true, tipo, mensagem })
 
-  // salva o que veio do pop-up: atualiza (editar) ou inclui no fim da lista (novo)
-  function salvar(dados, { continuar }) {
-    if (modal?.tipo === 'editar') {
-      const id = modal.tratamento.id
-      setTratamentos((lista) => lista.map((t) => (t.id === id ? { ...t, ...dados } : t)))
-      fecharModal()
-      avisar('sucesso', 'Tratamento atualizado com sucesso!')
-      return
+  // Separa falha da mutação de falha da leitura posterior; nunca repete uma gravação.
+  async function executarMutacao(enviar, conferir, aoConfirmar) {
+    const escopo = escopoRef.current
+    if (!escopo?.ativo || !escopo.carregado || escopo.ocupado || escopo.bloqueado) return false
+    escopo.ocupado = true
+    atualizar(escopo, (anterior) => ({ ...anterior, processando: true, erroOperacao: '' }))
+    setToast(TOAST_FECHADO)
+    try {
+      let resultado
+      try {
+        resultado = await enviar()
+      } catch (erroMutacao) {
+        if (!escopo.ativo) return false
+        escopo.bloqueado = !!erroMutacao.resultadoIncerto
+        atualizar(escopo, (anterior) => ({ ...anterior, bloqueado: escopo.bloqueado,
+          erroOperacao: erroMutacao.message || 'Não foi possível concluir a operação.' }))
+        return false
+      }
+      if (!escopo.ativo) return false
+
+      let lista
+      try {
+        lista = await listarTratamentosRequest(token, escopo.controle.signal)
+        if (!escopo.ativo) return false
+        if (!conferir(lista, resultado)) throw new Error('Dados divergentes na conferência.')
+      } catch {
+        if (!escopo.ativo) return false
+        escopo.bloqueado = true
+        atualizar(escopo, (anterior) => ({ ...anterior, bloqueado: true, erroOperacao: ERRO_CONFERENCIA }))
+        return false
+      }
+      atualizar(escopo, (anterior) => ({ ...anterior, tratamentos: lista, erroOperacao: '' }))
+      aoConfirmar()
+      return true
+    } finally {
+      escopo.ocupado = false
+      atualizar(escopo, (anterior) => ({ ...anterior, processando: false }))
     }
-    setTratamentos((lista) => [...lista, { id: Math.max(0, ...lista.map((t) => t.id)) + 1, ...dados }])
-    if (!continuar) fecharModal() // "Adicionar outro" mantém o pop-up aberto
-    avisar('sucesso', 'Tratamento adicionado!')
   }
 
-  // remove o tratamento confirmado no pop-up "Excluir tratamento"
-  function excluir() {
+  // Salva o que veio do pop-up e só confirma a inclusão/edição após reler todos os campos.
+  async function salvar(dados, { continuar }) {
+    if (!['novo', 'editar'].includes(modal?.tipo)) return false
+    const editando = modal.tipo === 'editar'
+    const id = editando ? modal.tratamento.id : null
+    return executarMutacao(
+      async () => {
+        if (id === null) return criarTratamentoRequest(token, dados)
+        await editarTratamentoRequest(token, id, dados)
+        return id
+      },
+      (lista, idSalvo) => tratamentoConfere(lista.find((item) => item.id === idSalvo), dados),
+      () => {
+        if (editando || !continuar) setModal(null)
+        avisar('sucesso', editando ? 'Tratamento atualizado com sucesso!' : 'Tratamento adicionado!')
+      },
+    )
+  }
+
+  // Remove o tratamento confirmado no pop-up e exige sua ausência na nova listagem.
+  async function excluir() {
+    if (modal?.tipo !== 'excluir') return false
     const id = modal.tratamento.id
-    setTratamentos((lista) => lista.filter((t) => t.id !== id))
-    fecharModal()
-    avisar('erro', 'Tratamento removido.')
+    return executarMutacao(
+      () => excluirTratamentoRequest(token, id),
+      (lista) => !lista.some((item) => item.id === id),
+      () => {
+        setModal(null)
+        avisar('erro', 'Tratamento removido.')
+      },
+    )
   }
 
   // com o pop-up de tratamento aberto, o toast vai para dentro dele (aparece por cima do fundo escuro)
@@ -78,25 +201,32 @@ function Tratamentos() {
         <header className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-[24px] font-extrabold leading-[30px] text-texto">Tratamentos</h1>
-            <p className="mt-1 text-[14px] leading-5 text-secundaria">{textoContagem(tratamentos.length)}</p>
+            <p className="mt-1 text-[14px] leading-5 text-secundaria">{carregando ? 'Carregando tratamentos...' : erro ? 'Não foi possível carregar os tratamentos' : textoContagem(tratamentos.length)}</p>
           </div>
-          <Button type="button" larguraAuto className={BOTAO_NOVO} onClick={() => setModal({ tipo: 'novo' })}>
+          <Button type="button" larguraAuto className={BOTAO_NOVO} disabled={processando || bloqueado} onClick={() => abrirModal({ tipo: 'novo' })}>
             <IconeMais tamanho={16} />
             Novo tratamento
           </Button>
         </header>
 
-        {tratamentos.length > 0 && (
-          <div className="mt-6 flex flex-col gap-2.5 lg:gap-3.5">
+        {carregando && <p role="status" className="mt-6 text-[14px] text-secundaria">Carregando tratamentos...</p>}
+        {!carregando && (erro || remoto.bloqueado) && (
+          <div role="alert" className="mt-6 flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-4">
+            <p className="text-[14px] text-erro">{erro || erroOperacao}</p>
+            <Button type="button" variante="suave" larguraAuto disabled={processando} onClick={recarregar}>Tentar novamente</Button>
+          </div>
+        )}
+        {!carregando && !erro && tratamentos.length > 0 && (
+          <fieldset disabled={processando || bloqueado} className="mt-6 flex min-w-0 flex-col gap-2.5 lg:gap-3.5">
             {tratamentos.map((tratamento) => (
               <CartaoTratamento
                 key={tratamento.id}
                 tratamento={tratamento}
-                onEditar={(t) => setModal({ tipo: 'editar', tratamento: t })}
-                onExcluir={(t) => setModal({ tipo: 'excluir', tratamento: t })}
+                onEditar={(t) => abrirModal({ tipo: 'editar', tratamento: t })}
+                onExcluir={(t) => abrirModal({ tipo: 'excluir', tratamento: t })}
               />
             ))}
-          </div>
+          </fieldset>
         )}
       </div>
 
@@ -109,9 +239,14 @@ function Tratamentos() {
           onFecharToast={fecharToast}
           onFechar={fecharModal}
           onSalvar={salvar}
+          processando={processando}
+          bloqueado={bloqueado}
+          erroOperacao={erroOperacao}
+          onRecarregar={recarregar}
         />
       )}
-      {modal?.tipo === 'excluir' && <ModalExcluirTratamento onFechar={fecharModal} onConfirmar={excluir} />}
+      {modal?.tipo === 'excluir' && <ModalExcluirTratamento onFechar={fecharModal} onConfirmar={excluir} processando={processando}
+          bloqueado={bloqueado} erroOperacao={erroOperacao} onRecarregar={recarregar} />}
 
       {/* toasts da página (com o pop-up de tratamento aberto, o toast fica dentro dele) */}
       {!formularioAberto && (
@@ -123,4 +258,8 @@ function Tratamentos() {
   )
 }
 
-export default Tratamentos
+// Reinicia também os formulários e avisos ao trocar a credencial autenticada.
+export default function Tratamentos() {
+  const { auth } = useAuth()
+  return <ConteudoTratamentos key={auth?.token ?? 'sem-sessao'} token={auth?.token} />
+}
