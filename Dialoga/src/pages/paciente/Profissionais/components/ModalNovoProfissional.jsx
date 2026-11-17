@@ -55,6 +55,7 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
   const refNome = useRef(null)
   const refEmail = useRef(null)
   const refEspecialidade = useRef(null)
+  const envio = useRef(false)
   const buscaCpf = useRef(null) // AbortController da busca de CPF em andamento
   const [dados, setDados] = useState(PROFISSIONAL_VAZIO)
   const [erros, setErros] = useState({})
@@ -76,40 +77,48 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
   // Achando, preenche nome, e-mail e especialidade (a primeira cadastrada por ele).
   async function alterarCpf(e) {
     const cpf = mascararCpf(e.target.value)
+    buscaCpf.current?.abort()
+    buscaCpf.current = null
+    setVerificando(false)
     setDados((d) => ({ ...d, cpf }))
     setErros((er) => ({ ...er, cpf: undefined }))
     setErroEnvio('')
     setEncontrado(null)
-    buscaCpf.current?.abort() // CPF mudou: a busca anterior não vale mais
-
     if (limparCpf(cpf).length !== 11) return
-    if (!cpfValido(cpf)) return setErros((er) => ({ ...er, cpf: 'CPF inválido.' }))
-
+    if (!cpfValido(cpf)) {
+      setErros((er) => ({ ...er, cpf: 'CPF inválido.' }))
+      return
+    }
     const controle = new AbortController()
     buscaCpf.current = controle
     setVerificando(true)
     try {
       const achado = await onBuscarCpf(cpf, controle.signal)
-      if (controle.signal.aborted || !achado) return
-      // RN99: o mesmo profissional não entra duas vezes no acompanhamento
-      if (idsVinculados.has(achado.id)) {
+      if (controle.signal.aborted || buscaCpf.current !== controle || !achado) return
+      const jaVinculado = [...idsVinculados].some((id) => String(id) === String(achado.id))
+      if (jaVinculado) {
         setErros((er) => ({ ...er, cpf: 'Este profissional já está no seu acompanhamento.' }))
         return
       }
       setEncontrado(achado)
-      setDados({ cpf, nome: achado.nome, email: achado.email, especialidade: achado.especialidades[0] })
+      setDados({ cpf, nome: achado.nome, email: achado.email ?? '', especialidade: achado.especialidades[0] })
       setErros({})
     } catch (erro) {
-      if (!controle.signal.aborted) setErros((er) => ({ ...er, cpf: erro.message }))
+      if (!controle.signal.aborted && buscaCpf.current === controle) {
+        setErros((er) => ({ ...er, cpf: erro.message }))
+      }
     } finally {
-      if (!controle.signal.aborted) setVerificando(false)
+      if (buscaCpf.current === controle) {
+        buscaCpf.current = null
+        setVerificando(false)
+      }
     }
   }
 
   // valida, mostra os erros e entrega os dados para a página (que chama a API)
   async function enviar(evento) {
     evento.preventDefault() // não deixo a página recarregar ao enviar o formulário
-    if (verificando || enviando) return
+    if (buscaCpf.current || envio.current || verificando || enviando) return
 
     const novosErros = validarNovoProfissional(dados)
     if (erros.cpf) novosErros.cpf = erros.cpf // CPF inválido ou já vinculado continua valendo
@@ -125,6 +134,7 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
     if (primeiro) return primeiro[1].current?.focus()
 
     const limpos = { ...dados, nome: dados.nome.trim(), email: dados.email.trim(), especialidade: dados.especialidade.trim() }
+    envio.current = true
     setEnviando(true)
     setErroEnvio('')
     try {
@@ -132,13 +142,17 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
       else await onAdicionar(limpos)
     } catch (erro) {
       setErroEnvio(erro.message)
+    } finally {
+      envio.current = false
       setEnviando(false)
     }
   }
 
+  const fechar = () => { if (!envio.current) onFechar() }
+
   const rodape = (
     <>
-      <Button type="button" variante="suave" larguraAuto className={`${BOTAO_CLARO} ${BOTAO_MOBILE}`} onClick={onFechar}>
+      <Button type="button" variante="suave" larguraAuto className={`${BOTAO_CLARO} ${BOTAO_MOBILE}`} onClick={fechar} disabled={enviando}>
         Cancelar
       </Button>
       {/* O rodapé fica fora do <form>; com o atributo "form" o botão continua enviando o formulário */}
@@ -155,10 +169,11 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
   )
 
   return (
-    <div className={AJUSTE_MODAL}>
-      <Modal aberto comDivisores largura="max-w-[448px]" titulo="Novo profissional" onFechar={onFechar} rodape={rodape}>
+    <div className={AJUSTE_MODAL} onCancel={(e) => { if (envio.current) e.preventDefault() }}>
+      <Modal aberto comDivisores largura="max-w-[448px]" titulo="Novo profissional" onFechar={fechar} rodape={rodape}>
         {/* -my-1: o Modal tem 24px de respiro; no Figma são 20px em cima e embaixo */}
-        <form id={idFormulario} noValidate onSubmit={enviar} className="-my-1 flex flex-col gap-5">
+        <form id={idFormulario} noValidate onSubmit={enviar}>
+          <fieldset disabled={enviando} className="-my-1 flex min-w-0 flex-col gap-5">
           <div className="flex flex-col">
             {/* a ajuda some quando o profissional é encontrado (o cartão verde fica no lugar) */}
             <div className={AJUSTE_CAMPO}>
@@ -278,6 +293,7 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
               {erroEnvio}
             </p>
           )}
+          </fieldset>
         </form>
       </Modal>
     </div>

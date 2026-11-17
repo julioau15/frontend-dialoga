@@ -42,7 +42,7 @@ const BOTAO_ICONE =
 // (mesma medida dos botões dos pop-ups desta tela); ficam por cima do link do cartão (z-10)
 const BOTAO_RESPOSTA = 'relative z-10 h-11! rounded-xl! text-[14px]! font-bold! lg:w-40!'
 
-export default function CartaoProfissional({ profissional, onExcluir, onAceitar, onRecusar, respondendo = false }) {
+export default function CartaoProfissional({ profissional, onExcluir, onAceitar, onRecusar, respondendo = false, desabilitado = false }) {
   const idTitulo = useId()
   const { nome, especialidade, status, recebida, naPlataforma, desde, proximaConsulta } = profissional
   const statusInfo = STATUS_PROFISSIONAL[recebida ? 'recebida' : status] ?? STATUS_PROFISSIONAL.inativo
@@ -66,7 +66,7 @@ export default function CartaoProfissional({ profissional, onExcluir, onAceitar,
           <h3 id={idTitulo} className="mr-px break-words text-[14px] font-bold leading-5 text-texto">
             {/* link "esticado": o after:absolute cobre o cartão todo (o leitor de tela lê só o nome) */}
             <Link
-              to={`/paciente/profissionais/${profissional.id}`}
+              to={`/paciente/profissionais/${encodeURIComponent(profissional.id)}${naPlataforma ? `?vinculo=${encodeURIComponent(profissional.idVinculo)}` : ''}`}
               className="rounded-sm after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
             >
               {nome}
@@ -102,7 +102,7 @@ export default function CartaoProfissional({ profissional, onExcluir, onAceitar,
       {/* RF326: lixeira só nos profissionais do acompanhamento atual (na solicitação recebida
           quem responde são os botões Aceitar/Recusar) */}
       {onExcluir && !recebida && (
-        <button type="button" aria-label={`Excluir ${nome}`} onClick={() => onExcluir(profissional)} className={BOTAO_ICONE}>
+        <button type="button" disabled={desabilitado} aria-label={`Excluir ${nome}`} onClick={() => onExcluir(profissional)} className={BOTAO_ICONE}>
           <IconeLixeira tamanho={16} className="[stroke-width:1.8]" />
         </button>
       )}
@@ -114,6 +114,7 @@ export default function CartaoProfissional({ profissional, onExcluir, onAceitar,
             type="button"
             variante="sucesso"
             carregando={respondendo}
+            disabled={desabilitado}
             aria-label={`Aceitar a solicitação de ${nome}`}
             className={BOTAO_RESPOSTA}
             onClick={() => onAceitar(profissional)}
@@ -124,6 +125,7 @@ export default function CartaoProfissional({ profissional, onExcluir, onAceitar,
             type="button"
             variante="perigo-contorno"
             carregando={respondendo}
+            disabled={desabilitado}
             aria-label={`Recusar a solicitação de ${nome}`}
             className={BOTAO_RESPOSTA}
             onClick={() => onRecusar(profissional)}

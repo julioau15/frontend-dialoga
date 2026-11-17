@@ -3,7 +3,7 @@
 // Tela de configurações de notificações do paciente (versão Mobile do
 // modal), com seta Voltar, "Desligar todas", Tarefas, Tratamentos e Agenda
 // com contagem de ativas e o botão "Salvar preferências"
-// (RF132–RF134, RF362, RF364, RF366). Dados fixos, sem integração.
+// (RF132–RF134, RF362, RF364, RF366). Carrega e salva as preferências na API (GET/PUT /preferencias-notificacao).
 // Ao salvar, volta para Notificações, que exibe o aviso "Preferências salvas!".
 // Rota: /paciente/notificacoes/configuracoes
 // ============================================================
@@ -19,10 +19,10 @@ export default function ConfiguracoesNotificacaoPaciente() {
   const navigate = useNavigate()
   const config = useConfiguracoesNotificacao(CATEGORIAS_PACIENTE, ['tarefas'])
 
-  // Salva as preferências e volta para Notificações, que exibe o aviso (RF134)
-  function salvar() {
-    config.salvar()
-    navigate('/paciente/notificacoes', { replace: true, state: { preferenciasSalvas: true } })
+  // Salva as preferências na API e, se der certo, volta para Notificações, que exibe o aviso (RF134)
+  async function salvar() {
+    const salvou = await config.salvar()
+    if (salvou) navigate('/paciente/notificacoes', { replace: true, state: { preferenciasSalvas: true } })
   }
 
   return (
@@ -49,8 +49,15 @@ export default function ConfiguracoesNotificacaoPaciente() {
 
         {/* Salva as preferências e exibe o aviso (RF134) */}
         <div className="mt-5 flex justify-end">
-          <Button type="button" larguraAuto className="h-10 px-5" onClick={salvar}>
-            Salvar preferências
+          <Button
+            type="button"
+            larguraAuto
+            className="h-10 px-5"
+            onClick={salvar}
+            carregando={config.salvando}
+            disabled={config.carregando || !!config.erroCarregar}
+          >
+            {config.salvando ? 'Salvando...' : 'Salvar preferências'}
           </Button>
         </div>
       </section>

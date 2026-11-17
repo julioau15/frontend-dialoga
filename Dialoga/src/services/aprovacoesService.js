@@ -13,82 +13,178 @@
 // ============================================================
 import { API_URL } from '../config/api'
 
-const URL_APROVACOES = `${API_URL}/aprovacoes-profissionais`
+const CAMINHO = '/aprovacoes-profissionais'
 
-// O back lê o token no header "x-access-token"
-function cabecalhos(token) {
-  return { 'Content-Type': 'application/json', 'x-access-token': token }
+// Cria erros com status para permitir tratamento pela interface.
+function criarErro(mensagem, status) {
+  const erro = new Error(mensagem)
+  erro.status = status
+  return erro
 }
 
-// fetch + leitura do JSON. Se não conseguir falar com o servidor, lança um erro amigável.
-async function requisitar(url, opcoes) {
-  let res
-  try {
-    res = await fetch(url, opcoes)
-  } catch {
-    throw new Error('Não foi possível conectar ao servidor. Verifique se a API está rodando.')
+// Valida identificadores antes de montar uma URL de decisão.
+function validarId(valor) {
+  if (!/^[1-9]\d*$/.test(String(valor))) {
+    throw criarErro('A solicitação possui um identificador inválido.', 400)
   }
-  const data = await res.json().catch(() => null)
-  return { res, data }
+
+  const id = Number(valor)
+  if (!Number.isSafeInteger(id)) {
+    throw criarErro('A solicitação possui um identificador inválido.', 400)
+  }
+
+  return id
 }
 
-// No banco, status_aprovacao é TINYINT: NULL = pendente, 1 = aprovado, 0 = recusado.
-// (A documentação OpenAPI fala em texto "Pendente/Aprovado/Recusado", então aceitamos os dois.)
+// Executa requisições sem expor mensagens técnicas de erro do servidor.
+async function requisitar(caminho, { token, signal, method = 'GET' }) {
+  if (!token) {
+    throw criarErro('Sua sessão expirou. Faça login novamente.', 401)
+  }
+
+  let resposta
+
+  try {
+    resposta = await fetch(`${API_URL}${caminho}`, {
+      method,
+      headers: { 'x-access-token': token },
+      signal,
+    })
+  } catch (erro) {
+    if (signal?.aborted) throw erro
+    throw new Error(
+      'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
+      { cause: erro },
+    )
+  }
+
+  const dados = await resposta.json().catch(() => null)
+
+  if (!resposta.ok) {
+    if (resposta.status === 401) {
+      throw criarErro('Sua sessão expirou. Faça login novamente.', 401)
+    }
+
+    if (resposta.status === 403) {
+      throw criarErro('Você não tem permissão para realizar esta ação.', 403)
+    }
+
+    // Somente o 404 JSON conhecido representa uma listagem vazia.
+    if (
+      method === 'GET' &&
+      resposta.status === 404 &&
+      dados?.status === false &&
+      dados?.status_code === 404 &&
+      dados?.message === 'Não foi possivel encontrar nenhum registro.'
+    ) {
+      return { response: { administradorProfissional: [] } }
+    }
+
+    if (resposta.status === 409) {
+      throw criarErro(
+        'A solicitação foi alterada. Atualize a lista antes de tentar novamente.',
+        409,
+      )
+    }
+
+    throw criarErro(
+      method === 'GET'
+        ? 'Não foi possível carregar as solicitações.'
+        : 'Não foi possível registrar a decisão. Tente novamente.',
+      resposta.status,
+    )
+  }
+
+  if (dados?.status !== true) {
+    throw new Error('O servidor retornou uma resposta inválida.')
+  }
+
+  return dados
+}
+
+// Reconhece apenas os estados previstos no contrato atual.
 function normalizarStatus(valor) {
-  if (valor === 1 || valor === '1' || valor === true) return 'aprovado'
-  if (valor === 0 || valor === '0' || valor === false) return 'recusado'
-  const texto = String(valor ?? '').toLowerCase()
-  if (texto.startsWith('aprov')) return 'aprovado'
-  if (texto.startsWith('recus') || texto.startsWith('reprov')) return 'recusado'
-  return 'pendente'
+  if (valor === null) return 'pendente'
+  if ([1, '1', true].includes(valor)) return 'aprovado'
+  if ([0, '0', false].includes(valor)) return 'recusado'
+
+  const texto = String(valor ?? '').trim().toLowerCase()
+  if (texto === 'pendente') return 'pendente'
+  if (texto === 'aprovado') return 'aprovado'
+  if (texto === 'recusado' || texto === 'reprovado') return 'recusado'
+
+  throw new Error('O servidor retornou um status de solicitação inválido.')
 }
 
-// Transforma o item do back no formato que as telas usam:
-// { id, idProfissional, nome, especialidade, clinica, email, telefone, crp, cpf, status, enviadoEm }
+// Converte o registro da API para o formato já utilizado pelos componentes.
 function normalizarAprovacao(item) {
-  // o back devolve "profissional" como lista de 1 item
-  const p = (Array.isArray(item.profissional) ? item.profissional[0] : item.profissional) ?? {}
-  const especialidades = Array.isArray(p.especialidade) ? p.especialidade : []
+  if (!item || typeof item !== 'object') {
+    throw new Error('O servidor retornou uma solicitação inválida.')
+  }
+
+  const profissional = Array.isArray(item.profissional)
+    ? item.profissional[0]
+    : item.profissional
+
+  if (
+    !profissional ||
+    typeof profissional !== 'object' ||
+    typeof profissional.nome_completo !== 'string' ||
+    !profissional.nome_completo.trim()
+  ) {
+    throw new Error('Não foi possível identificar o profissional da solicitação.')
+  }
+
+  const especialidades = Array.isArray(profissional.especialidade)
+    ? profissional.especialidade
+    : []
 
   return {
-    id: item.id,
-    idProfissional: p.id ?? item.id_profissional,
-    nome: p.nome_completo ?? '',
-    especialidade: especialidades.map((e) => e.especialidade).join(', '),
-    clinica: p.instituicao_clinica ?? '',
-    email: p.email ?? '',
-    telefone: p.celular ?? '',
-    crp: p.crp ?? '',
-    cpf: p.cpf ?? '',
+    id: validarId(item.id),
+    idProfissional: validarId(profissional.id ?? item.id_profissional),
+    nome: profissional.nome_completo,
+    especialidade: especialidades
+      .map((especialidade) => especialidade.especialidade)
+      .filter(Boolean)
+      .join(', '),
+    clinica: profissional.instituicao_clinica ?? '',
+    email: profissional.email ?? '',
+    telefone: profissional.celular ?? '',
+    crp: profissional.crp ?? '',
+    cpf: profissional.cpf ?? '',
     status: normalizarStatus(item.status_aprovacao),
     enviadoEm: item.criado_em,
   }
 }
 
-// GET /aprovacoes-profissionais
-// O back ainda NÃO filtra por status/busca (apesar de constar no OpenAPI):
-// ele devolve tudo, então o filtro e a busca são feitos na tela.
-export async function listarAprovacoes(token) {
-  const { res, data } = await requisitar(URL_APROVACOES, { headers: cabecalhos(token) })
+// Carrega a lista completa; busca e filtros continuam no frontend.
+export async function listarAprovacoes(token, signal) {
+  const dados = await requisitar(CAMINHO, { token, signal })
+  const lista = dados.response?.administradorProfissional
 
-  if (res.status === 404) return [] // o back responde 404 quando não há nenhuma solicitação
-  if (!data?.status) throw new Error(data?.message ?? 'Não foi possível carregar as solicitações.')
+  if (!Array.isArray(lista)) {
+    throw new Error('O servidor retornou uma lista de solicitações inválida.')
+  }
 
-  return (data.response.administradorProfissional ?? []).map(normalizarAprovacao)
+  return lista.map(normalizarAprovacao)
 }
 
-async function decidir(idProfissional, acao, token, mensagemErro) {
-  const { data } = await requisitar(`${URL_APROVACOES}/${idProfissional}/${acao}`, {
+// Registra uma decisão usando exclusivamente o ID do profissional.
+async function decidir(idProfissional, acao, token) {
+  const id = validarId(idProfissional)
+
+  await requisitar(`${CAMINHO}/${id}/${acao}`, {
+    token,
     method: 'PUT',
-    headers: cabecalhos(token),
   })
-  if (!data?.status) throw new Error(data?.message ?? mensagemErro)
 }
 
-// PUT /aprovacoes-profissionais/:idProfissional/aprovar
-export const aprovarProfissional = (idProfissional, token) =>
-  decidir(idProfissional, 'aprovar', token, 'Não foi possível aprovar o profissional.')
+// Aprova o profissional selecionado.
+export function aprovarProfissional(idProfissional, token) {
+  return decidir(idProfissional, 'aprovar', token)
+}
 
-// PUT /aprovacoes-profissionais/:idProfissional/recusar
-export const recusarProfissional = (idProfissional, token) =>
-  decidir(idProfissional, 'recusar', token, 'Não foi possível recusar o profissional.')
+// Recusa o profissional selecionado.
+export function recusarProfissional(idProfissional, token) {
+  return decidir(idProfissional, 'recusar', token)
+}

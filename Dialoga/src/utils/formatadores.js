@@ -68,6 +68,17 @@ export function formatarData(valor) {
   return data.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
 }
 
+// "2026-09-02T12:15:00.000Z" (ou Date) -> "02/09/2026 às 09:15" (horário de Brasília)
+export function formatarDataHora(valor) {
+  if (!valor) return ''
+  const data = new Date(valor)
+  if (Number.isNaN(data.getTime())) return ''
+  const opcoes = { timeZone: 'America/Sao_Paulo' }
+  const dia = data.toLocaleDateString('pt-BR', opcoes)
+  const hora = data.toLocaleTimeString('pt-BR', { ...opcoes, hour: '2-digit', minute: '2-digit' })
+  return `${dia} às ${hora}`
+}
+
 // "23456789011" -> "234.567.890-11" (se já vier formatado, devolve igual)
 export function formatarCpf(cpf = '') {
   const numeros = String(cpf).replace(/\D/g, '')

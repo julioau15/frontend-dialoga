@@ -4,7 +4,7 @@
 // Props:
 //   busca / onAlterarBusca -> texto digitado e função que o atualiza
 //   filtro / onAlterarFiltro -> aba ativa ('pendente' | 'aprovado' | 'recusado' | 'todos') e função que a troca
-//   contagens -> { pendente, aprovado, recusado } (números mostrados nas abas)
+//   contagens -> { pendente, aprovado, recusado, todos } (números mostrados nas abas)
 // ============================================================
 import IconeBusca from '../../../../../components/IconeBusca'
 
@@ -46,11 +46,9 @@ export default function FiltrosAprovacoes({ busca, onAlterarBusca, filtro, onAlt
               }`}
             >
               {rotulo}
-              {valor !== 'todos' && (
-                <span className={`ml-1 font-normal ${ativa ? 'text-branco-alfa-80' : 'text-secundaria'}`}>
-                  ({contagens[valor]})
-                </span>
-              )}
+              <span className={`ml-1 font-normal ${ativa ? 'text-branco-alfa-80' : 'text-secundaria'}`}>
+                ({contagens[valor]})
+              </span>
             </button>
           )
         })}

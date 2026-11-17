@@ -1,36 +1,71 @@
 // ============================================================
 // hooks/useConfiguracoesNotificacao.js
 // Lógica das configurações de notificação do paciente e do profissional
-// (as telas só desenham). Tudo local, com dados fixos e sem API:
+// (as telas só desenham), integrada à API de preferências:
+//   - carrega as preferências salvas do usuário logado (GET)
 //   - liga e desliga cada tipo de notificação (RF366, RF371)
-//   - "Desligar todas" suspende os alertas sem perder as escolhas (RF364, RF369)
+//   - "Desligar todas" suspende os alertas e bloqueia os interruptores,
+//     sem perder as escolhas de cada tipo (RF364, RF369)
 //   - abre e fecha as categorias
 //   - conta as notificações ativas de cada categoria (valor calculado)
-//   - salva as preferências (RF127, RF134); o aviso "Preferências salvas!"
-//     é exibido pela página de Notificações
+//   - salva as preferências na API (PUT) (RF127, RF134); o aviso
+//     "Preferências salvas!" é exibido pela página de Notificações
 //   - descarta o que não foi salvo (botão Fechar do modal)
 // Uso: const config = useConfiguracoesNotificacao(CATEGORIAS_PACIENTE, ['tarefas'])
+//      const config = useConfiguracoesNotificacao(CATEGORIAS_PACIENTE, ['tarefas'], { ativo: aberto })
+//   ativo -> false adia a busca (ex.: modal fechado)
 // ============================================================
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import { carregarPreferenciasRequest, salvarPreferenciasRequest } from '../services/preferenciasNotificacaoService'
+import { aplicarPreferenciasSalvas, criarEstadoPadrao, montarPreferencias } from '../utils/preferenciasNotificacao'
 
-// Monta o estado inicial a partir dos dados fixos: { desligarTodas, ativos: { idDoTipo: true | false } }
-function criarEstado(categorias) {
-  const ativos = {}
-  categorias.forEach((categoria) => {
-    categoria.tipos.forEach((tipo) => {
-      ativos[tipo.id] = tipo.ativo
-    })
-  })
-  return { desligarTodas: false, ativos }
-}
+const REMOTO_INICIAL = { carregado: false, erro: '' }
 
-export function useConfiguracoesNotificacao(categorias, abertasIniciais = []) {
-  // Preferências da última vez que o usuário salvou
-  const [salvo, setSalvo] = useState(() => criarEstado(categorias))
+export function useConfiguracoesNotificacao(categorias, abertasIniciais = [], { ativo = true } = {}) {
+  const { auth } = useAuth()
+  const token = auth?.token
+
+  // Preferências da última vez que foram carregadas ou salvas na API
+  const [salvo, setSalvo] = useState(() => criarEstadoPadrao(categorias))
   // Preferências que estão sendo editadas na tela
-  const [atual, setAtual] = useState(() => criarEstado(categorias))
+  const [atual, setAtual] = useState(() => criarEstadoPadrao(categorias))
   // Ids das categorias abertas
   const [abertas, setAbertas] = useState(() => abertasIniciais)
+  // Situação da busca na API (carregado / mensagem de erro)
+  const [remoto, setRemoto] = useState(REMOTO_INICIAL)
+  // Muda para buscar de novo ("Tentar novamente")
+  const [tentativa, setTentativa] = useState(0)
+  // Envio das preferências em andamento e erro ao salvar
+  const [salvando, setSalvando] = useState(false)
+  const [erroSalvar, setErroSalvar] = useState('')
+
+  // Busca as preferências salvas do usuário logado
+  useEffect(() => {
+    if (!ativo) return
+    const controle = new AbortController()
+
+    carregarPreferenciasRequest(token, controle.signal)
+      .then((linhas) => {
+        const estado = aplicarPreferenciasSalvas(categorias, linhas)
+        setSalvo(estado)
+        setAtual(estado)
+        setRemoto({ carregado: true, erro: '' })
+      })
+      .catch((erro) => {
+        if (controle.signal.aborted) return // saiu da tela antes da resposta
+        setRemoto({ carregado: false, erro: erro.message })
+      })
+
+    // cancela se a pessoa sair da tela (ou fechar o modal) antes da resposta chegar
+    return () => controle.abort()
+  }, [token, categorias, ativo, tentativa])
+
+  // Tenta buscar as preferências de novo depois de uma falha
+  const recarregar = useCallback(() => {
+    setRemoto(REMOTO_INICIAL)
+    setTentativa((valor) => valor + 1)
+  }, [])
 
   // Conta as notificações ativas de cada categoria; com "Desligar todas" ativo, nenhuma conta como ativa
   const resumo = useMemo(
@@ -68,20 +103,40 @@ export function useConfiguracoesNotificacao(categorias, abertasIniciais = []) {
     return abertas.includes(idCategoria)
   }
 
-  // Guarda as preferências atuais
-  function salvar() {
-    setSalvo(atual)
+  // Envia as preferências atuais para a API.
+  // Devolve true quando salvou e false quando deu erro (a mensagem fica em erroSalvar).
+  async function salvar() {
+    if (salvando) return false
+    setSalvando(true)
+    setErroSalvar('')
+
+    try {
+      await salvarPreferenciasRequest(token, montarPreferencias(categorias, atual))
+      setSalvo(atual)
+      return true
+    } catch (erro) {
+      setErroSalvar(erro.message)
+      return false
+    } finally {
+      setSalvando(false)
+    }
   }
 
   // Volta para as preferências salvas, descartando o que não foi salvo
   function descartar() {
     setAtual(salvo)
+    setErroSalvar('')
   }
 
   return {
     categorias: resumo,
     ativos: atual.ativos,
     desligarTodas: atual.desligarTodas,
+    carregando: ativo && !remoto.carregado && !remoto.erro,
+    erroCarregar: remoto.erro,
+    recarregar,
+    salvando,
+    erroSalvar,
     alternarTipo,
     alternarDesligarTodas,
     alternarCategoria,

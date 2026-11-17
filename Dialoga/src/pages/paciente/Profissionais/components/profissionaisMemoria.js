@@ -1,25 +1,34 @@
-// ============================================================
-// profissionaisMemoria
-// Última lista de profissionais do paciente carregada da API, guardada na memória do navegador
-// e compartilhada pela tela Profissionais e pela tela do profissional (/paciente/profissionais/:id):
-// quem clica no cartão abre o perfil com os dados que já estavam na lista.
-// Quem preenche a lista é o hook useProfissionaisPaciente (a cada carregamento).
-// Ao recarregar a página, a lista começa vazia até a tela Profissionais carregar de novo.
-// ============================================================
+// A identidade da pessoa é id; a identidade do acompanhamento é idVinculo.
+export const chaveProfissional = (p) => p.naPlataforma ? `vinculo-${p.idVinculo}` : `externo-${p.id}`
 
-let profissionais = []
-
-// cópia da lista atual (na ordem da tela)
-export function listarProfissionais() {
-  return [...profissionais]
+export function selecionarProfissional(lista, id, idVinculo) {
+  const candidatos = lista.filter((p) => String(p.id) === String(id))
+  if (idVinculo != null) {
+    return candidatos.find((p) => p.naPlataforma && String(p.idVinculo) === String(idVinculo))
+  }
+  // URLs antigas continuam válidas e preferem o acompanhamento atual.
+  return candidatos.find((p) => p.status !== 'inativo') ?? candidatos[0]
 }
 
-// troca a lista inteira pela que veio da API (mais os profissionais fora da plataforma)
-export function definirProfissionais(lista) {
-  profissionais = [...lista]
+const chaveExternos = (idUsuario) => `dialoga:profissionais-externos:${idUsuario}`
+
+export function lerExternos(idUsuario) {
+  if (idUsuario == null) throw new Error('Não foi possível identificar o paciente.')
+  try {
+    const lista = JSON.parse(localStorage.getItem(chaveExternos(idUsuario)) ?? '[]')
+    // só aproveita itens com id e nome; o resto é descartado sem quebrar a tela
+    return Array.isArray(lista) ? lista.filter((p) => p && typeof p === 'object' && p.id != null && p.nome) : []
+  } catch {
+    // dado corrompido ou armazenamento bloqueado: ignora os externos em vez de quebrar a tela
+    return []
+  }
 }
 
-// profissional pelo id da URL (texto ou número); undefined se não existe
-export function buscarProfissional(id) {
-  return profissionais.find((p) => String(p.id) === String(id))
+export function salvarExternos(idUsuario, lista) {
+  if (idUsuario == null) throw new Error('Não foi possível identificar o paciente.')
+  try {
+    localStorage.setItem(chaveExternos(idUsuario), JSON.stringify(lista))
+  } catch {
+    throw new Error('Não foi possível salvar o profissional neste navegador.')
+  }
 }

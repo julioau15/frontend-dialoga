@@ -10,52 +10,182 @@
 //   aprovar(s)   -> aprova a solicitação s (lança erro se a API falhar)
 //   recusar(s)   -> recusa a solicitação s (lança erro se a API falhar)
 // ============================================================
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { aprovarProfissional, listarAprovacoes, recusarProfissional } from '../services/aprovacoesService'
+import {
+  aprovarProfissional,
+  listarAprovacoes,
+  recusarProfissional,
+} from '../services/aprovacoesService'
 
+// Compartilha o carregamento e as decisões do Dashboard Admin.
 export default function useAprovacoes() {
   const { auth } = useAuth()
-  const [solicitacoes, setSolicitacoes] = useState([])
-  const [carregando, setCarregando] = useState(true)
-  const [erro, setErro] = useState(null)
-
   const token = auth?.token
+  const nivel = auth?.nivel
+
+  const [tentativa, setTentativa] = useState(0)
+  const [estado, setEstado] = useState({
+    token: null,
+    tentativa: -1,
+    solicitacoes: [],
+    erro: null,
+    carregado: false,
+    enviando: false,
+  })
+  const escopoRef = useRef(null)
 
   useEffect(() => {
-    let cancelado = false
+    const controle = new AbortController()
+    const escopo = {
+      token,
+      tentativa,
+      ativo: true,
+      ocupado: false,
+      lista: [],
+    }
+    escopoRef.current = escopo
 
+    // O cancelamento invalida a resposta sem alterar a próxima sessão.
     async function carregar() {
       try {
-        const dados = await listarAprovacoes(token)
-        if (!cancelado) setSolicitacoes(dados)
-      } catch (e) {
-        if (!cancelado) setErro(e.message)
-      } finally {
-        if (!cancelado) setCarregando(false)
+        if (nivel !== 0) {
+          throw new Error('Acesso permitido somente a administradores.')
+        }
+
+        const lista = await listarAprovacoes(token, controle.signal)
+        if (!escopo.ativo) return
+
+        escopo.lista = lista
+        setEstado({
+          token,
+          tentativa,
+          solicitacoes: lista,
+          erro: null,
+          carregado: true,
+          enviando: false,
+        })
+      } catch (erro) {
+        if (!escopo.ativo || controle.signal.aborted) return
+
+        setEstado({
+          token,
+          tentativa,
+          solicitacoes: [],
+          erro: erro.message || 'Não foi possível carregar as solicitações.',
+          carregado: true,
+          enviando: false,
+        })
       }
     }
 
     carregar()
-    return () => { cancelado = true }
-  }, [token])
 
-  // Muda o status só na lista local (a tela atualiza contadores e abas sozinha)
-  const marcarStatus = useCallback((id, status) => {
-    setSolicitacoes((lista) => lista.map((s) => (s.id === id ? { ...s, status } : s)))
+    return () => {
+      escopo.ativo = false
+      controle.abort()
+    }
+  }, [token, nivel, tentativa])
+
+  const atual =
+    estado.token === token &&
+    estado.tentativa === tentativa
+
+  // Só modifica o estado associado à requisição ainda ativa.
+  function atualizar(escopo, transformar) {
+    if (!escopo.ativo || escopoRef.current !== escopo) return
+
+    setEstado((anterior) => {
+      if (
+        anterior.token !== escopo.token ||
+        anterior.tentativa !== escopo.tentativa
+      ) {
+        return anterior
+      }
+
+      return transformar(anterior)
+    })
+  }
+
+  // Serializa decisões e rejeita ações sobre itens já decididos.
+  async function registrarDecisao(solicitacao, status, enviar) {
+    const escopo = escopoRef.current
+
+    if (
+      !escopo?.ativo ||
+      escopo.token !== token ||
+      escopo.tentativa !== tentativa ||
+      escopo.ocupado
+    ) {
+      return false
+    }
+
+    const item = escopo.lista.find(
+      (registro) => registro.id === solicitacao?.id,
+    )
+
+    if (!item || item.status !== 'pendente') {
+      throw new Error('Esta solicitação não está disponível para decisão.')
+    }
+
+    escopo.ocupado = true
+    atualizar(escopo, (anterior) => ({ ...anterior, enviando: true }))
+
+    try {
+      await enviar(item.idProfissional, token)
+
+      if (!escopo.ativo || escopoRef.current !== escopo) return false
+
+      // O endpoint decide por profissional e pode afetar mais de uma linha.
+      escopo.lista = escopo.lista.map((registro) =>
+        registro.idProfissional === item.idProfissional
+          ? { ...registro, status }
+          : registro,
+      )
+
+      atualizar(escopo, (anterior) => ({
+        ...anterior,
+        solicitacoes: escopo.lista,
+      }))
+
+      return true
+    } catch (erro) {
+      if (!escopo.ativo || escopoRef.current !== escopo) return false
+      throw erro
+    } finally {
+      escopo.ocupado = false
+      atualizar(escopo, (anterior) => ({
+        ...anterior,
+        enviando: false,
+      }))
+    }
+  }
+
+  // TODO (lógica): o back ainda não envia o e-mail de boas-vindas ao aprovar
+  // Em falha, o status permanece inalterado, sem precisar de rollback.
+  function aprovar(solicitacao) {
+    return registrarDecisao(solicitacao, 'aprovado', aprovarProfissional)
+  }
+
+  // TODO (lógica): o back ainda não envia o e-mail de notificação ao recusar
+  // Mantém a mesma proteção usada na aprovação.
+  function recusar(solicitacao) {
+    return registrarDecisao(solicitacao, 'recusado', recusarProfissional)
+  }
+
+  // Permite nova tentativa sem atualizar a página inteira.
+  const recarregar = useCallback(() => {
+    if (escopoRef.current?.ocupado) return
+    setTentativa((valor) => valor + 1)
   }, [])
 
-  async function aprovar(solicitacao) {
-    // TODO (lógica): o back ainda não envia o e-mail de boas-vindas ao aprovar
-    await aprovarProfissional(solicitacao.idProfissional, token)
-    marcarStatus(solicitacao.id, 'aprovado')
+  return {
+    solicitacoes: atual ? estado.solicitacoes : [],
+    carregando: !atual || !estado.carregado,
+    erro: atual ? estado.erro : null,
+    enviando: atual && estado.enviando,
+    recarregar,
+    aprovar,
+    recusar,
   }
-
-  async function recusar(solicitacao) {
-    // TODO (lógica): o back ainda não envia o e-mail de notificação ao recusar
-    await recusarProfissional(solicitacao.idProfissional, token)
-    marcarStatus(solicitacao.id, 'recusado')
-  }
-
-  return { solicitacoes, carregando, erro, aprovar, recusar }
 }
