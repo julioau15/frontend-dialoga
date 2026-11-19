@@ -1,4 +1,11 @@
+// ============================================================
+// layouts/LayoutPaciente
+// Menu lateral das páginas do paciente e o aviso de lembrete de dose,
+// que aparece em qualquer página quando chega um lembrete novo.
+// ============================================================
 import LayoutComSidebar from '../LayoutComSidebar/index'
+import Toast from '../../components/Toast'
+import { useLembreteDoses } from '../../hooks/useLembreteDoses'
 
 const itens = [
   { rotulo: 'Dashboard', caminho: '/paciente/dashboard', icone: 'dashboard' },
@@ -11,6 +18,19 @@ const itens = [
   { rotulo: 'Perfil', caminho: '/paciente/perfil', icone: 'perfil' },
 ]
 
+// aviso no canto superior direito, para não cobrir os toasts das páginas (canto inferior)
+const POSICAO_LEMBRETE = '[&>div]:top-6 [&>div]:bottom-auto'
+
+// Monta o layout do paciente com o aviso de lembrete de dose por cima das páginas.
 export default function LayoutPaciente() {
-  return <LayoutComSidebar titulo="Dialoga" itens={itens} />
+  const { toast, fecharToast } = useLembreteDoses()
+
+  return (
+    <>
+      <LayoutComSidebar titulo="Dialoga" itens={itens} />
+      <div className={POSICAO_LEMBRETE}>
+        <Toast aberto={toast.aberto} tipo={toast.tipo} mensagem={toast.mensagem} onFechar={fecharToast} />
+      </div>
+    </>
+  )
 }

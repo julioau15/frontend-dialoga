@@ -5,10 +5,12 @@
 import { API_URL } from '../config/api'
 import {
   montarPayloadTratamento,
+  normalizarDose,
   normalizarTratamento,
 } from '../utils/tratamentos'
 
 const CAMINHO_PACIENTE = '/pacientes/me/tratamentos'
+const CAMINHO_DOSES = '/pacientes/me/doses'
 
 // Executa uma chamada autenticada e mantém o status para quem a utiliza.
 async function chamar(token, caminho, {
@@ -147,5 +149,34 @@ export async function editarTratamentoRequest(token, id, campos) {
 export async function excluirTratamentoRequest(token, id) {
   await chamar(token, `/tratamentos/${validarId(id)}`, {
     method: 'DELETE',
+  })
+}
+
+// Lista as doses de hoje do paciente do token (uma por horário), com a situação de cada uma.
+// 404 (usuário sem perfil de paciente) vira lista vazia, como na listagem de tratamentos.
+export async function listarDosesDoDiaRequest(token, signal) {
+  let dados
+
+  try {
+    dados = await chamar(token, CAMINHO_DOSES, { signal })
+  } catch (erro) {
+    if (erro.status === 404) return []
+    throw erro
+  }
+
+  const registros = dados?.response?.doses
+
+  if (!Array.isArray(registros)) {
+    throw new Error('A API retornou uma lista de doses inválida.')
+  }
+
+  return registros.map(normalizarDose)
+}
+
+// Confirma (marca como tomada) a dose de hoje do horário informado.
+// A página relê as doses depois para confirmar o registro.
+export async function confirmarDoseRequest(token, idHorario) {
+  await chamar(token, `${CAMINHO_DOSES}/${validarId(idHorario)}/confirmar`, {
+    method: 'POST',
   })
 }

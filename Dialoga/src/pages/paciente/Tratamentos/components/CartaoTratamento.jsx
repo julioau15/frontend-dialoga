@@ -4,17 +4,23 @@
 //   - nome do medicamento com a dosagem num selo lilás ao lado;
 //   - frequência na linha de baixo;
 //   - um chip por horário (relógio + hora) e "Lembrete ativo" em verde (só com lembrete);
+//   - cada horário mostra a situação da dose de hoje e o botão "Tomar" quando pode confirmar;
 //   - lápis (editar) e lixeira (excluir) no canto direito.
 // No mobile, "Lembrete ativo" desce para a linha de baixo quando não cabe ao lado dos horários.
 // Props:
 //   tratamento -> { id, nome, dosagem, frequencia, horarios, lembrete }
 //   onEditar(tratamento)  -> abre o pop-up "Editar tratamento"
 //   onExcluir(tratamento) -> abre o pop-up "Excluir tratamento"
+//   indiceDoses -> Map de chaveDose(idTratamento, hora) -> dose de hoje (pode estar vazio)
+//   confirmandoDose -> idHorario da dose sendo confirmada (null quando nenhuma)
+//   onConfirmarDose(dose) -> confirma a dose de um horário
 // ============================================================
 import { useId } from 'react'
 import Card from '../../../../components/Card'
 import Selo from '../../../../components/Selo'
-import { IconeEditar, IconeLixeira, IconeRelogio, IconeSino } from './iconesTratamentos'
+import ChipHorarioDose from './ChipHorarioDose'
+import { IconeEditar, IconeLixeira, IconeSino } from './iconesTratamentos'
+import { chaveDose } from '../../../../utils/tratamentos'
 
 // selo do Figma: 20px de altura, texto de 12px e 8px nas laterais (o Selo compartilhado não muda)
 const AJUSTE_SELO = 'inline-flex shrink-0 [&>span]:h-5 [&>span]:px-2 [&>span]:py-0 [&>span]:text-[12px]'
@@ -24,7 +30,7 @@ const BOTAO_ICONE =
   'grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-lg text-secundaria transition-colors duration-200 ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
-export default function CartaoTratamento({ tratamento, onEditar, onExcluir }) {
+export default function CartaoTratamento({ tratamento, onEditar, onExcluir, indiceDoses, confirmandoDose = null, onConfirmarDose }) {
   const idTitulo = useId()
   const { nome, dosagem, frequencia, horarios, lembrete } = tratamento
 
@@ -49,12 +55,14 @@ export default function CartaoTratamento({ tratamento, onEditar, onExcluir }) {
             {horarios.length > 0 && (
               <ul aria-label="Horários" className="flex flex-wrap gap-2">
                 {horarios.map((hora) => (
-                  <li
-                    key={hora}
-                    className="inline-flex h-[22px] items-center gap-1 rounded-md bg-borda px-2 text-[12px] font-semibold text-texto"
-                  >
-                    <IconeRelogio tamanho={11} className="text-secundaria" />
-                    {hora}
+                  <li key={hora} className="inline-flex">
+                    <ChipHorarioDose
+                      hora={hora}
+                      nome={nome}
+                      dose={indiceDoses?.get(chaveDose(tratamento.id, hora))}
+                      confirmando={confirmandoDose}
+                      onConfirmar={onConfirmarDose}
+                    />
                   </li>
                 ))}
               </ul>

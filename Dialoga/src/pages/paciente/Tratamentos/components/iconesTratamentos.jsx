@@ -71,3 +71,10 @@ export const IconeChevronBaixo = (props) => (
     <path d="m6 9 6 6 6-6" />
   </Base>
 )
+
+// visto: dose tomada e itens do aviso de lista vazia
+export const IconeCheck = (props) => (
+  <Base {...props}>
+    <path d="M20 6 9 17l-5-5" />
+  </Base>
+)
