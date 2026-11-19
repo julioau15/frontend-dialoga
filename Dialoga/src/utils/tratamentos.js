@@ -158,3 +158,45 @@ export function tratamentoConfere(registro, campos) {
       JSON.stringify(horariosCanonicos(campos.horarios))
   )
 }
+
+// Situações da dose de hoje devolvidas pela API (GET /pacientes/me/doses).
+export const SITUACOES_DOSE = ['tomada', 'pendente', 'atrasada', 'futura']
+
+// Chave que liga a dose ao chip de horário do cartão (id do tratamento + horário 'HH:mm').
+export const chaveDose = (idTratamento, horario) =>
+  `${idTratamento}|${normalizarHorario(horario).slice(0, 5)}`
+
+// Normaliza uma dose da API para o formato usado nos cartões.
+export function normalizarDose(registro) {
+  const idHorario = Number(registro?.id_horario_tratamento)
+  const idTratamento = Number(registro?.id_tratamento)
+  const horario = normalizarHorario(registro?.horario)
+
+  if (
+    !Number.isSafeInteger(idHorario) || idHorario <= 0 ||
+    !Number.isSafeInteger(idTratamento) || idTratamento <= 0 ||
+    !horario
+  ) {
+    throw new Error('A API retornou uma dose inválida.')
+  }
+
+  const status = SITUACOES_DOSE.includes(registro.status) ? registro.status : 'futura'
+  const confirmacao = typeof registro.data_hora_confirmacao === 'string'
+    ? registro.data_hora_confirmacao
+    : ''
+
+  return {
+    idHorario,
+    idTratamento,
+    horario: horario.slice(0, 5),
+    status,
+    podeConfirmar: registro.pode_confirmar === true && status !== 'tomada',
+    // 'YYYY-MM-DD HH:mm:ss' -> 'HH:mm'
+    horaConfirmacao: confirmacao.slice(11, 16),
+  }
+}
+
+// Monta o índice chave -> dose para cada cartão encontrar a dose de cada horário.
+export function indexarDoses(doses) {
+  return new Map(doses.map((dose) => [chaveDose(dose.idTratamento, dose.horario), dose]))
+}
