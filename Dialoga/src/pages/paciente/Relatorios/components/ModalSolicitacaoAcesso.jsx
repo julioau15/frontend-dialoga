@@ -2,8 +2,9 @@
 // ModalSolicitacaoAcesso
 // Pop-up "Solicitação de acesso" (RF204–RF207, RN72):
 //   - profissional (avatar, nome, especialidade e o selo "Pendente");
-//   - os indicadores que ele pediu para ver, como caixas de marcar (Sentimento, Energia,
-//     Humor, Horas de sono, Acontecimentos); o paciente pode desmarcar o que não quer mostrar.
+//   - os indicadores que ele pode ver, como caixas de marcar (Sentimento, Energia, Humor,
+//     Horas de sono, Pensamentos, Acontecimentos e Tratamentos); o paciente marca só o que
+//     quer mostrar. "Tratamentos" libera para o profissional os tratamentos (medicação).
 // Mobile e Tablet (frame "Relatorios - Mobile-3"): título "Solicitação de acesso" com X,
 //   caixas uma embaixo da outra e rodapé com "Aprovar" (roxo, com ✓) e "Recusar".
 // Desktop (frame "Solicitação de acesso - Paciente"): 846px, sem a linha do título,
@@ -26,7 +27,7 @@ import { IconeCheck } from '../../../../components/Icones'
 import Modal from '../../../../components/Modal'
 import Selo from '../../../../components/Selo'
 import { AJUSTE_SELO_PENDENTE, AVATAR_PENDENTE } from './estilosRelatorios'
-import { INDICADORES_ACESSO, nomeAvatarSolicitacao } from './relatoriosMock'
+import { INDICADORES_ACESSO, nomeAvatarSolicitacao } from '../../../../utils/relatorios'
 
 // medidas do Figma: 351px no mobile, cabeçalho de 63px com título de 16px e X de 18px,
 // corpo com 12px nas laterais e rodapé com os dois botões dividindo a largura.

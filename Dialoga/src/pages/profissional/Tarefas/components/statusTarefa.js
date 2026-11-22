@@ -7,6 +7,7 @@
 // ============================================================
 export const STATUS = {
   em_andamento: { rotulo: 'Em andamento', tom: 'info' },
+  parcial: { rotulo: 'Respondida em parte', tom: 'info' },
   pendente: { rotulo: 'Pendente', tom: 'primaria' },
   respondida: { rotulo: 'Respondida', tom: 'sucesso' },
   atrasada: { rotulo: 'Em atraso', tom: 'erro' },
@@ -14,3 +15,12 @@ export const STATUS = {
 
 // rascunho ainda não foi enviado ao paciente, então não tem status de resposta
 export const RASCUNHO = { rotulo: 'Rascunho', tom: 'neutro' }
+
+// Texto e tom do selo de um item da lista ({ status, is_rascunho, respondidas, total }).
+// Tarefa enviada a vários pacientes e respondida só por parte: "x/y respondidas".
+// Status desconhecido cai em "Pendente".
+export function rotuloStatusTarefa({ status, is_rascunho, respondidas, total }) {
+  if (is_rascunho) return RASCUNHO
+  if (status === 'parcial' && total > 0) return { rotulo: `${respondidas}/${total} respondidas`, tom: 'info' }
+  return STATUS[status] ?? STATUS.pendente
+}

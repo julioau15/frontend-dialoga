@@ -10,7 +10,10 @@
 //     "Aprovado"; "Recusar" mostra o aviso vermelho "Solicitação recusada." e o selo vira
 //     "Recusado". Mobile e tablet: a solicitação respondida fica mais clara e vai para o fim
 //     da lista; desktop (frame "Solicitação aprovada"): continua no mesmo lugar, sem clarear.
-// Só visual: dados fixos (mock) guardados no estado da tela, sem API.
+// Props:
+//   solicitacoes -> [{ id, nome, especialidade, status, indicadores }] (vindas da API)
+//   onResponder(solicitacao, 'aprovado' | 'recusado', indicadores?) -> async; grava na API
+//     (se falhar, o pop-up continua aberto e o aviso vermelho mostra a mensagem)
 // ============================================================
 import { useCallback, useState } from 'react'
 import AvatarIniciais from '../../../../components/AvatarIniciais'
@@ -21,7 +24,7 @@ import CabecalhoCartao from '../../../profissional/PerfilPaciente/components/Cab
 import ModalSolicitacaoAcesso from './ModalSolicitacaoAcesso'
 import { AJUSTE_SELO_DECIDIDO, AJUSTE_SELO_PENDENTE, AJUSTE_TOAST, AVATAR_PENDENTE, AVATAR_RESPONDIDA } from './estilosRelatorios'
 import { IconeTarefa } from './iconesRelatorios'
-import { SOLICITACOES_MOCK, nomeAvatarSolicitacao } from './relatoriosMock'
+import { nomeAvatarSolicitacao } from '../../../../utils/relatorios'
 
 // avisos depois de responder
 const AVISOS = {
@@ -76,9 +79,9 @@ function Linha({ solicitacao }) {
   )
 }
 
-export default function CartaoSolicitacoesAcesso() {
-  const [solicitacoes, setSolicitacoes] = useState(SOLICITACOES_MOCK)
+export default function CartaoSolicitacoesAcesso({ solicitacoes, onResponder }) {
   const [aberta, setAberta] = useState(null) // solicitação no pop-up
+  const [enviando, setEnviando] = useState(false)
   const [chave, setChave] = useState(0) // recomeça as marcações do pop-up a cada abertura
   const [aviso, setAviso] = useState(null)
 
@@ -90,13 +93,19 @@ export default function CartaoSolicitacoesAcesso() {
     setAberta(solicitacao)
   }
 
-  // aprova ou recusa: muda o status (a solicitação fica no mesmo lugar da lista) e mostra o aviso
-  function responder(status, indicadores) {
-    setSolicitacoes((lista) =>
-      lista.map((s) => (s.id === aberta.id ? { ...s, status, indicadores: indicadores ?? s.indicadores } : s)),
-    )
-    setAberta(null)
-    setAviso(AVISOS[status])
+  // aprova ou recusa na API: o status muda (a solicitação fica no mesmo lugar da lista) e mostra o aviso
+  async function responder(status, indicadores) {
+    if (enviando) return
+    setEnviando(true)
+    try {
+      await onResponder(aberta, status, indicadores)
+      setAberta(null)
+      setAviso(AVISOS[status])
+    } catch (erro) {
+      setAviso({ tipo: 'erro', mensagem: erro.message })
+    } finally {
+      setEnviando(false)
+    }
   }
 
   // o Toast compara esta função entre renderizações: precisa ser a mesma
@@ -122,6 +131,10 @@ export default function CartaoSolicitacoesAcesso() {
           }
         />
       </div>
+
+      {solicitacoes.length === 0 && (
+        <p className="border-t border-borda px-5 py-6 text-center text-[13px] text-secundaria">Nenhuma solicitação de acesso.</p>
+      )}
 
       {/* lista na ordem original; no mobile e no tablet a respondida vai para o fim (order-last) */}
       <ul className="flex flex-col">

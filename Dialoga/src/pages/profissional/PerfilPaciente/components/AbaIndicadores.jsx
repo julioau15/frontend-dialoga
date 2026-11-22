@@ -5,6 +5,8 @@
 //   Conclusão de tarefas, Aderência ao tratamento e o aviso de que os dados
 //   são informados pelo paciente.
 // Sem acesso aprovado (ou paciente externo), mostra o BlocoSemAcesso no lugar.
+// Com acesso, cada cartão só aparece se o paciente autorizou a categoria dele; as
+// categorias negadas são listadas no aviso "O paciente não compartilhou".
 // Props:
 //   paciente          -> perfil (usa acesso e indicadores)
 //   onSolicitarAcesso -> clique em "Solicitar acesso" no bloco sem acesso
@@ -31,11 +33,17 @@ export default function AbaIndicadores({ paciente, onSolicitarAcesso }) {
   return (
     <div className="flex flex-col gap-[15px]">
       <SeletorPeriodo opcoes={PERIODOS} valor={periodo} onMudar={setPeriodo} />
-      <CartaoEmocionais emocionais={dados.emocionais} dias={dias} />
-      <CartaoSono sono={dados.sono} />
-      <CartaoAnotacoesPaciente anotacoes={dados.anotacoesPaciente} />
+      {/* só aparecem os cartões das categorias que o paciente autorizou */}
+      {dados.emocionais && <CartaoEmocionais emocionais={dados.emocionais} dias={dias} />}
+      {dados.sono && <CartaoSono sono={dados.sono} />}
+      {dados.anotacoesPaciente && <CartaoAnotacoesPaciente anotacoes={dados.anotacoesPaciente} />}
       <CartaoConclusao conclusao={dados.conclusao} />
-      <CartaoAderencia aderencia={dados.aderencia} />
+      {dados.aderencia && <CartaoAderencia aderencia={dados.aderencia} />}
+      {dados.negadas?.length > 0 && (
+        <p role="note" className="rounded-xl border border-borda bg-branco px-[17px] py-[13px] text-[12px] leading-4 text-secundaria">
+          🔒 O paciente não compartilhou: {dados.negadas.join(', ')}.
+        </p>
+      )}
 
       {/* RF238: aviso sobre a origem dos dados */}
       <p

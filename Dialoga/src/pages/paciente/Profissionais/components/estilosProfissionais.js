@@ -5,22 +5,8 @@
 // o contêiner só ajusta as medidas (mesmo recurso usado em Tratamentos).
 // ============================================================
 
-// cabeçalho do Modal: título de 16px em negrito, 63px de altura e o X de 18px (traço 1.8);
-// no mobile (403px) o pop-up fica com 351px de largura, como no Figma
-export const AJUSTE_MODAL = [
-  '[&_dialog]:w-[calc(100%-52px)]',
-  '[&_dialog>div>div:first-child]:py-[19px]',
-  '[&_h2]:text-[16px] [&_h2]:font-bold [&_h2]:leading-6',
-  '[&_h2+button]:mt-0 [&_h2+button]:mr-[3px]',
-  '[&_h2+button_svg]:h-[18px] [&_h2+button_svg]:w-[18px] [&_h2+button_svg]:[stroke-width:1.8]',
-].join(' ')
-
-// botões do rodapé: 44px de altura, cantos de 12px e texto de 14px em negrito
-const BOTAO_RODAPE = 'h-11! rounded-xl! px-5! text-[14px]! font-bold!'
-// botão claro ("Cancelar"): contorno lilás de 2px por fora
-export const BOTAO_CLARO = `${BOTAO_RODAPE} border-0! px-[18px]! shadow-[0_0_0_2px_var(--color-borda)]`
-// botão principal ("Salvar", "Excluir" e "Entendi")
-export const BOTAO_PRINCIPAL = `${BOTAO_RODAPE} shadow-sm`
+// cabeçalho e botões dos pop-ups: medidas do Figma compartilhadas por todas as telas do paciente
+export { AJUSTE_MODAL, BOTAO_CLARO, BOTAO_PRINCIPAL } from '../../../../components/Modal/estilosModal'
 
 // campos do pop-up "Novo profissional" (TextField): rótulo de 14px seminegrito, 4px até a
 // caixa de 46px com cantos de 12px, texto de 14px e o texto de ajuda de 11,5px

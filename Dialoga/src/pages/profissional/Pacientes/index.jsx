@@ -14,7 +14,7 @@
 //   - cartão abre o perfil do paciente; o ícone de anotação abre o pop-up "Anotar — [nome]",
 //     grava a nota na API e mostra o toast "Nota adicionada!" (card 1.6.4.3.1.3);
 //   - ao voltar do perfil depois de "Remover paciente", mostra o aviso "Paciente removido.".
-// Os dados vêm do hook usePacientesProfissional; o perfil (ainda sem API) lê a cópia em pacientesMemoria.
+// Os dados vêm do hook usePacientesProfissional; o perfil busca os dele na API (usePerfilPaciente).
 // Estados: carregando, erro (com "Tentar novamente") e lista vazia.
 // Busca e filtro valem juntos. Desktop (a partir de 1024px, com o menu lateral),
 // Tablet e Mobile (403px): Tablet segue o layout do mobile.

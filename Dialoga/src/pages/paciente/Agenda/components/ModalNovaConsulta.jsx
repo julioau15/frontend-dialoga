@@ -14,6 +14,7 @@
 // ============================================================
 import { useEffect, useId, useRef, useState } from 'react'
 import Modal from '../../../../components/Modal'
+import { AJUSTE_MODAL, BOTAO_CLARO, BOTAO_PRINCIPAL, LARGURA_FORMULARIO } from '../../../../components/Modal/estilosModal'
 import Button from '../../../../components/Button'
 import TextField from '../../../../components/TextField'
 import { dataCurta } from '../../../../utils/datasAgenda'
@@ -131,16 +132,18 @@ export default function ModalNovaConsulta({ profissionais, buscarHorarios, onFec
   }
 
   return (
+    // o contêiner ajusta o cabeçalho às medidas do Figma (igual às outras modais do paciente)
+    <div className={AJUSTE_MODAL}>
     <Modal
       aberto
       comDivisores
-      largura="max-w-[420px]"
+      largura={LARGURA_FORMULARIO}
       titulo="Nova consulta"
       onFechar={onFechar}
       rodape={
         <>
-          <Button type="button" variante="suave" larguraAuto disabled={salvando} onClick={() => enviar(true)}>Adicionar outra</Button>
-          <Button type="button" larguraAuto disabled={salvando} onClick={() => enviar(false)}>{salvando ? 'Salvando...' : 'Salvar'}</Button>
+          <Button type="button" variante="suave" larguraAuto className={BOTAO_CLARO} disabled={salvando} onClick={() => enviar(true)}>Adicionar outra</Button>
+          <Button type="button" larguraAuto className={BOTAO_PRINCIPAL} disabled={salvando} onClick={() => enviar(false)}>{salvando ? 'Salvando...' : 'Salvar'}</Button>
         </>
       }
     >
@@ -218,5 +221,6 @@ export default function ModalNovaConsulta({ profissionais, buscarHorarios, onFec
         {erroGeral && <p role="alert" className="text-[11px] text-erro">{erroGeral}</p>}
       </div>
     </Modal>
+    </div>
   )
 }

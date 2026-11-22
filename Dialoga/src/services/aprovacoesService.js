@@ -5,6 +5,7 @@
 // não mexe em tela nem em estado. Todas exigem o token do admin.
 //
 //   GET /aprovacoes-profissionais                 -> lista todas as solicitações
+//                                                    (com o admin responsável de cada pendente)
 //   PUT /aprovacoes-profissionais/:idProfissional/aprovar
 //   PUT /aprovacoes-profissionais/:idProfissional/recusar
 //
@@ -80,9 +81,10 @@ async function requisitar(caminho, { token, signal, method = 'GET' }) {
       return { response: { administradorProfissional: [] } }
     }
 
+    // 409: a solicitação já foi decidida ou está atribuída a outro administrador
     if (resposta.status === 409) {
       throw criarErro(
-        'A solicitação foi alterada. Atualize a lista antes de tentar novamente.',
+        'Esta solicitação já foi decidida ou está atribuída a outro administrador. A lista foi atualizada.',
         409,
       )
     }
@@ -154,6 +156,11 @@ function normalizarAprovacao(item) {
     cpf: profissional.cpf ?? '',
     status: normalizarStatus(item.status_aprovacao),
     enviadoEm: item.criado_em,
+    // divisão fixa: administrador responsável pela decisão (null quando ainda não há)
+    responsavel: item.responsavel
+      ? { id: item.responsavel.id, nome: item.responsavel.nome_completo ?? '' }
+      : null,
+    atribuidaAMim: item.atribuida_a_mim === true,
   }
 }
 

@@ -1,7 +1,7 @@
 // ============================================================
 // pages/profissional/PerfilPaciente
 // Perfil do paciente na visão do profissional (acompanhamento do paciente).
-// Só visual: dados fixos (mock), sem API. Rota: /profissional/pacientes/:id
+// Dados da API pelo hook usePerfilPaciente. Rota: /profissional/pacientes/:id
 // Frames: "Paciente com aceite", "Paciente com aceite indicadores", "Paciente com aceite
 //         hitorico de tarefas", "Nova nota perfil", "Solicitar acesso", "Acesso solicitado"
 //         e os frames "Pacientes profissional - mobile" correspondentes.
@@ -18,14 +18,14 @@
 // Desktop, Tablet e Mobile (403px).
 // ============================================================
 import { useCallback, useState } from 'react'
+import Button from '../../../components/Button'
+import { usePerfilPaciente } from '../../../hooks/usePerfilPaciente'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import AbasSegmentadas from '../../../components/AbasSegmentadas'
 import Card from '../../../components/Card'
 import Toast from '../../../components/Toast'
 import BotaoVoltar from '../NovaTarefa/components/BotaoVoltar'
 import ModalAnotacao from '../Pacientes/components/ModalAnotacao'
-import { excluirAnotacao, listarAnotacoes, salvarAnotacao } from '../Pacientes/components/anotacoesMock'
-import { removerPaciente } from '../Pacientes/components/pacientesMemoria'
 import AbaAnotacoes from './components/AbaAnotacoes'
 import AbaHistorico from './components/AbaHistorico'
 import AbaIndicadores from './components/AbaIndicadores'
@@ -33,7 +33,6 @@ import CabecalhoPaciente from './components/CabecalhoPaciente'
 import CartoesResumo from './components/CartoesResumo'
 import ModalConfirmacao from './components/ModalConfirmacao'
 import { AJUSTE_TOAST } from './components/estilosPerfil'
-import { buscarPerfil, pedirAcesso } from './components/perfilMock'
 import { ABAS_PERFIL } from './components/textosPerfil'
 
 const ID_PAINEL = 'painel-perfil-paciente'
@@ -63,12 +62,11 @@ function Moldura({ children, fora }) {
 function Perfil({ id }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const perfil = buscarPerfil(id)
+  const dados = usePerfilPaciente(id)
+  const { perfil, anotacoes } = dados
 
-  const [acesso, setAcesso] = useState(perfil?.acesso) // vira 'pendente' ao solicitar
   // aba inicial: "Anotações", ou a que a tela anterior pediu (ex.: voltar da resposta -> "Histórico")
   const [aba, setAba] = useState(location.state?.aba ?? 'anotacoes')
-  const [anotacoes, setAnotacoes] = useState(() => (perfil ? listarAnotacoes(perfil.id) : []))
   const [notaAberta, setNotaAberta] = useState(null) // { anotacao } enquanto o pop-up de nota está aberto
   const [chaveNota, setChaveNota] = useState(0) // troco a key do pop-up para ele abrir sempre com os dados certos
   const [paraExcluir, setParaExcluir] = useState(null) // nota escolhida na lixeira
@@ -93,6 +91,26 @@ function Perfil({ id }) {
     navigate('/profissional/pacientes', state ? { state } : undefined)
   }
 
+  if (dados.carregando || dados.erro) {
+    return (
+      <Moldura>
+        <div className="mb-[6px]">
+          <BotaoVoltar onClick={() => voltar()}>Voltar à lista</BotaoVoltar>
+        </div>
+        {dados.carregando ? (
+          <p role="status" className="text-[13px] text-secundaria">Carregando perfil...</p>
+        ) : (
+          <div role="alert" className="flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-4">
+            <p className="text-[13px] text-erro">{dados.erro}</p>
+            <Button type="button" variante="suave" larguraAuto onClick={dados.recarregar}>
+              Tentar novamente
+            </Button>
+          </div>
+        )}
+      </Moldura>
+    )
+  }
+
   // paciente inexistente (id errado na URL)
   if (!perfil) {
     return (
@@ -108,7 +126,7 @@ function Perfil({ id }) {
     )
   }
 
-  const paciente = { ...perfil, acesso }
+  const paciente = perfil
 
   // mostra um aviso no toast
   function avisar(mensagem, tipo = 'sucesso') {
@@ -121,35 +139,50 @@ function Perfil({ id }) {
     setNotaAberta({ anotacao })
   }
 
-  // salva (criando ou editando), atualiza a lista e mostra o toast
-  function salvarNota(dados) {
-    salvarAnotacao(paciente.id, dados)
-    setAnotacoes(listarAnotacoes(paciente.id))
-    setNotaAberta(null)
-    avisar(dados.id != null ? 'Nota atualizada!' : 'Nota adicionada!')
+  // salva na API (criando ou editando), atualiza a lista e mostra o toast
+  async function salvarNota(nota) {
+    try {
+      await dados.salvarNota(nota)
+      setNotaAberta(null)
+      avisar(nota.id != null ? 'Nota atualizada!' : 'Nota adicionada!')
+    } catch (erro) {
+      avisar(erro.message, 'erro')
+    }
   }
 
   // confirma a exclusão da nota escolhida na lixeira
-  function confirmarExclusao() {
-    excluirAnotacao(paciente.id, paraExcluir.id)
-    setAnotacoes(listarAnotacoes(paciente.id))
-    setParaExcluir(null)
-    avisar('Nota removida.', 'erro')
+  async function confirmarExclusao() {
+    try {
+      await dados.excluirNota(paraExcluir)
+      setParaExcluir(null)
+      avisar('Nota removida.', 'erro')
+    } catch (erro) {
+      avisar(erro.message, 'erro')
+    }
   }
 
-  // RF225 e RF226: envia o pedido (só na tela) e mostra "Solicitação enviada"
-  function enviarSolicitacao() {
-    pedirAcesso(paciente.id)
-    setAcesso('pendente')
-    setConfirmarAcesso(false)
-    avisar('Solicitação de acesso enviada ao paciente.')
+  // RF225 e RF226: envia o pedido ao paciente e mostra "Solicitação enviada"
+  async function enviarSolicitacao() {
+    try {
+      await dados.solicitarAcesso()
+      setConfirmarAcesso(false)
+      avisar('Solicitação de acesso enviada ao paciente.')
+    } catch (erro) {
+      setConfirmarAcesso(false)
+      avisar(erro.message, 'erro')
+    }
   }
 
-  // RF315: tira o paciente da lista e volta para ela com o aviso
-  function confirmarRemocaoPaciente() {
-    removerPaciente(paciente.id)
-    setConfirmarRemocao(false)
-    voltar({ aviso: 'Paciente removido.', tipoAviso: 'erro' })
+  // RF315: encerra o vínculo e volta para a lista com o aviso
+  async function confirmarRemocaoPaciente() {
+    try {
+      await dados.remover()
+      setConfirmarRemocao(false)
+      voltar({ aviso: 'Paciente removido.', tipoAviso: 'erro' })
+    } catch (erro) {
+      setConfirmarRemocao(false)
+      avisar(erro.message, 'erro')
+    }
   }
 
   const abas = ABAS_PERFIL.map((a) => ({ ...a, icone: <span aria-hidden="true">{a.emoji}</span> }))

@@ -5,7 +5,7 @@
 //   - marco quem está logado com "Você", comparando com a sessão (RF04)
 //   - filtro pela busca, sem acento e sem maiúscula (RF02)
 //   - crio e removo, com estados de carregamento (RF09, RF11, RF15, RF17)
-//   - não deixo remover a própria conta (RN03)
+//   - não deixo remover a própria conta (RN03) nem quem criou o meu perfil
 // Uso: const adm = useAdministradores()
 // ============================================================
 import { useEffect, useMemo, useState } from 'react'
@@ -68,8 +68,12 @@ export function useAdministradores() {
 
   // RN03: a conta logada nunca pode ser removida.
   // Com isso sempre sobra pelo menos um administrador (a própria conta logada).
+  // Também escondo a lixeira de quem criou o perfil da conta logada (o back responde 403).
+  const idMeuCriador = administradores.find((a) => a.voce)?.idAdministradorCriador ?? null
+
   function podeRemover(administrador) {
-    return !administrador.voce
+    if (administrador.voce) return false
+    return idMeuCriador == null || administrador.id !== idMeuCriador
   }
 
   // Valido o pop-up usando os e-mails que já estão na lista
@@ -92,7 +96,13 @@ export function useAdministradores() {
   // RF15 e RF17: removo e tiro da lista
   async function remover(administrador) {
     // Confiro a RN03 aqui também, para não depender só de a lixeira estar escondida
-    if (!podeRemover(administrador)) throw new Error('Você não pode remover a sua própria conta.')
+    if (!podeRemover(administrador)) {
+      throw new Error(
+        administrador.voce
+          ? 'Você não pode remover a sua própria conta.'
+          : 'Você não pode remover o administrador que criou o seu perfil.',
+      )
+    }
 
     setRemovendo(true)
     try {

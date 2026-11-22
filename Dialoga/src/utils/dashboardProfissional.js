@@ -70,7 +70,7 @@ export function montarDashboard({ vinculos, pacientes, consultas, destinatarios,
       const idPaciente = vinculoPorId.get(c.id_vinculo).id_paciente
       return {
         id: c.id,
-        titulo: c.nome_da_conculta, // (sic) é assim que a coluna se chama no banco
+        titulo: c.nome_da_consulta,
         especialidade: c.especialidade,
         status: c.status,
         hora: String(c.hora).slice(0, 5),

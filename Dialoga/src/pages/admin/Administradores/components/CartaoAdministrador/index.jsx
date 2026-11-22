@@ -1,12 +1,13 @@
 // ============================================================
 // CartaoAdministrador
-// Um item da lista de administradores: avatar com iniciais, nome
+// Um item da lista de administradores: foto (ou iniciais), nome
 // (com a etiqueta "Você" no meu próprio cartão), e-mail, quem criou
 // e quando, e a lixeira nos outros administradores.
 // Props:
-//   administrador -> { nome, email, criadoPor, criadoEm, voce }
+//   administrador -> { nome, email, criadoPor, criadoEm, voce, fotoUrl }
 //   onRemover     -> (administrador) => void, chamado ao clicar na lixeira
-//   podeRemover   -> true mostra a lixeira (false no cartão do administrador logado, RN03)
+//   podeRemover   -> true mostra a lixeira (false no cartão do administrador logado, RN03,
+//                    e no de quem criou o perfil do administrador logado)
 // ============================================================
 import AvatarIniciais from '../../../../../components/AvatarIniciais'
 import Card from '../../../../../components/Card'
@@ -15,13 +16,13 @@ import { IconeLixeira } from '../../../../../components/Icones'
 import { formatarData } from '../../../../../utils/formatadores'
 
 export default function CartaoAdministrador({ administrador, podeRemover, onRemover }) {
-  const { nome, email, criadoPor, criadoEm, voce } = administrador
+  const { nome, email, criadoPor, criadoEm, voce, fotoUrl } = administrador
   const dataCriacao = formatarData(criadoEm)
 
   return (
     // Reaproveito o Card como <li>, porque o cartão fica dentro de uma lista <ul>
     <Card as="li" className="flex items-center gap-4 p-4">
-      <AvatarIniciais nome={nome} />
+      <AvatarIniciais nome={nome} foto={fotoUrl} />
 
       <div className="flex flex-col flex-1 min-w-0 gap-0.5">
         <p className="flex items-center gap-2 text-[13px] font-bold text-texto">

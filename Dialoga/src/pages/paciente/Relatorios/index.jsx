@@ -1,6 +1,7 @@
 // ============================================================
 // pages/paciente/Relatorios
-// Relatórios do paciente. Só visual: dados fixos (mock), sem API. Rota: /paciente/relatorios
+// Relatórios do paciente. Rota: /paciente/relatorios
+// Dados da API pelo hook useRelatorios (registros de humor, solicitações de acesso e tarefas).
 // Frames: "Relatorio - Paciente" (desktop) e "Relatorios - Mobile" (403px).
 //   - título "Relatórios" e subtítulo "Seu histórico de saúde emocional" (RF189);
 //   - "SELECIONAR PERÍODO": calendário com navegação por mês, seleção de intervalo, ponto nos
@@ -17,19 +18,16 @@
 // em 1440px as posições são as do frame. Tablet e Mobile: tudo em uma coluna, na ordem do Figma.
 // ============================================================
 import { useMemo, useState } from 'react'
+import Button from '../../../components/Button'
+import { useRelatorios } from '../../../hooks/useRelatorios'
+import { hojeNoBrasil } from '../../../utils/datasAgenda'
+import { periodoInicial, registrosDoPeriodo } from '../../../utils/relatorios'
 import CalendarioPeriodo from './components/CalendarioPeriodo'
 import CartaoAnotacoesPeriodo from './components/CartaoAnotacoesPeriodo'
 import CartaoIndicadores from './components/CartaoIndicadores'
 import CartaoSolicitacoesAcesso from './components/CartaoSolicitacoesAcesso'
 import CartaoSonoPeriodo from './components/CartaoSonoPeriodo'
 import CartaoTarefasPeriodo from './components/CartaoTarefasPeriodo'
-import { PERIODO_INICIAL, REGISTROS_MOCK, registrosDoPeriodo } from './components/relatoriosMock'
-
-// mês que o calendário abre (o do período inicial)
-const [ANO_INICIAL, MES_INICIAL] = PERIODO_INICIAL.inicio.split('-').map(Number)
-
-// dias com registro (ponto no calendário)
-const DIAS_COM_REGISTRO = new Set(REGISTROS_MOCK.map((r) => r.data))
 
 // Botão "Exportar Relatório" (RF211), como no Figma: branco com borda lilás.
 // Desktop: "📄 Exportar Relatório" (42px de altura); mobile e tablet: "📄 PDF" (32px).
@@ -50,12 +48,24 @@ function BotaoExportar() {
   )
 }
 
+// o calendário abre no mês em que termina o período inicial (últimos 7 dias)
+function estadoInicial() {
+  const periodo = periodoInicial(hojeNoBrasil())
+  const [ano, mes] = periodo.fim.split('-').map(Number)
+  return { periodo, mesVisivel: { ano, mes: mes - 1 } }
+}
+
 function Relatorios() {
-  const [periodo, setPeriodo] = useState(PERIODO_INICIAL)
-  const [mesVisivel, setMesVisivel] = useState({ ano: ANO_INICIAL, mes: MES_INICIAL - 1 })
+  const [inicial] = useState(estadoInicial)
+  const [periodo, setPeriodo] = useState(inicial.periodo)
+  const [mesVisivel, setMesVisivel] = useState(inicial.mesVisivel)
+  const rel = useRelatorios()
+
+  // dias com registro (ponto no calendário)
+  const diasComRegistro = useMemo(() => new Set(rel.registros.map((r) => r.data)), [rel.registros])
 
   // registros do período escolhido (enquanto falta o dia final, vale só o dia inicial)
-  const registros = useMemo(() => registrosDoPeriodo(REGISTROS_MOCK, periodo), [periodo])
+  const registros = useMemo(() => registrosDoPeriodo(rel.registros, periodo), [rel.registros, periodo])
 
   // avança ou volta um mês no calendário (vira o ano quando passa de dezembro/janeiro)
   function mudarMes(delta) {
@@ -79,6 +89,18 @@ function Relatorios() {
           <BotaoExportar />
         </header>
 
+        {rel.carregando && (
+          <p role="status" className="mt-4 text-[13px] text-secundaria xl:pl-[33px]">Carregando seus relatórios...</p>
+        )}
+        {rel.erro && (
+          <div role="alert" className="mt-4 flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-4 xl:ml-[33px]">
+            <p className="text-[13px] text-erro">{rel.erro}</p>
+            <Button type="button" variante="suave" larguraAuto onClick={rel.recarregar}>
+              Tentar novamente
+            </Button>
+          </div>
+        )}
+
         {/* desktop: calendário | gráfico na 1ª linha; solicitações | sono na 2ª
             (mobile e tablet: calendário, gráfico, sono e solicitações, como no Figma) */}
         <div className="mt-[18px] flex flex-col gap-[18px] xl:mt-[11px] xl:grid xl:grid-cols-[297px_528px] xl:gap-x-4 xl:gap-y-[15px] xl:pl-[33px]">
@@ -86,7 +108,7 @@ function Relatorios() {
             ano={mesVisivel.ano}
             mes={mesVisivel.mes}
             periodo={periodo}
-            diasComRegistro={DIAS_COM_REGISTRO}
+            diasComRegistro={diasComRegistro}
             onMudarPeriodo={setPeriodo}
             onMudarMes={mudarMes}
           />
@@ -98,7 +120,7 @@ function Relatorios() {
           </div>
           {/* no Figma este cartão é 5px mais largo que o calendário, para a esquerda */}
           <div className="min-w-0 xl:col-start-1 xl:row-start-2 xl:-ml-[5px] xl:self-start">
-            <CartaoSolicitacoesAcesso />
+            <CartaoSolicitacoesAcesso solicitacoes={rel.solicitacoes} onResponder={rel.responderSolicitacao} />
           </div>
         </div>
 
@@ -106,7 +128,7 @@ function Relatorios() {
           <CartaoAnotacoesPeriodo registros={registros} />
           {/* os frames de Mobile não têm "Tarefas deste período" (tablet segue o mobile) */}
           <div className="max-xl:hidden">
-            <CartaoTarefasPeriodo periodo={periodo} />
+            <CartaoTarefasPeriodo periodo={periodo} tarefas={rel.tarefas} />
           </div>
         </div>
       </div>

@@ -61,3 +61,28 @@ export const normalizar = (texto) => texto.normalize('NFD').replace(/[\u0300-\u0
 export function hojeNoBrasil() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
 }
+
+// '2026-11-24' -> '24/11, terça' (opções de data do pop-up de consulta)
+const DIAS_DA_SEMANA = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
+
+export function dataComDiaDaSemana(iso) {
+  const [, m, d] = iso.split('-')
+  return `${d}/${m}, ${DIAS_DA_SEMANA[paraData(iso).getUTCDay()]}`
+}
+
+// Na edição, o horário que a consulta já tem precisa aparecer nas opções, mesmo que
+// não esteja livre (ele está ocupado pela própria consulta ou fora da disponibilidade atual).
+// dias: [{ data, horarios }] em ordem; atual: { data, hora } | null. Devolve uma lista nova.
+export function diasComHorarioAtual(dias, atual) {
+  if (!atual?.data || !atual?.hora) return dias
+
+  const lista = dias.map((d) => ({ ...d, horarios: [...d.horarios] }))
+  const dia = lista.find((d) => d.data === atual.data)
+
+  if (dia) {
+    if (!dia.horarios.includes(atual.hora)) dia.horarios = [...dia.horarios, atual.hora].sort()
+    return lista
+  }
+
+  return [...lista, { data: atual.data, horarios: [atual.hora] }].sort((a, b) => a.data.localeCompare(b.data))
+}

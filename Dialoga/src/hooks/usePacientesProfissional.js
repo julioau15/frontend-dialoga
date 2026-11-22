@@ -12,7 +12,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { vincularPaciente } from '../services/profissionalService'
 import { aceitarVinculo, buscarPacientesDoProfissional, criarAnotacao, recusarVinculo } from '../services/pacientesProfissionalService'
-import { definirPacientes } from '../pages/profissional/Pacientes/components/pacientesMemoria'
 
 export function usePacientesProfissional(token) {
   const [pacientes, setPacientes] = useState([])
@@ -26,8 +25,6 @@ export function usePacientesProfissional(token) {
 
     buscarPacientesDoProfissional(token, signal)
       .then((lista) => {
-        // o perfil do paciente (ainda sem API) lê a mesma lista guardada na memória
-        definirPacientes(lista)
         setPacientes(lista)
         setErro('')
         setCarregando(false)
@@ -58,7 +55,6 @@ export function usePacientesProfissional(token) {
     // o pedido já foi enviado; se só a releitura falhar, não acusa erro
     await buscarPacientesDoProfissional(token)
       .then((lista) => {
-        definirPacientes(lista)
         setPacientes(lista)
       })
       .catch(() => {})
@@ -71,7 +67,6 @@ export function usePacientesProfissional(token) {
 
     await buscarPacientesDoProfissional(token)
       .then((nova) => {
-        definirPacientes(nova)
         setPacientes(nova)
       })
       .catch(() => {})

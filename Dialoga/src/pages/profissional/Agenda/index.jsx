@@ -282,9 +282,9 @@ function Agenda() {
         </div>
       </div>
 
-      {modal?.tipo === 'nova' && <ModalConsulta pacientes={pacientes} hoje={hoje} onFechar={fecharModal} onSalvar={salvar} />}
+      {modal?.tipo === 'nova' && <ModalConsulta pacientes={pacientes} buscarHorarios={agenda.horarios} onFechar={fecharModal} onSalvar={salvar} />}
       {modal?.tipo === 'editar' && (
-        <ModalConsulta modo="editar" consulta={modal.consulta} pacientes={pacientes} hoje={hoje} onFechar={fecharModal} onSalvar={salvar} />
+        <ModalConsulta modo="editar" consulta={modal.consulta} pacientes={pacientes} buscarHorarios={agenda.horarios} onFechar={fecharModal} onSalvar={salvar} />
       )}
       {modal?.tipo === 'detalhes' && (
         <ModalDetalhes

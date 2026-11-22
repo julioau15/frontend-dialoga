@@ -9,14 +9,14 @@
 //   - legenda Positivo, Moderado e Atenção.
 // Reaproveita o cabeçalho e as faixas do perfil do paciente (visão do profissional).
 // Props:
-//   registros -> registros do período (relatoriosMock)
+//   registros -> registros do período (formato de utils/relatorios)
 //   periodo   -> { inicio, fim } ('AAAA-MM-DD')
 // ============================================================
 import Card from '../../../../components/Card'
 import { dataCurta } from '../../../../utils/datasAgenda'
 import CabecalhoCartao from '../../../profissional/PerfilPaciente/components/CabecalhoCartao'
 import { FAIXAS } from '../../../profissional/PerfilPaciente/components/textosPerfil'
-import { INDICADORES, faixaDe, media, notaMaxima } from './relatoriosMock'
+import { INDICADORES, faixaDe, media, notaMaxima } from '../../../../utils/relatorios'
 
 const ALTURA_MAXIMA = 120 // altura (px) da barra com a nota máxima (Figma: 1.9/3 = 74px)
 

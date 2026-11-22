@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import { nomeDaSidebar } from '../../utils/formatadores'
 import logoPadrao from '../../assets/auth/logo-dialoga.png'
 
 // ajuste nomes e extensões para os arquivos reais de src/assets/sidebar
@@ -107,8 +108,9 @@ function IconeFechar() {
 }
 
 // Conteúdo compartilhado entre a sidebar fixa (desktop) e a gaveta (tablet/mobile)
-function ConteudoMenu({ nome, foto, itens, onSair }) {
-  const primeiroNome = nome.trim().split(/\s+/)[0]
+// nome (dois primeiros nomes do profissional; primeiro nome dos outros) e, embaixo, a função
+function ConteudoMenu({ nome, foto, funcao, nivel, itens, onSair }) {
+  const nomeExibido = nomeDaSidebar(nome, nivel)
 
   return (
     <>
@@ -116,7 +118,10 @@ function ConteudoMenu({ nome, foto, itens, onSair }) {
       {nome && (
         <div className="flex flex-col items-center gap-2 border-b border-[#E8E3F0] px-4 py-6">
           <Avatar nome={nome} foto={foto} />
-          <span className="text-sm font-bold text-[#2B1B3D]">{primeiroNome}</span>
+          <span className="flex flex-col items-center text-center">
+            <span className="text-sm font-bold text-[#2B1B3D]">{nomeExibido}</span>
+            {funcao && <span className="text-xs text-[#7D7490]">{funcao}</span>}
+          </span>
         </div>
       )}
 
@@ -150,7 +155,7 @@ function ConteudoMenu({ nome, foto, itens, onSair }) {
 }
 
 // itens: [{ rotulo, caminho, icone? }]  (icone = chave do objeto `icones` acima)
-function Sidebar({ logo = logoPadrao, nome = '', foto, itens = [], onSair }) {
+function Sidebar({ logo = logoPadrao, nome = '', foto, funcao = '', nivel, itens = [], onSair }) {
   const [aberto, setAberto] = useState(false)
   const { pathname } = useLocation()
   const botaoMenuRef = useRef(null)
@@ -257,7 +262,7 @@ function Sidebar({ logo = logoPadrao, nome = '', foto, itens = [], onSair }) {
             </button>
           </div>
 
-          <ConteudoMenu nome={nome} foto={foto} itens={itens} onSair={sair} />
+          <ConteudoMenu nome={nome} foto={foto} funcao={funcao} nivel={nivel} itens={itens} onSair={sair} />
         </aside>
       </div>
 
@@ -267,7 +272,7 @@ function Sidebar({ logo = logoPadrao, nome = '', foto, itens = [], onSair }) {
           <img src={logo} alt="Dialoga" className="h-9" />
         </div>
 
-        <ConteudoMenu nome={nome} foto={foto} itens={itens} onSair={onSair} />
+        <ConteudoMenu nome={nome} foto={foto} funcao={funcao} nivel={nivel} itens={itens} onSair={onSair} />
       </aside>
     </>
   )
