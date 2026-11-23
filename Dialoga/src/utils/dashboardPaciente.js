@@ -10,7 +10,7 @@
 //     profissionais -> profissionais do paciente com status ('ativo' | 'pendente' | 'inativo')
 //   }
 //   hoje -> 'AAAA-MM-DD'
-// Devolve { indicadores, sono, tratamentos, consultas, tarefas, totalProfissionais }.
+// Devolve { semRegistros, indicadores, sono, tratamentos, consultas, tarefas, totalProfissionais }.
 // ============================================================
 import { diaEMesAbreviado } from './datasAgenda.js'
 import { INDICADORES, media, notaMaxima, registroApiParaRelatorio } from './relatorios.js'
@@ -54,10 +54,12 @@ export function montarDashboardPaciente({ registros, tratamentos, consultas, tar
     .slice(0, 2)
     .map((c) => {
       const { dia, mes } = diaEMesAbreviado(c.data)
-      return { id: c.id, dia, mes, profissional: c.profissional, especialidade: c.especialidade, hora: c.hora }
+      return { id: c.id, data: c.data, dia, mes, profissional: c.profissional, especialidade: c.especialidade, hora: c.hora }
     })
 
   return {
+    // sem nenhum registro de humor na semana, a tela mostra "Ainda não há registros"
+    semRegistros: daSemana.length === 0,
     indicadores: indicadoresDa(daSemana),
     sono: {
       ideal: SONO_IDEAL,

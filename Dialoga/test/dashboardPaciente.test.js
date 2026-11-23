@@ -30,7 +30,7 @@ const RESPOSTAS = {
 test('consultas: próximas 2, sem canceladas nem passadas', () => {
   const d = montarDashboardPaciente(RESPOSTAS, HOJE)
   assert.deepStrictEqual(d.consultas.map((c) => c.id), [1, 4])
-  assert.deepStrictEqual(d.consultas[0], { id: 1, dia: '25', mes: 'Nov.', profissional: 'Ana', especialidade: 'Psicologia', hora: '09:00' })
+  assert.deepStrictEqual(d.consultas[0], { id: 1, data: '2026-11-25', dia: '25', mes: 'Nov.', profissional: 'Ana', especialidade: 'Psicologia', hora: '09:00' })
 })
 
 test('tarefas: as 3 mais recentes, concluída continua concluída e atrasada vira pendente', () => {
@@ -54,4 +54,15 @@ test('tratamentos, total de profissionais ativos e listas vazias', () => {
   const vazio = montarDashboardPaciente({ registros: [], tratamentos: [], consultas: [], tarefas: [], profissionais: [] }, HOJE)
   assert.deepStrictEqual(vazio.indicadores.map((i) => i.valor), [0, 0, 0, 0])
   assert.deepStrictEqual(vazio.sono.dias, [])
+})
+
+test('sem registros na semana: indicadores marcados como vazios (a tela mostra "Ainda não há registros")', () => {
+  const vazio = montarDashboardPaciente({ registros: [], tratamentos: [], consultas: [], tarefas: [], profissionais: [] }, HOJE)
+  assert.strictEqual(vazio.semRegistros, true)
+  assert.strictEqual(montarDashboardPaciente(RESPOSTAS, HOJE).semRegistros, false)
+})
+
+test('itens trazem o que é preciso para abrir cada um', () => {
+  const d = montarDashboardPaciente(RESPOSTAS, HOJE)
+  assert.strictEqual(d.consultas[0].data, '2026-11-25')
 })

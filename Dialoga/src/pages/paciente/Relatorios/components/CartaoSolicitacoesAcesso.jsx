@@ -6,6 +6,8 @@
 //   - no mobile e no tablet, a etiqueta vermelha com a quantidade de pendentes no topo
 //     (no desktop o Figma não mostra);
 //   - clicar numa solicitação pendente abre o pop-up (ModalSolicitacaoAcesso);
+//   - clicar num profissional já aprovado abre o mesmo pop-up para alterar as permissões
+//     ou remover o acesso;
 //   - "Aprovar" mostra o aviso verde "Acesso concedido ao profissional!" e o selo vira
 //     "Aprovado"; "Recusar" mostra o aviso vermelho "Solicitação recusada." e o selo vira
 //     "Recusado". Mobile e tablet: a solicitação respondida fica mais clara e vai para o fim
@@ -30,6 +32,8 @@ import { nomeAvatarSolicitacao } from '../../../../utils/relatorios'
 const AVISOS = {
   aprovado: { tipo: 'sucesso', mensagem: 'Acesso concedido ao profissional!' },
   recusado: { tipo: 'erro', mensagem: 'Solicitação recusada.' },
+  editado: { tipo: 'sucesso', mensagem: 'Permissões atualizadas.' },
+  removido: { tipo: 'erro', mensagem: 'Acesso removido. O profissional não vê mais seus indicadores.' },
 }
 
 // selo do status ("Pendente", "Aprovado" ou "Recusado")
@@ -93,14 +97,14 @@ export default function CartaoSolicitacoesAcesso({ solicitacoes, onResponder }) 
     setAberta(solicitacao)
   }
 
-  // aprova ou recusa na API: o status muda (a solicitação fica no mesmo lugar da lista) e mostra o aviso
-  async function responder(status, indicadores) {
+  // grava na API ('aprovado' | 'recusado' | 'editado' | 'removido') e mostra o aviso
+  async function responder(acao, indicadores) {
     if (enviando) return
     setEnviando(true)
     try {
-      await onResponder(aberta, status, indicadores)
+      await onResponder(aberta, acao, indicadores)
       setAberta(null)
-      setAviso(AVISOS[status])
+      setAviso(AVISOS[acao])
     } catch (erro) {
       setAviso({ tipo: 'erro', mensagem: erro.message })
     } finally {
@@ -139,12 +143,13 @@ export default function CartaoSolicitacoesAcesso({ solicitacoes, onResponder }) 
       {/* lista na ordem original; no mobile e no tablet a respondida vai para o fim (order-last) */}
       <ul className="flex flex-col">
         {solicitacoes.map((s) =>
-          s.status === 'pendente' ? (
-            <li key={s.id} className="border-t border-borda">
+          // pendente: abre para aprovar/recusar; aprovado: abre para alterar ou remover as permissões
+          s.status !== 'recusado' ? (
+            <li key={s.id} className={`border-t border-borda ${s.status === 'aprovado' ? 'max-xl:order-last' : ''}`}>
               <button
                 type="button"
                 aria-haspopup="dialog"
-                aria-label={`Ver a solicitação de ${s.nome}`}
+                aria-label={s.status === 'pendente' ? `Ver a solicitação de ${s.nome}` : `Alterar o acesso de ${s.nome}`}
                 onClick={() => abrir(s)}
                 className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primaria xl:pr-6 xl:pl-5"
               >
@@ -164,8 +169,11 @@ export default function CartaoSolicitacoesAcesso({ solicitacoes, onResponder }) 
         aberto={!!aberta}
         solicitacao={aberta}
         onFechar={() => setAberta(null)}
+        enviando={enviando}
         onAprovar={(indicadores) => responder('aprovado', indicadores)}
         onRecusar={() => responder('recusado')}
+        onSalvar={(indicadores) => responder('editado', indicadores)}
+        onRemover={() => responder('removido')}
       />
 
       <div className={AJUSTE_TOAST}>

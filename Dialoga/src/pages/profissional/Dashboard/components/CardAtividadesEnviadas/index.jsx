@@ -7,7 +7,7 @@
 // ============================================================
 import { CheckQuadrado } from '../../../../../components/Icones'
 import Selo from '../../../../../components/Selo'
-import CardLista from '../CardLista'
+import CardLista, { ItemLink } from '../CardLista'
 
 const SITUACOES = {
   pendente: { texto: 'Pendente', tom: 'primaria' },
@@ -28,13 +28,20 @@ export default function CardAtividadesEnviadas({ atividades }) {
       {atividades.map((t) => {
         const situacao = SITUACOES[t.situacao] ?? SITUACOES.pendente
         return (
-          <li key={t.id} className="flex items-center justify-between gap-3 px-5 py-3">
+          // clicar abre as respostas deste envio (Acompanhamento de respostas)
+          <ItemLink
+            key={t.id}
+            para={`/profissional/tarefas/acompanhamento/${t.id}`}
+            state={{ voltarPara: '/profissional/dashboard', rotuloVoltar: 'Voltar ao dashboard' }}
+            rotulo={`Ver as respostas de ${t.titulo} enviada para ${t.nome_paciente}`}
+            className="items-center justify-between gap-3 px-5 py-3"
+          >
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-texto">{t.titulo}</p>
               <p className="truncate text-xs text-secundaria">Para: {t.nome_paciente}</p>
             </div>
             <Selo tom={situacao.tom}>{situacao.texto}</Selo>
-          </li>
+          </ItemLink>
         )
       })}
     </CardLista>

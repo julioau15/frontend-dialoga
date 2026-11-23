@@ -70,6 +70,7 @@ export function montarDashboard({ vinculos, pacientes, consultas, destinatarios,
       const idPaciente = vinculoPorId.get(c.id_vinculo).id_paciente
       return {
         id: c.id,
+        data: dia(c.data),
         titulo: c.nome_da_consulta,
         especialidade: c.especialidade,
         status: c.status,

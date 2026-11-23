@@ -6,17 +6,20 @@
 //   rel.solicitacoes  -> solicitações de acesso dos profissionais
 //   rel.tarefas       -> tarefas do paciente
 //   rel.carregando / rel.erro / rel.recarregar()
-//   rel.responderSolicitacao(solicitacao, 'aprovado' | 'recusado', indicadores?) -> grava na API
-//     e atualiza a lista (lança Error com .message pronta para a tela)
+//   rel.responderSolicitacao(solicitacao, acao, indicadores?) -> grava na API e atualiza a lista
+//     acao: 'aprovado' | 'recusado' (pendente), 'editado' (muda as permissões) ou 'removido'
+//     (retira o acesso; sai da lista). Lança Error com .message pronta para a tela.
 // ============================================================
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import {
+  alterarPermissoesAcesso,
   aprovarSolicitacaoAcesso,
   buscarRegistrosHumor,
   buscarSolicitacoesAcesso,
   buscarTarefasDoPaciente,
   recusarSolicitacaoAcesso,
+  removerAcesso,
 } from '../services/relatoriosService'
 
 const VAZIO = { registros: [], solicitacoes: [], tarefas: [] }
@@ -49,10 +52,19 @@ export function useRelatorios() {
 
   const recarregar = useCallback(() => setTentativa((n) => n + 1), [])
 
-  async function responderSolicitacao(solicitacao, status, indicadores) {
-    if (status === 'aprovado') await aprovarSolicitacaoAcesso(token, solicitacao.id, indicadores)
+  async function responderSolicitacao(solicitacao, acao, indicadores) {
+    if (acao === 'removido') {
+      await removerAcesso(token, solicitacao.id)
+      setDados((atual) => ({ ...atual, solicitacoes: atual.solicitacoes.filter((s) => s.id !== solicitacao.id) }))
+      return
+    }
+
+    if (acao === 'aprovado') await aprovarSolicitacaoAcesso(token, solicitacao.id, indicadores)
+    else if (acao === 'editado') await alterarPermissoesAcesso(token, solicitacao.id, indicadores)
     else await recusarSolicitacaoAcesso(token, solicitacao.id)
 
+    // 'editado' continua aprovado, só com outras permissões
+    const status = acao === 'recusado' ? 'recusado' : 'aprovado'
     setDados((atual) => ({
       ...atual,
       solicitacoes: atual.solicitacoes.map((s) =>

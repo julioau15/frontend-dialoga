@@ -18,6 +18,11 @@
 //   onFechar        -> X, Esc ou clique fora
 //   onAprovar(lista) -> ids dos indicadores marcados
 //   onRecusar       -> recusa a solicitação
+//   onSalvar(lista) -> (já aprovado) grava as novas permissões
+//   onRemover       -> (já aprovado) retira o acesso, depois da confirmação dentro do pop-up
+//   enviando        -> desabilita os botões enquanto a API responde
+// Profissional já aprovado: título "Acesso compartilhado", selo "Aprovado" e os botões
+// "Remover acesso" e "Salvar alterações" (com as permissões atuais já marcadas).
 // Para recomeçar com as marcações da solicitação, o pai troca a "key" ao abrir.
 // ============================================================
 import { useState } from 'react'
@@ -26,7 +31,7 @@ import Button from '../../../../components/Button'
 import { IconeCheck } from '../../../../components/Icones'
 import Modal from '../../../../components/Modal'
 import Selo from '../../../../components/Selo'
-import { AJUSTE_SELO_PENDENTE, AVATAR_PENDENTE } from './estilosRelatorios'
+import { AJUSTE_SELO_DECIDIDO, AJUSTE_SELO_PENDENTE, AVATAR_PENDENTE } from './estilosRelatorios'
 import { INDICADORES_ACESSO, nomeAvatarSolicitacao } from '../../../../utils/relatorios'
 
 // medidas do Figma: 351px no mobile, cabeçalho de 63px com título de 16px e X de 18px,
@@ -48,8 +53,48 @@ const AJUSTE_MODAL = [
 // botões do rodapé: 37px no mobile e no tablet; 48px no desktop
 const BOTAO = 'h-[37px]! flex-1 rounded-[10px]! text-[14px]! font-bold! xl:h-12! xl:rounded-xl! xl:font-semibold!'
 
-export default function ModalSolicitacaoAcesso({ aberto, solicitacao, onFechar, onAprovar, onRecusar }) {
+export default function ModalSolicitacaoAcesso({ aberto, solicitacao, onFechar, onAprovar, onRecusar, onSalvar, onRemover, enviando = false }) {
   const [marcados, setMarcados] = useState(() => solicitacao?.indicadores ?? [])
+  const [confirmandoRemocao, setConfirmandoRemocao] = useState(false)
+  const aprovado = solicitacao?.status === 'aprovado'
+
+  const rodapePendente = (
+    <>
+      {/* desktop: "Cancelar" (só fecha) à esquerda do "Aprovar" */}
+      <Button type="button" variante="suave" className={`${BOTAO} border-borda-forte! text-secundaria! max-xl:hidden`} onClick={onFechar}>
+        Cancelar
+      </Button>
+      <Button type="button" className={`${BOTAO} shadow-sm`} disabled={marcados.length === 0 || enviando} onClick={() => onAprovar(marcados)}>
+        <IconeCheck tamanho={14} />
+        Aprovar
+      </Button>
+      {/* mobile e tablet: "Recusar" à direita do "Aprovar" */}
+      <Button type="button" variante="suave" className={`${BOTAO} border-borda! text-secundaria! xl:hidden`} disabled={enviando} onClick={onRecusar}>
+        Recusar
+      </Button>
+    </>
+  )
+
+  const rodapeAprovado = confirmandoRemocao ? (
+    <>
+      <Button type="button" variante="suave" className={`${BOTAO} border-borda! text-secundaria!`} disabled={enviando} onClick={() => setConfirmandoRemocao(false)}>
+        Voltar
+      </Button>
+      <Button type="button" variante="perigo" className={`${BOTAO} shadow-sm`} disabled={enviando} onClick={onRemover}>
+        Remover acesso
+      </Button>
+    </>
+  ) : (
+    <>
+      <Button type="button" variante="suave" className={`${BOTAO} border-erro-borda! text-erro!`} disabled={enviando} onClick={() => setConfirmandoRemocao(true)}>
+        Remover acesso
+      </Button>
+      <Button type="button" className={`${BOTAO} shadow-sm`} disabled={marcados.length === 0 || enviando} onClick={() => onSalvar(marcados)}>
+        <IconeCheck tamanho={14} />
+        Salvar alterações
+      </Button>
+    </>
+  )
 
   // marca ou desmarca um indicador
   const alternar = (id) => setMarcados((lista) => (lista.includes(id) ? lista.filter((i) => i !== id) : [...lista, id]))
@@ -58,26 +103,11 @@ export default function ModalSolicitacaoAcesso({ aberto, solicitacao, onFechar, 
     <div className={AJUSTE_MODAL}>
       <Modal
         aberto={aberto}
-        titulo="Solicitação de acesso"
+        titulo={aprovado ? 'Acesso compartilhado' : 'Solicitação de acesso'}
         onFechar={onFechar}
         largura="max-w-[351px]"
         comDivisores
-        rodape={
-          <>
-            {/* desktop: "Cancelar" (só fecha) à esquerda do "Aprovar" */}
-            <Button type="button" variante="suave" className={`${BOTAO} border-borda-forte! text-secundaria! max-xl:hidden`} onClick={onFechar}>
-              Cancelar
-            </Button>
-            <Button type="button" className={`${BOTAO} shadow-sm`} disabled={marcados.length === 0} onClick={() => onAprovar(marcados)}>
-              <IconeCheck tamanho={14} />
-              Aprovar
-            </Button>
-            {/* mobile e tablet: "Recusar" à direita do "Aprovar" */}
-            <Button type="button" variante="suave" className={`${BOTAO} border-borda! text-secundaria! xl:hidden`} onClick={onRecusar}>
-              Recusar
-            </Button>
-          </>
-        }
+        rodape={aprovado ? rodapeAprovado : rodapePendente}
       >
         {solicitacao && (
           <>
@@ -90,17 +120,31 @@ export default function ModalSolicitacaoAcesso({ aberto, solicitacao, onFechar, 
                 <p className="text-[14px] font-bold leading-5 text-texto">{solicitacao.nome}</p>
                 <p className="text-[12px] leading-4 text-secundaria">{solicitacao.especialidade}</p>
               </div>
-              <span className={AJUSTE_SELO_PENDENTE}>
-                <Selo tom="alerta">Pendente</Selo>
+              <span className={aprovado ? AJUSTE_SELO_DECIDIDO : AJUSTE_SELO_PENDENTE}>
+                {aprovado ? (
+                  <Selo tom="sucesso">
+                    <IconeCheck tamanho={12} />
+                    Aprovado
+                  </Selo>
+                ) : (
+                  <Selo tom="alerta">Pendente</Selo>
+                )}
               </span>
             </div>
 
+            {confirmandoRemocao && (
+              <p role="alert" className="mt-4 text-[14px] leading-5 text-secundaria xl:mt-[22px]">
+                Tem certeza que deseja remover o acesso de <strong className="font-bold text-texto">{solicitacao.nome}</strong>?
+                Ele deixará de ver todos os seus indicadores e tratamentos (poderá pedir acesso de novo).
+              </p>
+            )}
+
             {/* indicadores pedidos (caixas de marcar): 1 coluna no mobile e no tablet, 2 no desktop */}
-            <fieldset className="mt-4 border-0 p-0 xl:mt-[22px]">
+            <fieldset hidden={confirmandoRemocao} className="mt-4 border-0 p-0 xl:mt-[22px]">
               <legend className="sr-only">Indicadores que o profissional poderá ver</legend>
               {/* pergunta do Figma desktop (no mobile o título do pop-up já explica) */}
               <p aria-hidden="true" className="mb-3 hidden text-[12px] font-bold leading-4 text-texto xl:block">
-                O que deseja compartilhar com este profissional?
+                {aprovado ? 'O que este profissional pode ver:' : 'O que deseja compartilhar com este profissional?'}
               </p>
               <div className="flex flex-col gap-3 xl:grid xl:grid-cols-2 xl:gap-x-[11px] xl:gap-y-2.5">
                 {INDICADORES_ACESSO.map((ind) => {

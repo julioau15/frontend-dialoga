@@ -7,6 +7,8 @@
 //   p.anotacoes   -> anotações privadas do profissional
 //   p.salvarNota(dados) / p.excluirNota(nota) / p.solicitarAcesso() / p.remover()
 //     -> gravam na API (lançam Error com .message pronta para a tela)
+// Paciente externo (id "ext-..."): vem deste navegador (utils/pacientesExternos),
+// sem indicadores nem histórico; anotações e remoção também ficam no navegador.
 // ============================================================
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
@@ -18,10 +20,29 @@ import {
   removerPaciente,
   salvarAnotacao,
 } from '../services/perfilPacienteService'
+import {
+  buscarPacienteExterno,
+  ehPacienteExterno,
+  excluirAnotacaoExterno,
+  listarAnotacoesExterno,
+  removerPacienteExterno,
+  salvarAnotacaoExterno,
+} from '../utils/pacientesExternos'
+
+const RESUMO_VAZIO = { sessoes: 0, tarefasEnviadas: 0, taxaResposta: 0 }
+
+// paciente externo: só o que está guardado neste navegador (null se não existe)
+function carregarExterno(idUsuario, idPaciente) {
+  const basico = buscarPacienteExterno(idUsuario, idPaciente)
+  const perfil = basico ? { ...basico, acesso: 'externo', resumo: RESUMO_VAZIO, indicadores: null, historico: [] } : null
+  return Promise.resolve([perfil, basico ? listarAnotacoesExterno(idUsuario, idPaciente) : []])
+}
 
 export function usePerfilPaciente(idPaciente) {
   const { auth } = useAuth()
   const token = auth?.token
+  const idUsuario = auth?.id
+  const externo = ehPacienteExterno(idPaciente)
 
   const [dados, setDados] = useState({ perfil: null, anotacoes: [] })
   const [carga, setCarga] = useState(null) // { tentativa, erro }
@@ -32,7 +53,11 @@ export function usePerfilPaciente(idPaciente) {
     const { signal } = controller
     const minhaTentativa = tentativa
 
-    Promise.all([buscarPerfilPaciente(token, idPaciente, signal), listarAnotacoes(token, idPaciente, signal).catch(() => [])])
+    const carregar = externo
+      ? carregarExterno(idUsuario, idPaciente)
+      : Promise.all([buscarPerfilPaciente(token, idPaciente, signal), listarAnotacoes(token, idPaciente, signal).catch(() => [])])
+
+    carregar
       .then(([perfil, anotacoes]) => {
         setDados({ perfil, anotacoes })
         setCarga({ tentativa: minhaTentativa, erro: '' })
@@ -43,22 +68,24 @@ export function usePerfilPaciente(idPaciente) {
       })
 
     return () => controller.abort()
-  }, [token, idPaciente, tentativa])
+  }, [token, idUsuario, externo, idPaciente, tentativa])
 
   const recarregar = useCallback(() => setTentativa((n) => n + 1), [])
 
   async function atualizarAnotacoes() {
-    const anotacoes = await listarAnotacoes(token, idPaciente)
+    const anotacoes = externo ? listarAnotacoesExterno(idUsuario, idPaciente) : await listarAnotacoes(token, idPaciente)
     setDados((atual) => ({ ...atual, anotacoes }))
   }
 
   async function salvarNota(nota) {
-    await salvarAnotacao(token, idPaciente, nota)
+    if (externo) salvarAnotacaoExterno(idUsuario, idPaciente, nota)
+    else await salvarAnotacao(token, idPaciente, nota)
     await atualizarAnotacoes()
   }
 
   async function excluirNota(nota) {
-    await excluirAnotacao(token, nota.id)
+    if (externo) excluirAnotacaoExterno(idUsuario, idPaciente, nota.id)
+    else await excluirAnotacao(token, nota.id)
     await atualizarAnotacoes()
   }
 
@@ -68,8 +95,10 @@ export function usePerfilPaciente(idPaciente) {
     setDados((atual) => ({ ...atual, perfil: atual.perfil && { ...atual.perfil, acesso: 'pendente' } }))
   }
 
+  // externo sai do navegador (com as anotações); plataforma desfaz o vínculo no back
   async function remover() {
-    await removerPaciente(token, idPaciente)
+    if (externo) removerPacienteExterno(idUsuario, idPaciente)
+    else await removerPaciente(token, idPaciente)
   }
 
   const cargaAtual = carga?.tentativa === tentativa ? carga : null

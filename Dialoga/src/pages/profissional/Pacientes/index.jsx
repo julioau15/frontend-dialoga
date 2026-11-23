@@ -8,9 +8,10 @@
 //   - busca por nome (sem diferenciar maiúsculas/acentos) e filtro Todos | Ativos | Inativos (RF300, RF301);
 //   - cartão do paciente com avatar, nome, selo "Plataforma", "Desde", próxima consulta,
 //     status e ícone de anotação (RF306);
-//   - pop-up "Adicionar paciente" (RF303, RF304): busca o paciente na plataforma e envia o pedido
-//     de vínculo. Na API o paciente precisa aceitar antes, então a tela continua na lista, com o
-//     toast "Solicitação enviada!" e o paciente aparece como "Pendente" (no Figma o perfil abria direto);
+//   - pop-up "Adicionar paciente" (RF303, RF304) com o toast "Paciente adicionado!":
+//       plataforma -> envia o pedido de vínculo; na API o paciente precisa aceitar antes, então a
+//                     tela continua na lista e o paciente aparece como "Pendente";
+//       externo    -> só o nome, guardado neste navegador (utils/pacientesExternos); abre o perfil (Figma);
 //   - cartão abre o perfil do paciente; o ícone de anotação abre o pop-up "Anotar — [nome]",
 //     grava a nota na API e mostra o toast "Nota adicionada!" (card 1.6.4.3.1.3);
 //   - ao voltar do perfil depois de "Remover paciente", mostra o aviso "Paciente removido.".
@@ -32,7 +33,7 @@ import FiltroPilulas from './components/FiltroPilulas'
 import ItemPaciente from './components/ItemPaciente'
 import ModalAnotacao from './components/ModalAnotacao'
 import ModalNovoPaciente from './components/ModalNovoPaciente'
-import { FILTROS_STATUS } from './components/statusPaciente'
+import { FILTROS_STATUS, ordenarPacientes } from './components/statusPaciente'
 
 // botão "+ Novo paciente": 40px de altura, cantos de 12px e texto de 14px em negrito
 const BOTAO_NOVO = 'h-10! gap-2! rounded-xl! px-4! text-[14px]! font-bold! shadow-sm'
@@ -54,7 +55,7 @@ function Pacientes() {
   const location = useLocation()
   const { auth } = useAuth()
   // lista vinda da API (recarrega ao abrir a tela, então já vem sem o paciente removido)
-  const lista = usePacientesProfissional(auth?.token)
+  const lista = usePacientesProfissional(auth?.token, auth?.id)
   const { pacientes, carregando, erro } = lista
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState('todos')
@@ -87,8 +88,9 @@ function Pacientes() {
 
   // busca por nome + filtro de status, juntos (a lista é pequena; o React Compiler já memoriza)
   const termo = textoParaBusca(busca.trim())
-  const visiveis = pacientes.filter(
-    (p) => (!termo || textoParaBusca(p.nome).includes(termo)) && (filtro === 'todos' || p.status === filtro),
+  // solicitações recebidas primeiro (como na tela Profissionais do paciente)
+  const visiveis = ordenarPacientes(
+    pacientes.filter((p) => (!termo || textoParaBusca(p.nome).includes(termo)) && (filtro === 'todos' || p.status === filtro)),
   )
 
   // "+ Novo paciente": abre o pop-up sempre vazio
@@ -97,12 +99,18 @@ function Pacientes() {
     setModalAberto(true)
   }
 
-  // pop-up "Adicionar paciente": envia o pedido de vínculo à API e fecha o pop-up.
-  // Se a API recusar, o erro volta para o pop-up (ele mostra a mensagem e continua aberto).
+  // pop-up "Adicionar paciente":
+  //   externo    -> abre o perfil do paciente com o toast, como no Figma;
+  //   plataforma -> continua na lista com o toast (o paciente aparece como "Pendente" até aceitar).
+  // Se der erro, ele volta para o pop-up (que mostra a mensagem e continua aberto).
   async function adicionarPaciente(novo) {
-    await lista.adicionar(novo)
+    const adicionado = await lista.adicionar(novo)
     setModalAberto(false)
-    setToast({ aberto: true, tipo: 'sucesso', mensagem: 'Solicitação enviada! O paciente precisa aceitar o vínculo.' })
+    if (adicionado?.origem === 'externo') {
+      navigate(`/profissional/pacientes/${adicionado.id}`, { state: { aviso: 'Paciente adicionado!' } })
+      return
+    }
+    setToast({ aberto: true, tipo: 'sucesso', mensagem: 'Paciente adicionado!' })
   }
 
   // ícone de anotação do cartão: abre o pop-up "Anotar — [nome]" daquele paciente
@@ -119,8 +127,8 @@ function Pacientes() {
       await lista.responderPedido(paciente, aceitar)
       setToast(
         aceitar
-          ? { aberto: true, tipo: 'sucesso', mensagem: `${paciente.nome} agora é seu paciente!` }
-          : { aberto: true, tipo: 'erro', mensagem: 'Pedido recusado.' },
+          ? { aberto: true, tipo: 'sucesso', mensagem: 'Solicitação aceita!' }
+          : { aberto: true, tipo: 'erro', mensagem: 'Solicitação recusada.' },
       )
     } catch (e) {
       setToast({ aberto: true, tipo: 'erro', mensagem: e.message })
@@ -260,7 +268,7 @@ function Pacientes() {
         onSalvar={salvarNota}
       />
 
-      {/* avisos "Nota adicionada!" e "Paciente removido." */}
+      {/* avisos "Paciente adicionado!", "Nota adicionada!" e "Paciente removido." */}
       <div className={AJUSTE_TOAST}>
         <Toast aberto={toast.aberto} tipo={toast.tipo} mensagem={toast.mensagem} onFechar={fecharToast} />
       </div>

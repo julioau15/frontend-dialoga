@@ -5,8 +5,10 @@
 // é um componente dentro de ./components.
 // Estados: carregando (esqueleto), erro (com "Tentar novamente") e dados.
 // ============================================================
+import { useCallback, useState } from 'react'
 import Button from '../../../components/Button'
 import Card from '../../../components/Card'
+import Toast from '../../../components/Toast'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useDashboardPaciente } from '../../../hooks/useDashboardPaciente'
 import HeaderBoasVindas from './components/HeaderBoasVindas'
@@ -16,6 +18,7 @@ import ResumoCards from './components/ResumoCards'
 import TratamentosHoje from './components/TratamentosHoje'
 import ProximasConsultas from './components/ProximasConsultas'
 import TarefasRecentes from './components/TarefasRecentes'
+import ModalRegistrarHumor from './components/ModalRegistrarHumor'
 
 // Esqueleto cinza enquanto os dados carregam (mesmo padrão do dashboard do profissional)
 function Carregando() {
@@ -51,20 +54,31 @@ function Erro({ mensagem, onTentarNovamente }) {
 function Dashboard() {
   const { perfil } = useAuth()
   const { dados, carregando, erro, recarregar } = useDashboardPaciente()
+  const [humorAberto, setHumorAberto] = useState(false)
+  const [aviso, setAviso] = useState({ aberto: false, mensagem: '' })
+  const fecharAviso = useCallback(() => setAviso((a) => ({ ...a, aberto: false })), [])
+
+  // depois de registrar o humor: fecha o pop-up, recarrega os indicadores e avisa
+  function humorSalvo() {
+    setHumorAberto(false)
+    recarregar()
+    setAviso({ aberto: true, mensagem: 'Humor registrado com sucesso!' })
+  }
 
   const primeiroNome = perfil?.nome?.trim().split(/\s+/)[0] ?? ''
 
   const resumo = dados
     ? [
-        { rotulo: 'Tratamentos ativos', valor: dados.tratamentos.length, icone: 'remedio', cor: 'bg-fundo-card text-primaria' },
-        { rotulo: 'Próximas consultas', valor: dados.consultas.length, icone: 'calendario', cor: 'bg-info-fundo text-info' },
+        { rotulo: 'Tratamentos ativos', valor: dados.tratamentos.length, icone: 'remedio', cor: 'bg-fundo-card text-primaria', para: '/paciente/tratamentos' },
+        { rotulo: 'Próximas consultas', valor: dados.consultas.length, icone: 'calendario', cor: 'bg-info-fundo text-info', para: '/paciente/agenda' },
         {
           rotulo: 'Tarefas pendentes',
           valor: dados.tarefas.filter((t) => t.status !== 'concluida').length,
           icone: 'tarefa',
           cor: 'bg-sucesso-fundo text-sucesso',
+          para: '/paciente/tarefas',
         },
-        { rotulo: 'Profissionais', valor: dados.totalProfissionais, icone: 'pessoas', cor: 'bg-alerta-fundo text-alerta' },
+        { rotulo: 'Profissionais', valor: dados.totalProfissionais, icone: 'pessoas', cor: 'bg-alerta-fundo text-alerta', para: '/paciente/profissionais' },
       ]
     : []
 
@@ -77,8 +91,11 @@ function Dashboard() {
 
       {dados && (
         <>
-          {/* TODO: abrir o fluxo de registro de humor quando a tela/modal existir */}
-          <IndicadoresHoje indicadores={dados.indicadores} onRegistrarHumor={() => {}} />
+          <IndicadoresHoje
+            indicadores={dados.indicadores}
+            semRegistros={dados.semRegistros}
+            onRegistrarHumor={() => setHumorAberto(true)}
+          />
 
           {dados.sono.dias.length > 0 ? (
             <SonoSemana dias={dados.sono.dias} ideal={dados.sono.ideal} />
@@ -101,6 +118,9 @@ function Dashboard() {
           <TarefasRecentes tarefas={dados.tarefas} />
         </>
       )}
+
+      <ModalRegistrarHumor aberto={humorAberto} onFechar={() => setHumorAberto(false)} onSalvo={humorSalvo} />
+      <Toast aberto={aviso.aberto} tipo="sucesso" mensagem={aviso.mensagem} onFechar={fecharAviso} />
     </div>
   )
 }

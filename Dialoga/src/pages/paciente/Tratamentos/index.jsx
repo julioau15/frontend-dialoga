@@ -17,6 +17,7 @@
 // Desktop (com o menu lateral, a partir de 1024px), Tablet e Mobile (403px).
 // ============================================================
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import {
   confirmarDoseRequest,
@@ -114,6 +115,13 @@ function ConteudoTratamentos({ token }) {
   const tratamentos = atual ? remoto.tratamentos : []
   const carregando = !atual || !remoto.carregado
   const erro = atual ? remoto.erro : ''
+
+  // vindo do Dashboard (clique num tratamento): rola até o cartão dele, que fica em destaque
+  const idDestacado = useLocation().state?.destacarTratamento ?? null
+  useEffect(() => {
+    if (!idDestacado || carregando) return
+    document.getElementById(`tratamento-${idDestacado}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [idDestacado, carregando])
   const processando = atual && remoto.processando
   const bloqueado = carregando || !!erro || (atual && remoto.bloqueado)
   const erroOperacao = atual ? remoto.erroOperacao : ''
@@ -312,15 +320,21 @@ function ConteudoTratamentos({ token }) {
         {!carregando && !erro && tratamentos.length > 0 && (
           <fieldset disabled={processando || bloqueado} className="mt-6 flex min-w-0 flex-col gap-2.5 lg:gap-3.5">
             {tratamentos.map((tratamento) => (
-              <CartaoTratamento
+              // vindo do Dashboard: o tratamento clicado fica em destaque (e a tela rola até ele)
+              <div
                 key={tratamento.id}
-                tratamento={tratamento}
-                indiceDoses={indiceDoses}
-                confirmandoDose={confirmandoDose}
-                onConfirmarDose={confirmarDose}
-                onEditar={(t) => abrirModal({ tipo: 'editar', tratamento: t })}
-                onExcluir={(t) => abrirModal({ tipo: 'excluir', tratamento: t })}
-              />
+                id={`tratamento-${tratamento.id}`}
+                className={String(tratamento.id) === String(idDestacado) ? 'rounded-2xl ring-2 ring-primaria ring-offset-2 ring-offset-fundo-suave' : ''}
+              >
+                <CartaoTratamento
+                  tratamento={tratamento}
+                  indiceDoses={indiceDoses}
+                  confirmandoDose={confirmandoDose}
+                  onConfirmarDose={confirmarDose}
+                  onEditar={(t) => abrirModal({ tipo: 'editar', tratamento: t })}
+                  onExcluir={(t) => abrirModal({ tipo: 'excluir', tratamento: t })}
+                />
+              </div>
             ))}
           </fieldset>
         )}

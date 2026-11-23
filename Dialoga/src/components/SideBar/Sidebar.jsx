@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { nomeDaSidebar } from '../../utils/formatadores'
+import { IconeUsuario } from '../Icones'
 import logoPadrao from '../../assets/auth/logo-dialoga.png'
 
 // ajuste nomes e extensões para os arquivos reais de src/assets/sidebar
@@ -118,9 +119,15 @@ function ConteudoMenu({ nome, foto, funcao, nivel, itens, onSair }) {
       {nome && (
         <div className="flex flex-col items-center gap-2 border-b border-[#E8E3F0] px-4 py-6">
           <Avatar nome={nome} foto={foto} />
-          <span className="flex flex-col items-center text-center">
+          <span className="flex flex-col items-center gap-1 text-center">
             <span className="text-sm font-bold text-[#2B1B3D]">{nomeExibido}</span>
-            {funcao && <span className="text-xs text-[#7D7490]">{funcao}</span>}
+            {/* função em selo de pílula, no mesmo formato do selo "Admin" do menu do administrador */}
+            {funcao && (
+              <span className="inline-flex h-[22px] items-center gap-1 rounded-full border border-borda-forte bg-fundo-card px-2.5 text-[10.5px] font-semibold text-primaria">
+                <IconeUsuario tamanho={11} />
+                {funcao}
+              </span>
+            )}
           </span>
         </div>
       )}

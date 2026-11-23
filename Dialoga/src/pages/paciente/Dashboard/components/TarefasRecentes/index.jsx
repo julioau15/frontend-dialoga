@@ -4,7 +4,7 @@
 // Props: tarefas -> [{ id, titulo, prazo, status, progresso (0 a 100) }]
 //   status: 'andamento' | 'pendente' | 'concluida'
 // ============================================================
-import CardLista from '../CardLista'
+import CardLista, { LinhaLink } from '../CardLista'
 
 const STATUS = {
   andamento: { texto: 'Em andamento', classe: 'bg-info-fundo text-info' },
@@ -14,11 +14,18 @@ const STATUS = {
 
 export default function TarefasRecentes({ tarefas }) {
   return (
-    <CardLista icone="tarefa" titulo="Tarefas recentes" linkTexto="Ver todas" linkPara="/paciente/tarefas">
+    <CardLista icone="tarefa" titulo="Tarefas recentes" linkTexto="Ver todas" linkPara="/paciente/tarefas" vazio="Nenhuma tarefa por enquanto.">
       {tarefas.map(({ id, titulo, prazo, status, progresso }) => {
         const { texto, classe } = STATUS[status] ?? STATUS.pendente
         return (
-          <div key={id} className="flex items-center justify-between gap-4 px-5 py-3">
+          // clicar abre a própria tarefa na tela de Tarefas
+          <LinhaLink
+            key={id}
+            para="/paciente/tarefas"
+            state={{ abrirTarefa: id }}
+            rotulo={`Abrir a tarefa ${titulo}`}
+            className="items-center justify-between gap-4 px-5 py-3"
+          >
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-texto">{titulo}</p>
               <p className="text-xs text-secundaria">Prazo: {prazo}</p>
@@ -39,7 +46,7 @@ export default function TarefasRecentes({ tarefas }) {
               )}
               <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${classe}`}>{texto}</span>
             </div>
-          </div>
+          </LinhaLink>
         )
       })}
     </CardLista>

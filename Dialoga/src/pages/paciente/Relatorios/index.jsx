@@ -81,7 +81,8 @@ function Relatorios() {
       {/* em 1440px: 874px de conteúdo a 141px do menu, como no frame */}
       <div className="mx-auto w-full max-w-[770px] px-[21px] pt-[17px] pb-12 sm:px-6 xl:max-w-[922px] xl:pt-[78px] min-[1440px]:max-w-[1184px]! min-[1440px]:pr-[169px]! min-[1440px]:pl-[141px]!">
         {/* RF189 e RF211: título à esquerda e "Exportar Relatório" à direita */}
-        <header className="flex items-start justify-between gap-3 xl:pl-[27px]">
+        {/* desktop: título, grade e cartões de baixo começam na mesma linha (a borda do calendário) */}
+        <header className="flex items-start justify-between gap-3 xl:pl-[33px]">
           <div className="min-w-0">
             <h1 className="text-[20px] font-extrabold leading-7 text-texto xl:text-[24px] xl:leading-[30px]">Relatórios</h1>
             <p className="mt-0.5 text-[14px] leading-5 text-secundaria xl:mt-[5px]">Seu histórico de saúde emocional</p>
@@ -112,19 +113,20 @@ function Relatorios() {
             onMudarPeriodo={setPeriodo}
             onMudarMes={mudarMes}
           />
-          <div className="min-w-0 xl:pt-[3px]">
+          {/* o gráfico estica até o fim da coluna do calendário (sem buraco antes de "Horas de sono") */}
+          <div className="min-w-0 xl:h-full">
             <CartaoIndicadores registros={registros} periodo={periodo} />
           </div>
           <div className="min-w-0 xl:col-start-2">
             <CartaoSonoPeriodo registros={registros} />
           </div>
           {/* no Figma este cartão é 5px mais largo que o calendário, para a esquerda */}
-          <div className="min-w-0 xl:col-start-1 xl:row-start-2 xl:-ml-[5px] xl:self-start">
+          <div className="min-w-0 xl:col-start-1 xl:row-start-2 xl:self-start">
             <CartaoSolicitacoesAcesso solicitacoes={rel.solicitacoes} onResponder={rel.responderSolicitacao} />
           </div>
         </div>
 
-        <div className="mt-[18px] flex flex-col gap-[18px] xl:mt-4 xl:gap-[22px]">
+        <div className="mt-[18px] flex flex-col gap-[18px] xl:mt-4 xl:gap-[22px] xl:pl-[33px]">
           <CartaoAnotacoesPeriodo registros={registros} />
           {/* os frames de Mobile não têm "Tarefas deste período" (tablet segue o mobile) */}
           <div className="max-xl:hidden">

@@ -9,6 +9,7 @@
 // Rota: /profissional/agenda
 // ============================================================
 import { useCallback, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useAgendaProfissional } from '../../../hooks/useAgendaProfissional'
 import Button from '../../../components/Button'
@@ -56,11 +57,17 @@ function Agenda() {
   const agenda = useAgendaProfissional(auth?.token)
   const { consultas, pacientes, disponibilidades } = agenda
   const [hoje] = useState(hojeNoBrasil) // 'AAAA-MM-DD' de hoje (fuso de São Paulo, igual ao back)
+  // vindo do Dashboard (clique num atendimento): abre no dia daquele atendimento
+  const { state } = useLocation()
+  const diaInicial = /^\d{4}-\d{2}-\d{2}$/.test(state?.data ?? '') ? state.data : null
   const [aba, setAba] = useState('eventos')
   const [busca, setBusca] = useState('')
   const [periodo, setPeriodo] = useState('hoje') // 'todos' | 'hoje' | 'semana'
-  const [mesVisivel, setMesVisivel] = useState(() => anoEMes(hojeNoBrasil())) // mes de 0 a 11
-  const [selecionado, setSelecionado] = useState(hoje)
+  // em "Todos" ou "Semana", clicar num dia do calendário faz a lista mostrar só aquele dia
+  // (o filtro continua o mesmo); trocar o filtro volta a lista ao normal
+  const [diaClicado, setDiaClicado] = useState(false)
+  const [mesVisivel, setMesVisivel] = useState(() => anoEMes(diaInicial ?? hojeNoBrasil())) // mes de 0 a 11
+  const [selecionado, setSelecionado] = useState(diaInicial ?? hoje)
   // modal aberto: null | { tipo: 'nova' | 'detalhes' | 'editar' | 'excluir', consulta? }
   const [modal, setModal] = useState(null)
   const [modalDisponibilidade, setModalDisponibilidade] = useState(false)
@@ -77,18 +84,19 @@ function Agenda() {
     [consultas, busca],
   )
   // Consultas do período escolhido no filtro Todos | Hoje | Semana
-  // (Hoje = dia selecionado no calendário; Semana = semana desse dia)
+  // (Hoje = dia selecionado no calendário; Semana = semana desse dia).
+  // Com um dia clicado no calendário, a lista mostra só o dia selecionado.
+  const mostrandoDia = periodo === 'hoje' || diaClicado
   const doPeriodo = useMemo(() => {
+    if (mostrandoDia) return filtradas.filter((c) => c.data === selecionado)
     if (periodo === 'todos') return filtradas
-    if (periodo === 'semana') {
-      const dias = new Set(semanaDe(selecionado))
-      return filtradas.filter((c) => dias.has(c.data))
-    }
-    return filtradas.filter((c) => c.data === selecionado)
-  }, [filtradas, periodo, selecionado])
-  const tituloPeriodo =
-    periodo === 'todos' ? 'Todas as consultas' : periodo === 'semana' ? 'Consultas da semana' : dataPorExtenso(selecionado)
-  const varianteCartao = { todos: 'proxima', hoje: 'dia', semana: 'semana' }[periodo]
+    const dias = new Set(semanaDe(selecionado))
+    return filtradas.filter((c) => dias.has(c.data))
+  }, [filtradas, periodo, selecionado, mostrandoDia])
+  const tituloPeriodo = mostrandoDia
+    ? dataPorExtenso(selecionado)
+    : periodo === 'todos' ? 'Todas as consultas' : 'Consultas da semana'
+  const varianteCartao = mostrandoDia ? 'dia' : { todos: 'proxima', semana: 'semana' }[periodo]
   // Próximos atendimentos: só o que ainda não aparece na lista do período acima
   const idsNoPeriodo = useMemo(() => new Set(doPeriodo.map((c) => c.id)), [doPeriodo])
   const proximas = filtradas.filter((c) => c.data >= hoje && !idsNoPeriodo.has(c.id))
@@ -99,6 +107,18 @@ function Agenda() {
     [disponibilidades, mesVisivel],
   )
   const naAbaDisponibilidade = aba === 'disponibilidade'
+
+  // clique num dia do calendário: em "Todos" ou "Semana" a lista passa a mostrar só aquele dia
+  function escolherDia(dia) {
+    setSelecionado(dia)
+    if (periodo !== 'hoje') setDiaClicado(true)
+  }
+
+  // trocar o filtro volta a lista ao período escolhido
+  function mudarPeriodo(novo) {
+    setPeriodo(novo)
+    setDiaClicado(false)
+  }
 
   function mudarMes(delta) {
     setMesVisivel(({ ano, mes }) => {
@@ -214,7 +234,7 @@ function Agenda() {
               diasComConsulta={naAbaDisponibilidade ? SEM_CONSULTAS : diasComConsulta}
               diasComDisponibilidade={naAbaDisponibilidade ? diasDisponiveis : undefined}
               legenda={naAbaDisponibilidade ? 'Dias com disponibilidade' : undefined}
-              onSelecionar={setSelecionado}
+              onSelecionar={escolherDia}
               onMudarMes={mudarMes}
             />
           </div>
@@ -241,7 +261,7 @@ function Agenda() {
                     onChange={(e) => setBusca(e.target.value)}
                   />
                 </div>
-                <FiltroPeriodo periodo={periodo} onMudar={setPeriodo} />
+                <FiltroPeriodo periodo={periodo} onMudar={mudarPeriodo} />
               </div>
 
               <div className="flex min-w-0 flex-col gap-4 md:col-start-2 md:row-start-2">
@@ -258,7 +278,7 @@ function Agenda() {
                     ))
                   ) : (
                     <Card as="p" className="px-4 py-6 text-center text-[12px] text-secundaria">
-                      Não há consultas registradas
+                      {mostrandoDia ? 'Não há consultas neste dia' : 'Não há consultas registradas'}
                     </Card>
                   )}
                 </section>

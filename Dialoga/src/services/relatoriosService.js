@@ -5,6 +5,8 @@
 //   buscarSolicitacoesAcesso(token, signal)        -> GET /solicitacoes-acesso (+ GET /pacientes/me/profissionais)
 //   aprovarSolicitacaoAcesso(token, id, ids)       -> PUT /solicitacoes-acesso/:id/aprovar { categorias }
 //   recusarSolicitacaoAcesso(token, id)            -> PUT /solicitacoes-acesso/:id/recusar
+//   alterarPermissoesAcesso(token, id, ids)        -> PUT /solicitacoes-acesso/:id/categorias { categorias }
+//   removerAcesso(token, id)                       -> DELETE /solicitacoes-acesso/:id (retira todas as permissões)
 //   buscarTarefasDoPaciente(token, signal)         -> GET /tarefas (só as do paciente do token)
 // O back usa 404 para "lista vazia": aqui isso vira [].
 // ============================================================
@@ -68,6 +70,25 @@ export async function recusarSolicitacaoAcesso(token, id) {
     token,
     method: 'PUT',
     mensagemErro: 'Não foi possível recusar a solicitação.',
+  })
+}
+
+// Muda o que um profissional já aprovado pode ver (ids da tela)
+export async function alterarPermissoesAcesso(token, id, indicadores) {
+  return requisicao(`/solicitacoes-acesso/${encodeURIComponent(id)}/categorias`, {
+    token,
+    method: 'PUT',
+    body: { categorias: categoriasParaApi(indicadores) },
+    mensagemErro: 'Não foi possível alterar as permissões.',
+  })
+}
+
+// Retira o acesso: o profissional deixa de ver os indicadores (e pode pedir de novo)
+export async function removerAcesso(token, id) {
+  return requisicao(`/solicitacoes-acesso/${encodeURIComponent(id)}`, {
+    token,
+    method: 'DELETE',
+    mensagemErro: 'Não foi possível remover o acesso.',
   })
 }
 
