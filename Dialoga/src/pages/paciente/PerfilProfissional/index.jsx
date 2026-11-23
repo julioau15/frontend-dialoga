@@ -5,7 +5,9 @@
 // Frame: "Profissional histórico - Paciente" (só desktop no Figma).
 //   - nome e "Especialista em [especialidade] · [registro]";
 //   - cartão do perfil (avatar, nome, modalidades, especialidades e próxima consulta disponível);
-//   - "Tarefas ativas" e "Tratamentos vinculados", cada um com o link "Ver todas/todos";
+//   - "Tarefas ativas" (as deste profissional que ainda não foram concluídas) e
+//     "Tratamentos vinculados" (só quando o paciente autorizou 'Tratamentos' para este
+//     profissional em Relatórios), cada um com o link "Ver todas/todos";
 //   - botão "Voltar" (volta para a lista de Profissionais).
 // Desktop (a partir de 1280px): duas colunas com as larguras do Figma (627px e 470px, 48px entre
 // elas). Em telas maiores que o frame (ex.: 1920px) o bloco não estica: fica com a largura do
@@ -23,7 +25,7 @@ import Card from '../../../components/Card'
 import CartaoLista from './components/CartaoLista'
 import CartaoPerfil from './components/CartaoPerfil'
 import { IconeAtividade, IconeCirculoCheck } from './components/iconesPerfilProfissional'
-import { buscarPerfilProfissional } from './components/perfilProfissionalMock'
+import { buscarPerfilProfissional } from '../../../services/perfilProfissionalService'
 
 // botão "Voltar": pílula de 38px, texto de 14px em negrito (como no Figma)
 const BOTAO_VOLTAR = 'h-[38px]! rounded-full! pr-[25px]! pl-6! text-[14px]! font-bold! shadow-sm max-xl:w-full!'
@@ -47,7 +49,8 @@ function PerfilProfissional() {
           ? lerExternos(auth?.id)
           : await listarMeusProfissionais(auth?.token, controle.signal)
         const basico = selecionarProfissional(lista, id, idVinculo)
-        if (!controle.signal.aborted) setResultado({ chave, perfil: buscarPerfilProfissional(basico) })
+        const perfil = await buscarPerfilProfissional(auth?.token, basico, controle.signal)
+        if (!controle.signal.aborted) setResultado({ chave, perfil })
       } catch (erro) {
         if (!controle.signal.aborted) setResultado({ chave, erro: erro.message })
       }
@@ -98,25 +101,28 @@ function PerfilProfissional() {
                   subtitulo="Acompanhe as atividades práticas recomendadas pelo profissional para este período."
                   itens={perfil.tarefas}
                   icone={<IconeCirculoCheck tamanho={22} />}
-                  textoVazio="Tarefas deste acompanhamento não disponíveis nesta tela."
+                  textoVazio="Nenhuma tarefa ativa deste profissional."
                   link={{ para: '/paciente/tarefas', rotulo: 'Ver todas as tarefas' }}
                 />
               </div>
             </div>
 
-            {/* coluna da direita: tratamentos (no desktop começa na altura do cartão do perfil) */}
-            <div className="min-w-0 xl:pt-[99px]">
-              <CartaoLista
-                titulo="Tratamentos vinculados"
-                subtitulo="Acompanhe os planos e intervenções atuais com este profissional."
-                itens={perfil.tratamentos}
-                icone={<IconeAtividade tamanho={18} />}
-                textoVazio="Tratamentos deste acompanhamento não disponíveis nesta tela."
-                link={{ para: '/paciente/tratamentos', rotulo: 'Ver todos os tratamentos' }}
-                tituloInteiro
-                className="xl:min-h-[641px] xl:pb-[34px]"
-              />
-            </div>
+            {/* coluna da direita: tratamentos (no desktop começa na altura do cartão do perfil).
+                Só aparece quando o paciente compartilhou os tratamentos com este profissional. */}
+            {perfil.tratamentosCompartilhados && (
+              <div className="min-w-0 xl:pt-[99px]">
+                <CartaoLista
+                  titulo="Tratamentos vinculados"
+                  subtitulo="Tratamentos que você compartilhou com este profissional."
+                  itens={perfil.tratamentos}
+                  icone={<IconeAtividade tamanho={18} />}
+                  textoVazio="Você ainda não cadastrou tratamentos."
+                  link={{ para: '/paciente/tratamentos', rotulo: 'Ver todos os tratamentos' }}
+                  tituloInteiro
+                  className="xl:min-h-[641px] xl:pb-[34px]"
+                />
+              </div>
+            )}
           </div>
         )}
 

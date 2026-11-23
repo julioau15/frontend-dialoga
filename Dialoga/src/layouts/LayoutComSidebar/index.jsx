@@ -18,6 +18,8 @@ function LayoutComSidebar({ itens }) {
       <Sidebar
         nome={perfil?.nome}
         foto={perfil?.fotoUrl}
+        funcao={perfil?.funcao}
+        nivel={perfil?.nivel}
         itens={itens}
         onSair={sair}
       />

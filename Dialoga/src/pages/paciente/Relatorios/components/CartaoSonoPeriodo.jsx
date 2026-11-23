@@ -9,19 +9,21 @@
 //     verde dentro) e o alerta "Abaixo do recomendado (7–9h)" quando a média fica abaixo de 7h.
 // Desktop: gráfico à esquerda e Resumo à direita. Tablet e Mobile: Resumo embaixo do gráfico.
 // Props:
-//   registros -> registros do período (relatoriosMock)
+//   registros -> registros do período (formato de utils/relatorios); dias sem horas de sono ficam de fora
 // ============================================================
 import Card from '../../../../components/Card'
 import { useLargura } from '../../../../hooks/useLargura'
 import { ALTURA, Grafico } from '../../Dashboard/components/SonoSemana'
 import CabecalhoCartao from '../../../profissional/PerfilPaciente/components/CabecalhoCartao'
-import { SONO_MAXIMO, SONO_MINIMO, diaMes, media } from './relatoriosMock'
+import { SONO_MAXIMO, SONO_MINIMO, diaMes, media } from '../../../../utils/relatorios'
 
 // fora do recomendado (RN75): menos de 7h ou mais de 9h
 const foraDoRecomendado = (horas) => horas < SONO_MINIMO || horas > SONO_MAXIMO
 
-export default function CartaoSonoPeriodo({ registros }) {
+export default function CartaoSonoPeriodo({ registros: todos }) {
   const [ref, largura] = useLargura()
+  // só os dias em que o paciente informou as horas de sono
+  const registros = todos.filter((r) => typeof r.sono === 'number')
   const horas = registros.map((r) => r.sono)
   const mediaSono = media(horas)
   const minimo = horas.length ? Math.min(...horas) : 0

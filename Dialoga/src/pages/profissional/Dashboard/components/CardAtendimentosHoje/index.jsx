@@ -6,7 +6,7 @@
 // ============================================================
 import AvatarIniciais from '../../../../../components/AvatarIniciais'
 import { Calendario, Relogio } from '../../../../../components/Icones'
-import CardLista from '../CardLista'
+import CardLista, { ItemLink } from '../CardLista'
 
 export default function CardAtendimentosHoje({ atendimentos }) {
   return (
@@ -18,7 +18,14 @@ export default function CardAtendimentosHoje({ atendimentos }) {
       vazio="Nenhum atendimento para hoje."
     >
       {atendimentos.map((a) => (
-        <li key={a.id} className="flex items-center gap-3 px-5 py-3">
+        // clicar abre a Agenda no dia de hoje, com o atendimento na lista do dia
+        <ItemLink
+          key={a.id}
+          para="/profissional/agenda"
+          state={{ data: a.data }}
+          rotulo={`Ver o atendimento de ${a.nome_paciente} às ${a.hora} na agenda`}
+          className="items-center gap-3 px-5 py-3"
+        >
           <AvatarIniciais nome={a.nome_paciente} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-texto">{a.nome_paciente}</p>
@@ -28,7 +35,7 @@ export default function CardAtendimentosHoje({ atendimentos }) {
             <Relogio className="h-3 w-3" />
             {a.hora}
           </span>
-        </li>
+        </ItemLink>
       ))}
     </CardLista>
   )

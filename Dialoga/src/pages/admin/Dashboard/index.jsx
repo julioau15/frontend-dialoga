@@ -27,7 +27,7 @@ const MENSAGENS_TOAST = {
 }
 
 function ConteudoDashboardAdmin() {
-  const { solicitacoes, carregando, erro, enviando, recarregar, aprovar, recusar } = useAprovacoes()
+  const { solicitacoes, pendentesDeOutros, carregando, erro, enviando, recarregar, aprovar, recusar } = useAprovacoes()
 
   const [filtro, setFiltro] = useState('pendente') // 'pendente' | 'aprovado' | 'recusado' | 'todos'
   const [busca, setBusca] = useState('')
@@ -112,6 +112,14 @@ function ConteudoDashboardAdmin() {
     <section className="mx-auto w-full max-w-[790px] px-5 py-10 md:pt-16">
       <h1 className="text-[22px] font-extrabold text-texto">Aprovação de profissionais</h1>
       <p className="mt-1 text-[12px] text-secundaria">Analise e gerencie as solicitações de acesso à plataforma</p>
+      {/* Divisão fixa: as pendentes de outros administradores não aparecem aqui */}
+      {!carregando && !erro && pendentesDeOutros > 0 && (
+        <p className="mt-2 text-[11px] text-secundaria">
+          {pendentesDeOutros === 1
+            ? '1 solicitação pendente está atribuída a outro administrador.'
+            : `${pendentesDeOutros} solicitações pendentes estão atribuídas a outros administradores.`}
+        </p>
+      )}
 
       <div className="mt-6">
         <ResumoAprovacoes pendentes={contagens.pendente} aprovados={contagens.aprovado} recusados={contagens.recusado} />

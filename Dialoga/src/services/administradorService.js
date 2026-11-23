@@ -7,7 +7,7 @@
 //   definirSenhaAdministrador(token, dados)     -> PUT    /administradores/me/senha (JSON)
 // O token é enviado no header x-access-token.
 // Formato de cada administrador devolvido:
-//   { id, idUsuario, nome, email, criadoPor, criadoEm }
+//   { id, idUsuario, nome, email, criadoPor, idAdministradorCriador, fotoUrl, criadoEm }
 // Em caso de erro, é lançado um Error com .message (texto para a tela),
 // .status (código HTTP) e, quando o erro é do e-mail, .campo = 'email'.
 // ============================================================
@@ -75,6 +75,8 @@ function normalizarAdministrador(item) {
     nome: item.nome_completo,
     email: item.email ?? usuario?.email,
     criadoPor: item.criado_por ?? null,
+    idAdministradorCriador: item.id_administrador_criador ?? null,
+    fotoUrl: item.foto_avatar ?? null,
     criadoEm: item.data_criacao ?? usuario?.data_criacao ?? null,
   }
 }
@@ -131,7 +133,8 @@ export async function definirSenhaAdministrador(token, { senhaAtual, novaSenha }
 }
 
 // Remove o administrador (DELETE /administradores/{id}).
-// O back-end bloqueia a remoção da própria conta e do último administrador (403)
+// O back-end bloqueia a remoção da própria conta, de quem criou o perfil do solicitante
+// e do último administrador (403)
 // e exclui também o usuário vinculado, retirando o acesso (RN02).
 export async function removerAdministrador(token, id) {
   await requisicao(`/administradores/${encodeURIComponent(id)}`, {

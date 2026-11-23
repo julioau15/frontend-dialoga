@@ -3,7 +3,8 @@
 // Guarda quem está logado e deixa isso disponível para todo o app.
 // Uso em qualquer componente:  const { auth, perfil, login, logout } = useAuth()
 //   auth   -> { token, nivel, id, email } ou null (deslogado)
-//   perfil -> { nome, fotoUrl } do usuário logado ou null
+//   perfil -> { nome, fotoUrl, nivel, funcao } do usuário logado ou null
+//             (funcao: 1ª especialidade do profissional, "Paciente" ou "Administrador")
 //   login  -> faz o login na API e salva a sessão
 //   logout -> apaga a sessão
 //   atualizarPerfilLocal -> troca nome/foto do menu lateral (depois de salvar o Perfil)
@@ -11,6 +12,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { loginRequest } from '../services/authService'
 import { API_URL } from '../config/api'
+import { funcaoDoPerfil } from '../utils/formatadores'
 
 const AuthContext = createContext(null)
 
@@ -31,7 +33,7 @@ const NIVEL = {
 
 // Deixa o perfil sempre no mesmo formato, independente da tabela de origem.
 // AJUSTE: troque pelos nomes reais dos campos que sua API devolve.
-function normalizarPerfil(dados) {
+function normalizarPerfil(dados, nivel) {
   if (!dados) return null
   // se a API devolver uma lista ou um objeto embrulhado, pega o registro
   const registro = Array.isArray(dados) ? dados[0] : dados
@@ -41,6 +43,8 @@ function normalizarPerfil(dados) {
   return {
     nome: registro.nome_completo ?? registro.nome ?? '',
     fotoUrl: registro.foto_avatar ?? null,
+    nivel,
+    funcao: funcaoDoPerfil(registro, nivel),
   }
 }
 
@@ -160,7 +164,7 @@ export function AuthProvider({ children }) {
           registro = registro.find((item) => Number(item.id_usuario) === Number(auth.id))
         }
 
-        setPerfil(normalizarPerfil(registro))
+        setPerfil(normalizarPerfil(registro, nivel))
       })
       .catch(() => {
         if (!cancelado) setPerfil(null)

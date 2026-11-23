@@ -6,11 +6,16 @@
 //   - no mobile e no tablet, a etiqueta vermelha com a quantidade de pendentes no topo
 //     (no desktop o Figma não mostra);
 //   - clicar numa solicitação pendente abre o pop-up (ModalSolicitacaoAcesso);
+//   - clicar num profissional já aprovado abre o mesmo pop-up para alterar as permissões
+//     ou remover o acesso;
 //   - "Aprovar" mostra o aviso verde "Acesso concedido ao profissional!" e o selo vira
 //     "Aprovado"; "Recusar" mostra o aviso vermelho "Solicitação recusada." e o selo vira
 //     "Recusado". Mobile e tablet: a solicitação respondida fica mais clara e vai para o fim
 //     da lista; desktop (frame "Solicitação aprovada"): continua no mesmo lugar, sem clarear.
-// Só visual: dados fixos (mock) guardados no estado da tela, sem API.
+// Props:
+//   solicitacoes -> [{ id, nome, especialidade, status, indicadores }] (vindas da API)
+//   onResponder(solicitacao, 'aprovado' | 'recusado', indicadores?) -> async; grava na API
+//     (se falhar, o pop-up continua aberto e o aviso vermelho mostra a mensagem)
 // ============================================================
 import { useCallback, useState } from 'react'
 import AvatarIniciais from '../../../../components/AvatarIniciais'
@@ -21,12 +26,14 @@ import CabecalhoCartao from '../../../profissional/PerfilPaciente/components/Cab
 import ModalSolicitacaoAcesso from './ModalSolicitacaoAcesso'
 import { AJUSTE_SELO_DECIDIDO, AJUSTE_SELO_PENDENTE, AJUSTE_TOAST, AVATAR_PENDENTE, AVATAR_RESPONDIDA } from './estilosRelatorios'
 import { IconeTarefa } from './iconesRelatorios'
-import { SOLICITACOES_MOCK, nomeAvatarSolicitacao } from './relatoriosMock'
+import { nomeAvatarSolicitacao } from '../../../../utils/relatorios'
 
 // avisos depois de responder
 const AVISOS = {
   aprovado: { tipo: 'sucesso', mensagem: 'Acesso concedido ao profissional!' },
   recusado: { tipo: 'erro', mensagem: 'Solicitação recusada.' },
+  editado: { tipo: 'sucesso', mensagem: 'Permissões atualizadas.' },
+  removido: { tipo: 'erro', mensagem: 'Acesso removido. O profissional não vê mais seus indicadores.' },
 }
 
 // selo do status ("Pendente", "Aprovado" ou "Recusado")
@@ -76,9 +83,9 @@ function Linha({ solicitacao }) {
   )
 }
 
-export default function CartaoSolicitacoesAcesso() {
-  const [solicitacoes, setSolicitacoes] = useState(SOLICITACOES_MOCK)
+export default function CartaoSolicitacoesAcesso({ solicitacoes, onResponder }) {
   const [aberta, setAberta] = useState(null) // solicitação no pop-up
+  const [enviando, setEnviando] = useState(false)
   const [chave, setChave] = useState(0) // recomeça as marcações do pop-up a cada abertura
   const [aviso, setAviso] = useState(null)
 
@@ -90,13 +97,19 @@ export default function CartaoSolicitacoesAcesso() {
     setAberta(solicitacao)
   }
 
-  // aprova ou recusa: muda o status (a solicitação fica no mesmo lugar da lista) e mostra o aviso
-  function responder(status, indicadores) {
-    setSolicitacoes((lista) =>
-      lista.map((s) => (s.id === aberta.id ? { ...s, status, indicadores: indicadores ?? s.indicadores } : s)),
-    )
-    setAberta(null)
-    setAviso(AVISOS[status])
+  // grava na API ('aprovado' | 'recusado' | 'editado' | 'removido') e mostra o aviso
+  async function responder(acao, indicadores) {
+    if (enviando) return
+    setEnviando(true)
+    try {
+      await onResponder(aberta, acao, indicadores)
+      setAberta(null)
+      setAviso(AVISOS[acao])
+    } catch (erro) {
+      setAviso({ tipo: 'erro', mensagem: erro.message })
+    } finally {
+      setEnviando(false)
+    }
   }
 
   // o Toast compara esta função entre renderizações: precisa ser a mesma
@@ -123,15 +136,20 @@ export default function CartaoSolicitacoesAcesso() {
         />
       </div>
 
+      {solicitacoes.length === 0 && (
+        <p className="border-t border-borda px-5 py-6 text-center text-[13px] text-secundaria">Nenhuma solicitação de acesso.</p>
+      )}
+
       {/* lista na ordem original; no mobile e no tablet a respondida vai para o fim (order-last) */}
       <ul className="flex flex-col">
         {solicitacoes.map((s) =>
-          s.status === 'pendente' ? (
-            <li key={s.id} className="border-t border-borda">
+          // pendente: abre para aprovar/recusar; aprovado: abre para alterar ou remover as permissões
+          s.status !== 'recusado' ? (
+            <li key={s.id} className={`border-t border-borda ${s.status === 'aprovado' ? 'max-xl:order-last' : ''}`}>
               <button
                 type="button"
                 aria-haspopup="dialog"
-                aria-label={`Ver a solicitação de ${s.nome}`}
+                aria-label={s.status === 'pendente' ? `Ver a solicitação de ${s.nome}` : `Alterar o acesso de ${s.nome}`}
                 onClick={() => abrir(s)}
                 className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primaria xl:pr-6 xl:pl-5"
               >
@@ -151,8 +169,11 @@ export default function CartaoSolicitacoesAcesso() {
         aberto={!!aberta}
         solicitacao={aberta}
         onFechar={() => setAberta(null)}
+        enviando={enviando}
         onAprovar={(indicadores) => responder('aprovado', indicadores)}
         onRecusar={() => responder('recusado')}
+        onSalvar={(indicadores) => responder('editado', indicadores)}
+        onRemover={() => responder('removido')}
       />
 
       <div className={AJUSTE_TOAST}>

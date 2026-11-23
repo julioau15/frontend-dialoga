@@ -31,7 +31,7 @@ import TextField from '../../../../components/TextField'
 import Toast from '../../../../components/Toast'
 import { AJUSTE_MODAL, AJUSTE_TOAST, BOTAO_CLARO, BOTAO_PRINCIPAL } from './estilosTratamentos'
 import { IconeChevronBaixo, IconeRelogio, IconeSino } from './iconesTratamentos'
-import { FREQUENCIAS, TRATAMENTO_VAZIO, validarTratamento, vezesDe } from '../../../../utils/tratamentos'
+import { FREQUENCIAS, TRATAMENTO_VAZIO, frequenciaDoRegistro, validarTratamento, vezesDe } from '../../../../utils/tratamentos'
 
 const LIMITE_TEXTO = 150 // tamanho das colunas nome_medicamento e dosagem no banco
 
@@ -62,7 +62,8 @@ function estadoInicial(tratamento) {
   return {
     nome: tratamento.nome,
     dosagem: tratamento.dosagem,
-    frequencia: tratamento.frequencia,
+    // registros antigos ("1x ao dia", "à noite") viram uma das opções da lista
+    frequencia: frequenciaDoRegistro(tratamento.frequencia, tratamento.horarios.length),
     horarios: tratamento.horarios.length ? tratamento.horarios.map((hora) => hora.slice(0, 5)) : [''],
     lembrete: tratamento.lembrete,
   }
@@ -82,7 +83,8 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
   const envioRef = useRef(false)
   const focoNomeRef = useRef(false)
   const [campos, setCampos] = useState(() => estadoInicial(tratamento))
-  const [erros, setErros] = useState(() => tratamento ? validarTratamento(estadoInicial(tratamento)) : {})
+  // os erros só aparecem depois de salvar (ou ao corrigir um campo): na edição o pop-up abre limpo
+  const [erros, setErros] = useState({})
   const [avisoHorarios, setAvisoHorarios] = useState('')
   const desabilitado = processando || bloqueado
 

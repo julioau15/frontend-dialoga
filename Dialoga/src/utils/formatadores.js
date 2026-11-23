@@ -90,3 +90,23 @@ export function formatarCpf(cpf = '') {
 export function textoParaBusca(texto = '') {
   return String(texto).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 }
+
+// Nome mostrado no menu lateral:
+//   profissional -> dois primeiros nomes, sem o título ("Dra. Ana Beatriz Souza" -> "Ana Beatriz")
+//   paciente e administrador -> primeiro nome ("Maria Clara Santos" -> "Maria")
+export function nomeDaSidebar(nome = '', nivel) {
+  if (nivel === 'profissional') return doisPrimeirosNomes(semTitulo(nome)).join(' ')
+  return nome.trim().split(/\s+/)[0] ?? ''
+}
+
+// Função mostrada embaixo do nome no menu lateral:
+//   profissional -> primeira especialidade (ou "Profissional"); paciente -> "Paciente"; admin -> "Administrador"
+const FUNCAO_POR_NIVEL = { profissional: 'Profissional', paciente: 'Paciente', administrador: 'Administrador' }
+
+export function funcaoDoPerfil(registro, nivel) {
+  if (nivel === 'profissional') {
+    const especialidade = registro?.especialidade?.[0]?.especialidade
+    if (especialidade) return especialidade
+  }
+  return FUNCAO_POR_NIVEL[nivel] ?? ''
+}

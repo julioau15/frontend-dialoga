@@ -10,6 +10,23 @@ export const FREQUENCIAS = [
   { rotulo: 'Quatro vezes ao dia', vezes: 4 },
 ]
 
+// Frequência gravada no banco -> uma das opções da lista (FREQUENCIAS).
+// Registros antigos usam "1x ao dia", "2 vezes ao dia" ou textos livres ("à noite"):
+// pega o número do texto; sem número, usa a quantidade de horários do tratamento.
+const VEZES_POR_EXTENSO = { uma: 1, duas: 2, tres: 3, quatro: 4 }
+
+export function frequenciaDoRegistro(texto, quantidadeHorarios = 1) {
+  const exata = FREQUENCIAS.find((item) => item.rotulo === texto)
+  if (exata) return exata.rotulo
+
+  const normalizado = String(texto ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  const numero = normalizado.match(/(\d+)\s*(x|vez|vezes)/)?.[1]
+  const porExtenso = Object.entries(VEZES_POR_EXTENSO).find(([palavra]) => normalizado.startsWith(palavra))?.[1]
+  const vezes = Number(numero) || porExtenso || quantidadeHorarios || 1
+
+  return (FREQUENCIAS.find((item) => item.vezes === vezes) ?? FREQUENCIAS[0]).rotulo
+}
+
 export const TRATAMENTO_VAZIO = {
   nome: '',
   dosagem: '',

@@ -1,20 +1,25 @@
 // ============================================================
 // hooks/usePacientesProfissional.js
-// Carrega e altera os dados da tela Pacientes do profissional na API.
-//   const lista = usePacientesProfissional(token)
+// Carrega e altera os dados da tela Pacientes do profissional.
+//   const lista = usePacientesProfissional(token, idUsuario)
 //   lista.pacientes   -> [{ id, nome, email, origem, desde, proximaConsulta, status, ... }]
+//                        (pacientes da API + pacientes externos guardados neste navegador)
 //   lista.carregando / lista.erro / lista.recarregar()
-//   lista.adicionar({ id, origem })           -> envia o pedido de vínculo e recarrega a lista
-//   lista.salvarAnotacao(idPaciente, dados)   -> cria a anotação ({ titulo, conteudo })
+//   lista.adicionar({ id?, nome, origem })    -> plataforma: envia o pedido de vínculo e recarrega (devolve null);
+//                                                externo: grava só o nome e devolve o paciente novo
+//   lista.salvarAnotacao(idPaciente, dados)   -> cria a anotação ({ titulo, conteudo }) na API ou, se externo, no navegador
 //   lista.responderPedido(paciente, aceitar)  -> aceita (true) ou recusa (false) o pedido do paciente
 // As ações lançam Error com .message pronta para a tela (vinda do back).
 // ============================================================
 import { useCallback, useEffect, useState } from 'react'
 import { vincularPaciente } from '../services/profissionalService'
 import { aceitarVinculo, buscarPacientesDoProfissional, criarAnotacao, recusarVinculo } from '../services/pacientesProfissionalService'
-import { definirPacientes } from '../pages/profissional/Pacientes/components/pacientesMemoria'
+import { adicionarPacienteExterno, ehPacienteExterno, lerPacientesExternos, salvarAnotacaoExterno } from '../utils/pacientesExternos'
 
-export function usePacientesProfissional(token) {
+// lista da tela: primeiro os pacientes da API, depois os externos (na ordem do cadastro)
+const comExternos = (lista, idUsuario) => [...lista, ...lerPacientesExternos(idUsuario)]
+
+export function usePacientesProfissional(token, idUsuario) {
   const [pacientes, setPacientes] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
@@ -26,9 +31,7 @@ export function usePacientesProfissional(token) {
 
     buscarPacientesDoProfissional(token, signal)
       .then((lista) => {
-        // o perfil do paciente (ainda sem API) lê a mesma lista guardada na memória
-        definirPacientes(lista)
-        setPacientes(lista)
+        setPacientes(comExternos(lista, idUsuario))
         setErro('')
         setCarregando(false)
       })
@@ -39,45 +42,48 @@ export function usePacientesProfissional(token) {
       })
 
     return () => controller.abort()
-  }, [token, tentativa])
+  }, [token, idUsuario, tentativa])
 
   const recarregar = useCallback(() => {
     setCarregando(true)
     setTentativa((n) => n + 1)
   }, [])
 
-  // O back só sabe vincular quem já tem conta no Dialoga; paciente "externo" (só o nome) não existe lá.
-  // Depois do POST, busca a lista de novo para a tela mostrar exatamente o que o back guardou.
-  async function adicionar({ id, origem }) {
-    if (origem === 'externo' || id == null) {
-      throw new Error('O cadastro de paciente externo (só pelo nome) ainda não está disponível. Busque um paciente da plataforma.')
+  // busca a lista de novo depois de uma ação; se só a releitura falhar, não acusa erro
+  // (a ação já foi feita no back)
+  async function atualizarLista() {
+    await buscarPacientesDoProfissional(token)
+      .then((lista) => setPacientes(comExternos(lista, idUsuario)))
+      .catch(() => {})
+  }
+
+  // Externo (RF304): só o nome, guardado neste navegador (o back não tem tabela para ele).
+  // Plataforma (RF303): envia o pedido de vínculo; o paciente aparece como "Pendente" até aceitar.
+  async function adicionar({ id, nome, origem }) {
+    if (origem === 'externo') {
+      const novo = adicionarPacienteExterno(idUsuario, nome)
+      setPacientes((atual) => [...atual, novo])
+      return novo
     }
 
+    if (id == null) throw new Error('Escolha um paciente da lista de resultados.')
     await vincularPaciente(token, id)
-
-    // o pedido já foi enviado; se só a releitura falhar, não acusa erro
-    await buscarPacientesDoProfissional(token)
-      .then((lista) => {
-        definirPacientes(lista)
-        setPacientes(lista)
-      })
-      .catch(() => {})
+    await atualizarLista()
+    return null
   }
 
   // Pedido que o paciente fez: aceitar vira "Ativo"; recusar tira da lista. Depois recarrega.
   async function responderPedido(paciente, aceitar) {
     if (aceitar) await aceitarVinculo(token, paciente.idVinculo)
     else await recusarVinculo(token, paciente.idVinculo)
-
-    await buscarPacientesDoProfissional(token)
-      .then((nova) => {
-        definirPacientes(nova)
-        setPacientes(nova)
-      })
-      .catch(() => {})
+    await atualizarLista()
   }
 
-  const salvarAnotacao = (idPaciente, dados) => criarAnotacao(token, idPaciente, dados)
+  // ícone de anotação da lista: externo grava neste navegador; plataforma grava na API
+  async function salvarAnotacao(idPaciente, dados) {
+    if (ehPacienteExterno(idPaciente)) return salvarAnotacaoExterno(idUsuario, idPaciente, dados)
+    return criarAnotacao(token, idPaciente, dados)
+  }
 
   return { pacientes, carregando, erro, recarregar, adicionar, salvarAnotacao, responderPedido }
 }

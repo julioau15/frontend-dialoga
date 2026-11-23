@@ -4,19 +4,22 @@
 // A tela só chama este hook; quem fala com a API é services/aprovacoesService.js.
 //
 // Devolve:
-//   solicitacoes -> lista no formato das telas (ver normalizarAprovacao)
+//   solicitacoes -> lista no formato das telas (ver normalizarAprovacao), sem as
+//                   pendentes atribuídas a outro administrador (divisão fixa)
+//   pendentesDeOutros -> quantas pendentes estão com outros administradores
 //   carregando   -> true enquanto busca a lista
 //   erro         -> mensagem de erro ao carregar (ou null)
 //   aprovar(s)   -> aprova a solicitação s (lança erro se a API falhar)
 //   recusar(s)   -> recusa a solicitação s (lança erro se a API falhar)
 // ============================================================
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import {
   aprovarProfissional,
   listarAprovacoes,
   recusarProfissional,
 } from '../services/aprovacoesService'
+import { separarSolicitacoesDoAdmin } from '../utils/aprovacoes'
 
 // Compartilha o carregamento e as decisões do Dashboard Admin.
 export default function useAprovacoes() {
@@ -151,6 +154,8 @@ export default function useAprovacoes() {
       return true
     } catch (erro) {
       if (!escopo.ativo || escopoRef.current !== escopo) return false
+      // 409: outro administrador decidiu ou a solicitação não é minha; recarrego a lista
+      if (erro.status === 409) setTentativa((valor) => valor + 1)
       throw erro
     } finally {
       escopo.ocupado = false
@@ -179,8 +184,14 @@ export default function useAprovacoes() {
     setTentativa((valor) => valor + 1)
   }, [])
 
+  const separadas = useMemo(
+    () => separarSolicitacoesDoAdmin(atual ? estado.solicitacoes : []),
+    [atual, estado.solicitacoes],
+  )
+
   return {
-    solicitacoes: atual ? estado.solicitacoes : [],
+    solicitacoes: separadas.visiveis,
+    pendentesDeOutros: separadas.pendentesDeOutros,
     carregando: !atual || !estado.carregado,
     erro: atual ? estado.erro : null,
     enviando: atual && estado.enviando,

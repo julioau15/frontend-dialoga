@@ -7,7 +7,8 @@
 // Figma do mobile; no desktop também), que leva direto para a tela de resposta dela.
 // No mobile o nome é cortado com "…".
 // Selo por status:
-//   em_andamento -> azul | pendente -> lilás | respondida -> verde | atrasada -> vermelho
+//   em_andamento -> azul | parcial -> azul ("x/y respondidas") | pendente -> lilás
+//   respondida -> verde | atrasada -> vermelho
 //   rascunho     -> cinza ("Rascunho")
 // Props: tarefa, onEditar(tarefa), onVerRespostas(tarefa)
 // ============================================================
@@ -17,7 +18,7 @@ import Selo from '../../../../components/Selo'
 import { Atividade } from '../../../../components/Icones'
 import { IconeLapis } from '../../../../components/IconesPerfil'
 import { formatarDataBR } from '../../../../utils/formatadores'
-import { RASCUNHO, STATUS } from './statusTarefa'
+import { rotuloStatusTarefa } from './statusTarefa'
 
 // botões só com ícone (respostas e editar)
 const BOTAO_ICONE =
@@ -30,9 +31,9 @@ function textoPerguntas(qtd) {
 
 export default function ItemTarefa({ tarefa, onEditar, onVerRespostas }) {
   const idTitulo = useId()
-  const { titulo, total_perguntas, prazo, status, is_rascunho } = tarefa
-  // status desconhecido cai em "Pendente" (mesmo comportamento do Dashboard)
-  const config = is_rascunho ? RASCUNHO : STATUS[status] ?? STATUS.pendente
+  const { titulo, total_perguntas, prazo, is_rascunho } = tarefa
+  // status desconhecido cai em "Pendente"; enviada a vários e respondida em parte: "x/y respondidas"
+  const config = rotuloStatusTarefa(tarefa)
 
   return (
     <Card as="article" aria-labelledby={idTitulo} className="flex items-center gap-3 px-4 py-4 sm:gap-4 sm:pl-[17px] sm:pr-5">
