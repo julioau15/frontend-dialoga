@@ -17,6 +17,8 @@
 // nome externo, o clique só leva o foco ao campo "Nome do paciente...".
 // Ao adicionar, a página envia o pedido de vínculo; se a API recusar, a mensagem aparece
 // dentro do pop-up (ele continua aberto) e o botão fica desativado enquanto envia.
+// Nome externo: obrigatório, 3 a 100 caracteres e só letras (validarNomeExterno); o erro aparece
+// no mesmo aviso vermelho do pop-up e o foco vai para o campo.
 // A página troca a "key" deste componente a cada abertura, assim os campos
 // sempre começam vazios (sem precisar de useEffect para limpar).
 // Props:
@@ -33,6 +35,7 @@ import Modal from '../../../../components/Modal'
 import { useBuscaPaciente } from '../../../../hooks/useBuscaPaciente'
 import BuscaPlataforma from './BuscaPlataforma'
 import CampoPaciente from './CampoPaciente'
+import { validarNomeExterno } from '../../../../utils/pacientesExternos'
 
 const LIMITE_NOME = 100 // tamanho máximo do nome no cadastro externo
 
@@ -73,6 +76,7 @@ export default function ModalNovoPaciente({ aberto, token, idsVinculados, onFech
   const idExterno = useId()
   const idAjuda = useId()
   const refNome = useRef(null)
+  const refExterno = useRef(null) // campo do nome externo (recebe o foco quando o nome é inválido)
   const [buscaNome, setBuscaNome] = useState('')
   const [buscaEmail, setBuscaEmail] = useState('')
   const [selecionado, setSelecionado] = useState(null) // paciente da plataforma escolhido
@@ -126,6 +130,14 @@ export default function ModalNovoPaciente({ aberto, token, idsVinculados, onFech
     const nome = nomeExterno.trim().replace(/\s+/g, ' ')
     if (!selecionado && !nome) {
       refNome.current?.focus() // nada escolhido nem digitado: volta para a busca por nome
+      return
+    }
+
+    // cadastro externo: valida o nome antes de gravar
+    const erroNome = selecionado ? '' : validarNomeExterno(nome)
+    if (erroNome) {
+      setErro(erroNome)
+      refExterno.current?.focus()
       return
     }
 
@@ -191,6 +203,7 @@ export default function ModalNovoPaciente({ aberto, token, idsVinculados, onFech
           </label>
           <CampoPaciente
             id={idExterno}
+            inputRef={refExterno}
             name="nomeExterno"
             placeholder="Nome completo do paciente"
             maxLength={LIMITE_NOME}

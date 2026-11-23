@@ -10,6 +10,7 @@
 import { useRef, useState } from 'react'
 import Button from '../../../../components/Button'
 import Modal from '../../../../components/Modal'
+import { AJUSTE_MODAL, BOTAO_CLARO, BOTAO_PRINCIPAL } from '../../../../components/Modal/estilosModal'
 import TextField from '../../../../components/TextField'
 import { IconeCalendario } from './iconesTarefas'
 
@@ -90,6 +91,8 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
   }
 
   return (
+    // o contêiner ajusta o cabeçalho às medidas do Figma (igual às outras modais do paciente)
+    <div className={AJUSTE_MODAL}>
     <Modal
       aberto={aberto}
       titulo="Nova tarefa"
@@ -98,8 +101,8 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
       largura="max-w-[384px]"
       rodape={
         <>
-          <Button type="button" variante="suave" larguraAuto className="px-4 rounded-xl! text-[14px]!" disabled={enviando} onClick={fechar}>Cancelar</Button>
-          <Button type="button" larguraAuto className="px-4 rounded-xl! text-[14px]!" carregando={enviando} onClick={criar}>{enviando ? 'Criando...' : 'Criar'}</Button>
+          <Button type="button" variante="suave" larguraAuto className={BOTAO_CLARO} disabled={enviando} onClick={fechar}>Cancelar</Button>
+          <Button type="button" larguraAuto className={BOTAO_PRINCIPAL} carregando={enviando} onClick={criar}>{enviando ? 'Criando...' : 'Criar'}</Button>
         </>
       }
     >
@@ -148,5 +151,6 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
         {erroApi && <p role="alert" className="text-[12px] text-erro">{erroApi}</p>}
       </div>
     </Modal>
+    </div>
   )
 }

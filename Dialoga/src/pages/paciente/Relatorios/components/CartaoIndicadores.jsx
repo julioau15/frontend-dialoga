@@ -9,14 +9,14 @@
 //   - legenda Positivo, Moderado e Atenção.
 // Reaproveita o cabeçalho e as faixas do perfil do paciente (visão do profissional).
 // Props:
-//   registros -> registros do período (relatoriosMock)
+//   registros -> registros do período (formato de utils/relatorios)
 //   periodo   -> { inicio, fim } ('AAAA-MM-DD')
 // ============================================================
 import Card from '../../../../components/Card'
 import { dataCurta } from '../../../../utils/datasAgenda'
 import CabecalhoCartao from '../../../profissional/PerfilPaciente/components/CabecalhoCartao'
 import { FAIXAS } from '../../../profissional/PerfilPaciente/components/textosPerfil'
-import { INDICADORES, faixaDe, media, notaMaxima } from './relatoriosMock'
+import { INDICADORES, faixaDe, media, notaMaxima } from '../../../../utils/relatorios'
 
 const ALTURA_MAXIMA = 120 // altura (px) da barra com a nota máxima (Figma: 1.9/3 = 74px)
 
@@ -25,16 +25,16 @@ const textoPeriodo = ({ inicio, fim }) => (fim && fim !== inicio ? `${dataCurta(
 
 export default function CartaoIndicadores({ registros, periodo }) {
   return (
-    <Card as="section" aria-label="Indicadores emocionais" className="rounded-2xl! px-4 pt-[17px] pb-[15px] shadow-[0_2px_4px_var(--color-borda)]! sm:px-5 sm:pt-5 sm:pb-5 xl:pt-[21px] xl:pb-[23px]">
+    <Card as="section" aria-label="Indicadores emocionais" className="rounded-2xl! px-4 pt-[17px] pb-[15px] shadow-[0_2px_4px_var(--color-borda)]! sm:px-5 sm:pt-5 sm:pb-5 xl:flex xl:h-full xl:flex-col xl:pt-[21px] xl:pb-[23px]">
       <CabecalhoCartao
         titulo="Energia · Sentimento · Humor · Pensamentos"
         subtitulo={`${registros.length} registro(s) · ${textoPeriodo(periodo)}`}
       />
 
       {registros.length === 0 ? (
-        <p className="grid h-[200px] place-items-center text-center text-[13px] text-secundaria">Nenhum registro no período.</p>
+        <p className="grid h-[200px] place-items-center text-center text-[13px] text-secundaria xl:h-auto xl:min-h-[200px] xl:flex-1">Nenhum registro no período.</p>
       ) : (
-        <ul className="grid grid-cols-4 gap-3 sm:gap-6">
+        <ul className="grid grid-cols-4 gap-3 sm:gap-6 xl:flex-1 xl:content-end">
           {INDICADORES.map((ind) => {
             const maximo = notaMaxima(ind)
             const valor = media(registros.map((r) => ind.notas[r[ind.id]]))

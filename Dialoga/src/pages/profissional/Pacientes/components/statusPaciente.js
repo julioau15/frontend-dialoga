@@ -22,3 +22,11 @@ export const FILTROS_STATUS = [
   { id: 'ativo', rotulo: 'Ativos' },
   { id: 'inativo', rotulo: 'Inativos' },
 ]
+
+// solicitação recebida: o paciente pediu o vínculo e o profissional ainda não respondeu
+// (mesmo conceito da tela Profissionais do paciente)
+export const ROTULO_RECEBIDA = { rotulo: 'Solicitação recebida', tom: 'alerta' }
+export const pedidoRecebido = (paciente) => paciente.status === 'pendente' && paciente.pedidoPor === 'paciente'
+
+// solicitações recebidas primeiro; o resto mantém a ordem da API
+export const ordenarPacientes = (lista) => [...lista.filter(pedidoRecebido), ...lista.filter((p) => !pedidoRecebido(p))]

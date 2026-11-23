@@ -5,6 +5,8 @@
 // Props:
 //   indicadores      -> [{ id, emoji, nome, valor (0 a 100) }]
 //   onRegistrarHumor -> função chamada ao clicar em "Registrar humor"
+//   semRegistros     -> true quando não há registro de humor na semana: mostra
+//                       "Ainda não há registros" no lugar das barras
 // Gráfico feito só com HTML/CSS (sem biblioteca).
 // ============================================================
 import Card from '../../../../../components/Card'
@@ -28,7 +30,7 @@ const LEGENDA = [
   { texto: 'Atenção', classe: 'bg-erro' },
 ]
 
-export default function IndicadoresHoje({ indicadores, onRegistrarHumor }) {
+export default function IndicadoresHoje({ indicadores, onRegistrarHumor, semRegistros = false }) {
   return (
     <Card className="p-5">
       <div className="flex items-start justify-between gap-4">
@@ -49,6 +51,23 @@ export default function IndicadoresHoje({ indicadores, onRegistrarHumor }) {
         </button>
       </div>
 
+      {semRegistros ? (
+        <div role="status" className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-dashed border-borda bg-fundo-suave-2 px-5 py-10 text-center">
+          <span aria-hidden="true" className="text-3xl">📝</span>
+          <p className="text-sm font-bold text-texto">Ainda não há registros</p>
+          <p className="max-w-xs text-xs text-secundaria">
+            Registre como você está se sentindo para acompanhar sua energia, sentimento, humor e pensamentos.
+          </p>
+          <button
+            type="button"
+            onClick={onRegistrarHumor}
+            className="mt-2 cursor-pointer rounded-lg border-0 bg-transparent p-0 text-xs font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+          >
+            Registrar meu primeiro humor
+          </button>
+        </div>
+      ) : (
+      <>
       {/* Barras */}
       <ul className="mt-4 grid grid-cols-4 gap-2 sm:gap-6">
         {indicadores.map(({ id, emoji, nome, valor }) => (
@@ -76,6 +95,8 @@ export default function IndicadoresHoje({ indicadores, onRegistrarHumor }) {
           </li>
         ))}
       </ul>
+      </>
+      )}
     </Card>
   )
 }

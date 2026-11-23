@@ -8,7 +8,7 @@
 // abaixo do botão de acesso no desktop e no rodapé do cartão no mobile.
 // Paciente externo: sem e-mail, telefone, "Na plataforma" e "Solicitar acesso".
 // Props:
-//   paciente          -> perfil (ver buscarPerfil em perfilMock.js)
+//   paciente          -> perfil (ver buscarPerfilPaciente em services/perfilPacienteService.js)
 //   onSolicitarAcesso -> clique em "Solicitar acesso"
 //   onRemover         -> clique em "Remover paciente"
 // ============================================================

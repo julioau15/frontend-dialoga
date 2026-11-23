@@ -3,10 +3,11 @@
 // "Tarefas deste período" (RF208–RF210), como no Figma: uma linha por tarefa com o título,
 // o prazo, a barrinha de progresso (some quando está concluída) e o status (Selo),
 // e o link "Ver todas" para a tela de Tarefas.
-// Usa os mesmos dados fixos e status da tela de Tarefas do paciente.
+// Usa as tarefas do paciente vindas da API e os status da tela de Tarefas do paciente.
 // Desktop: barra e status à direita. Mobile: barra e status embaixo do prazo.
 // Props:
 //   periodo -> { inicio, fim } ('AAAA-MM-DD'); entram as tarefas com prazo no período
+//   tarefas -> tarefas do paciente (formato de tarefaApiParaTela)
 // ============================================================
 import { Link } from 'react-router-dom'
 import Card from '../../../../components/Card'
@@ -14,21 +15,16 @@ import { IconeSetaDireita } from '../../../../components/IconesAgenda'
 import Selo from '../../../../components/Selo'
 import CabecalhoCartao from '../../../profissional/PerfilPaciente/components/CabecalhoCartao'
 import { STATUS } from '../../Tarefas/components/statusTarefa'
-import { TAREFAS_MOCK } from '../../Tarefas/components/tarefasMock'
 import { IconeTarefa } from './iconesRelatorios'
 
 // selo do Figma: texto de 12px (o Selo compartilhado não muda)
 const AJUSTE_SELO = 'inline-flex shrink-0 [&>span]:text-[12px] [&>span]:leading-4'
 
-// "07/09/2026" -> "2026-09-07" (para comparar com o período)
-const paraIso = (br) => br.split('/').reverse().join('-')
-
-export default function CartaoTarefasPeriodo({ periodo }) {
+// tarefas: do paciente, no formato da tela de Tarefas ({ id, titulo, prazo, prazoIso, status, progresso })
+export default function CartaoTarefasPeriodo({ periodo, tarefas: todas }) {
   const fim = periodo.fim ?? periodo.inicio
-  const tarefas = TAREFAS_MOCK.filter((t) => {
-    const prazo = paraIso(t.prazo)
-    return prazo >= periodo.inicio && prazo <= fim
-  })
+  // só as tarefas com prazo dentro do período
+  const tarefas = todas.filter((t) => t.prazoIso && t.prazoIso >= periodo.inicio && t.prazoIso <= fim)
 
   return (
     <Card as="section" aria-label="Tarefas deste período" className="overflow-hidden rounded-2xl! shadow-[0_2px_4px_var(--color-borda)]!">
@@ -56,7 +52,7 @@ export default function CartaoTarefasPeriodo({ periodo }) {
       ) : (
         <ul>
           {tarefas.map((t) => {
-            const status = STATUS[t.status]
+            const status = STATUS[t.status] ?? STATUS.pendente
             return (
               <li
                 key={t.id}

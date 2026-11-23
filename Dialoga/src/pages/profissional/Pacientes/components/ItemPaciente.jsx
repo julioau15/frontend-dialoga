@@ -18,13 +18,18 @@
 // ============================================================
 import { Link } from 'react-router-dom'
 import AvatarIniciais from '../../../../components/AvatarIniciais'
+import Button from '../../../../components/Button'
 import Card from '../../../../components/Card'
 import Selo from '../../../../components/Selo'
 import { IconeCheck } from '../../../../components/Icones'
 import { doisPrimeirosNomes, formatarDataBR } from '../../../../utils/formatadores'
 import { formatarDesde } from './datasPacientes'
 import { IconeAnotacao } from './iconesPacientes'
-import { statusDe } from './statusPaciente'
+import { ROTULO_RECEBIDA, pedidoRecebido, statusDe } from './statusPaciente'
+
+// botões "Aceitar" e "Recusar" (iguais aos da tela Profissionais do paciente):
+// 44px de altura, cantos de 12px e texto de 14px em negrito
+const BOTAO_RESPOSTA = 'relative z-10 h-11! rounded-xl! text-[14px]! font-bold! lg:w-40!'
 
 // O AvatarIniciais e o Selo compartilhados não mudam; o contêiner só ajusta as
 // medidas do Figma (mesmo recurso do AvatarPaciente do Acompanhamento):
@@ -36,7 +41,7 @@ const AJUSTE_SELO = 'inline-flex shrink-0 [&>span]:h-5 [&>span]:gap-0.5 [&>span]
 export default function ItemPaciente({ paciente, onAnotacao, onResponder, ocupado = false }) {
   const status = statusDe(paciente.status)
   const pendente = paciente.status === 'pendente'
-  const pediuAcesso = pendente && paciente.pedidoPor === 'paciente' // só aqui o profissional decide
+  const pediuAcesso = pedidoRecebido(paciente) // só aqui o profissional decide
   // subtítulo: "Desde mar. de 2025" ou, se o vínculo ainda não foi aceito, quem precisa aceitar
   let subtitulo = paciente.desde ? `Desde ${formatarDesde(paciente.desde)}` : ''
   if (pendente) subtitulo = paciente.pedidoPor === 'paciente' ? 'Pediu para ser seu paciente' : 'Aguardando o aceite do paciente'
@@ -47,7 +52,7 @@ export default function ItemPaciente({ paciente, onAnotacao, onResponder, ocupad
     // relative: base do link "esticado"; ao passar o mouse, o fundo fica lilás bem claro
     <Card
       as="li"
-      className={`relative flex items-center gap-2 p-[17px] transition-colors duration-200 ${pendente ? '' : 'hover:bg-fundo-suave-2'}`}
+      className={`relative flex flex-wrap items-center gap-2 p-[17px] transition-colors duration-200 ${pendente ? '' : 'hover:bg-fundo-suave-2'}`}
     >
       {/* iniciais dos dois primeiros nomes, como no Figma ("João Pedro Alves" -> "JP") */}
       <div className={`mr-2 ${AJUSTE_AVATAR}`}>
@@ -84,6 +89,12 @@ export default function ItemPaciente({ paciente, onAnotacao, onResponder, ocupad
               </Selo>
             </span>
           )}
+          {/* solicitação recebida: selo amarelo ao lado do nome, como na tela Profissionais do paciente */}
+          {pediuAcesso && (
+            <span className={AJUSTE_SELO}>
+              <Selo tom={ROTULO_RECEBIDA.tom}>{ROTULO_RECEBIDA.rotulo}</Selo>
+            </span>
+          )}
         </div>
         {subtitulo && <p className="text-[12px] leading-4 text-secundaria">{subtitulo}</p>}
       </div>
@@ -97,32 +108,15 @@ export default function ItemPaciente({ paciente, onAnotacao, onResponder, ocupad
           </div>
         )}
 
-        {pediuAcesso ? (
-          <div className="relative z-10 mr-1 flex items-center gap-1.5">
-            <button
-              type="button"
-              disabled={ocupado}
-              onClick={() => onResponder?.(paciente, false)}
-              className="h-8 cursor-pointer rounded-lg px-3 text-[12px] font-semibold text-erro shadow-[0_0_0_1px_var(--color-erro-borda)] transition-colors hover:bg-erro-fundo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Recusar
-            </button>
-            <button
-              type="button"
-              disabled={ocupado}
-              onClick={() => onResponder?.(paciente, true)}
-              className="h-8 cursor-pointer rounded-lg bg-primaria px-3 text-[12px] font-semibold text-branco transition-colors hover:bg-primaria-escura focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Aceitar
-            </button>
-          </div>
-        ) : (
+        {!pediuAcesso && (
           <span className={AJUSTE_SELO}>
             <Selo tom={status.tom}>{status.rotulo}</Selo>
           </span>
         )}
 
-        {/* relative z-10: fica por cima do link do cartão; abre o pop-up "Anotar — [nome]" */}
+        {/* relative z-10: fica por cima do link do cartão; abre o pop-up "Anotar — [nome]".
+            Na solicitação recebida quem responde são os botões Aceitar/Recusar (sem o ícone). */}
+        {!pediuAcesso && (
         <button
           type="button"
           aria-label={`Anotar sobre ${paciente.nome}`}
@@ -133,7 +127,37 @@ export default function ItemPaciente({ paciente, onAnotacao, onResponder, ocupad
         >
           <IconeAnotacao />
         </button>
+        )}
       </div>
+
+      {/* solicitação recebida: Aceitar (verde) e Recusar (contorno vermelho) embaixo, na largura
+          do cartão, como na tela Profissionais do paciente */}
+      {pediuAcesso && onResponder && (
+        <div className="grid basis-full grid-cols-2 gap-3 pt-2 lg:flex lg:justify-end">
+          <Button
+            type="button"
+            variante="sucesso"
+            carregando={ocupado}
+            disabled={ocupado}
+            aria-label={`Aceitar a solicitação de ${paciente.nome}`}
+            className={BOTAO_RESPOSTA}
+            onClick={() => onResponder(paciente, true)}
+          >
+            Aceitar
+          </Button>
+          <Button
+            type="button"
+            variante="perigo-contorno"
+            carregando={ocupado}
+            disabled={ocupado}
+            aria-label={`Recusar a solicitação de ${paciente.nome}`}
+            className={BOTAO_RESPOSTA}
+            onClick={() => onResponder(paciente, false)}
+          >
+            Recusar
+          </Button>
+        </div>
+      )}
     </Card>
   )
 }

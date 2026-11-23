@@ -4,6 +4,7 @@
 //   const agenda = useAgendaProfissional(token)
 //   agenda.consultas / .pacientes / .disponibilidades -> listas já no formato da tela
 //   agenda.carregando / agenda.erro / agenda.recarregar()
+//   agenda.horarios(idVinculo, signal)         -> dias e horários livres da disponibilidade (igual ao paciente)
 //   agenda.salvarConsulta(dados, idConsulta?)  -> cria (ou edita, se vier o id) e recarrega
 //   agenda.excluirConsulta(id)
 //   agenda.adicionarDisponibilidade({ dias, inicio, fim, repetir, hoje })
@@ -21,6 +22,7 @@ import {
   excluirConsulta as excluirConsultaApi,
   excluirDisponibilidade,
 } from '../services/agendaProfissionalService'
+import { buscarHorariosDoVinculo } from '../services/agendaPacienteService'
 import { proximaData } from '../utils/disponibilidade'
 
 const VAZIO = { consultas: [], pacientes: [], disponibilidades: [] }
@@ -55,6 +57,9 @@ export function useAgendaProfissional(token) {
   }, [token, tentativa])
 
   const recarregar = useCallback(() => setTentativa((n) => n + 1), [])
+
+  // mesma rota usada pelo paciente: GET /consultas/vinculos/:id/horarios
+  const horarios = useCallback((idVinculo, signal) => buscarHorariosDoVinculo(token, idVinculo, signal), [token])
 
   // Depois de cada alteração, busca de novo para a tela refletir exatamente o que o back guardou
   async function atualizarListas() {
@@ -108,6 +113,7 @@ export function useAgendaProfissional(token) {
     carregando,
     erro,
     recarregar,
+    horarios,
     salvarConsulta,
     excluirConsulta,
     adicionarDisponibilidade,

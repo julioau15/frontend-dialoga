@@ -10,20 +10,32 @@
 //   - pop-ups Novo, Editar e Excluir tratamento;
 //   - toasts: verde ao incluir ("Tratamento adicionado!") e editar ("Tratamento atualizado com
 //     sucesso!"), vermelho ao remover ("Tratamento removido.") (RNF123).
+//   - doses de hoje em cada horário, com o botão "Tomar" (GET /pacientes/me/doses e
+//     POST /pacientes/me/doses/:idHorario/confirmar), atualizadas a cada minuto;
+//   - aviso com orientações e atalho "Adicionar primeiro tratamento" quando a lista está vazia.
 // "Adicionar outro" mantém o pop-up aberto e mostra o toast por cima dele.
 // Desktop (com o menu lateral, a partir de 1024px), Tablet e Mobile (403px).
 // ============================================================
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
-import { criarTratamentoRequest, editarTratamentoRequest, excluirTratamentoRequest, listarTratamentosRequest } from '../../../services/tratamentoService'
+import {
+  confirmarDoseRequest,
+  criarTratamentoRequest,
+  editarTratamentoRequest,
+  excluirTratamentoRequest,
+  listarDosesDoDiaRequest,
+  listarTratamentosRequest,
+} from '../../../services/tratamentoService'
 import Button from '../../../components/Button'
 import Toast from '../../../components/Toast'
 import CartaoTratamento from './components/CartaoTratamento'
+import EstadoVazioTratamentos from './components/EstadoVazioTratamentos'
 import ModalExcluirTratamento from './components/ModalExcluirTratamento'
 import ModalTratamento from './components/ModalTratamento'
 import { AJUSTE_TOAST } from './components/estilosTratamentos'
 import { IconeMais } from './components/iconesTratamentos'
-import { textoContagem, tratamentoConfere } from '../../../utils/tratamentos'
+import { indexarDoses, textoContagem, tratamentoConfere } from '../../../utils/tratamentos'
 
 // botão "+ Novo tratamento": 40px de altura, cantos de 12px e texto de 14px em negrito;
 // nunca quebra a linha (em celulares estreitos, quem desce é a contagem embaixo do título)
@@ -33,12 +45,15 @@ const TOAST_FECHADO = { aberto: false, tipo: 'sucesso', mensagem: '' }
 
 const ERRO_CONFERENCIA = 'A operação foi aceita, mas não foi possível confirmar os dados. Atualize a lista antes de tentar novamente.'
 
+// a situação da dose muda com o relógio (futura -> pendente -> atrasada): relê a cada minuto
+const INTERVALO_DOSES_MS = 60 * 1000
+
 // Mantém lista, modais e requisições vinculados à credencial desta sessão.
 function ConteudoTratamentos({ token }) {
   const [tentativa, setTentativa] = useState(0)
   const [remoto, setRemoto] = useState({
-    token: null, tentativa: -1, tratamentos: [], carregado: false,
-    erro: '', processando: false, bloqueado: false, erroOperacao: '',
+    token: null, tentativa: -1, tratamentos: [], doses: [], carregado: false,
+    erro: '', processando: false, bloqueado: false, erroOperacao: '', confirmandoDose: null,
   })
   const escopoRef = useRef(null)
   // pop-up aberto: null | { tipo: 'novo' } | { tipo: 'editar', tratamento } | { tipo: 'excluir', tratamento }
@@ -47,27 +62,52 @@ function ConteudoTratamentos({ token }) {
 
   useEffect(() => {
     const controle = new AbortController()
-    const escopo = { token, tentativa, controle, ativo: true, ocupado: false, carregado: false, bloqueado: false }
+    const escopo = { token, tentativa, controle, ativo: true, ocupado: false, carregado: false, bloqueado: false, versaoDoses: 0 }
     escopoRef.current = escopo
 
     // A listagem é a única fonte de dados, inclusive depois de uma reconciliação.
+    // As doses vêm junto; se só elas falharem, a lista aparece sem os botões de confirmação.
     async function carregar() {
       try {
-        const lista = await listarTratamentosRequest(token, controle.signal)
+        const [lista, doses] = await Promise.all([
+          listarTratamentosRequest(token, controle.signal),
+          listarDosesDoDiaRequest(token, controle.signal).catch((erroDoses) => {
+            if (controle.signal.aborted) throw erroDoses
+            return []
+          }),
+        ])
         if (!escopo.ativo) return
         escopo.carregado = true
-        setRemoto({ token, tentativa, tratamentos: lista, carregado: true,
-          erro: '', processando: false, bloqueado: false, erroOperacao: '' })
+        setRemoto({ token, tentativa, tratamentos: lista, doses, carregado: true,
+          erro: '', processando: false, bloqueado: false, erroOperacao: '', confirmandoDose: null })
       } catch (erro) {
         if (!escopo.ativo || controle.signal.aborted) return
-        setRemoto({ token, tentativa, tratamentos: [], carregado: true,
-          erro: erro.message, processando: false, bloqueado: true, erroOperacao: erro.message })
+        setRemoto({ token, tentativa, tratamentos: [], doses: [], carregado: true,
+          erro: erro.message, processando: false, bloqueado: true, erroOperacao: erro.message, confirmandoDose: null })
       }
     }
+
+    // Relê as doses em segundo plano (sem "carregando"); ignora a resposta se uma
+    // confirmação começou enquanto a leitura estava em andamento.
+    async function atualizarDosesPeriodicamente() {
+      if (!escopo.ativo || !escopo.carregado || escopo.ocupado || document.visibilityState !== 'visible') return
+      const versao = escopo.versaoDoses
+      try {
+        const doses = await listarDosesDoDiaRequest(token, controle.signal)
+        if (!escopo.ativo || escopo.ocupado || escopo.versaoDoses !== versao) return
+        setRemoto((anterior) => anterior.token === token && anterior.tentativa === tentativa
+          ? { ...anterior, doses } : anterior)
+      } catch {
+        // falha silenciosa: mantém as doses que já estão na tela
+      }
+    }
+
     carregar()
+    const intervalo = setInterval(atualizarDosesPeriodicamente, INTERVALO_DOSES_MS)
     return () => {
       escopo.ativo = false
       controle.abort()
+      clearInterval(intervalo)
     }
   }, [token, tentativa])
 
@@ -75,9 +115,20 @@ function ConteudoTratamentos({ token }) {
   const tratamentos = atual ? remoto.tratamentos : []
   const carregando = !atual || !remoto.carregado
   const erro = atual ? remoto.erro : ''
+
+  // vindo do Dashboard (clique num tratamento): rola até o cartão dele, que fica em destaque
+  const idDestacado = useLocation().state?.destacarTratamento ?? null
+  useEffect(() => {
+    if (!idDestacado || carregando) return
+    document.getElementById(`tratamento-${idDestacado}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [idDestacado, carregando])
   const processando = atual && remoto.processando
   const bloqueado = carregando || !!erro || (atual && remoto.bloqueado)
   const erroOperacao = atual ? remoto.erroOperacao : ''
+  const doses = atual ? remoto.doses : []
+  const confirmandoDose = atual ? remoto.confirmandoDose : null
+  // índice para cada cartão achar a dose de hoje de cada horário
+  const indiceDoses = useMemo(() => indexarDoses(doses), [doses])
 
   // Só altera o estado se a operação ainda pertence à sessão e à carga atuais.
   function atualizar(escopo, transformar) {
@@ -116,6 +167,47 @@ function ConteudoTratamentos({ token }) {
   // mostra o aviso (tipo 'sucesso' = verde, 'erro' = vermelho)
   const avisar = (tipo, mensagem) => setToast({ aberto: true, tipo, mensagem })
 
+  // Relê as doses de hoje sem bloquear a tela; devolve a lista nova ou null se falhar.
+  async function atualizarDoses(escopo) {
+    try {
+      const novas = await listarDosesDoDiaRequest(token, escopo.controle.signal)
+      atualizar(escopo, (anterior) => ({ ...anterior, doses: novas }))
+      return novas
+    } catch {
+      return null
+    }
+  }
+
+  // Confirma a dose de um horário e só mostra o sucesso depois de reler as doses do dia.
+  async function confirmarDose(dose) {
+    const escopo = escopoRef.current
+    if (!escopo?.ativo || !escopo.carregado || escopo.ocupado || escopo.bloqueado || !dose?.podeConfirmar) return
+    escopo.ocupado = true
+    escopo.versaoDoses += 1
+    atualizar(escopo, (anterior) => ({ ...anterior, confirmandoDose: dose.idHorario }))
+    setToast(TOAST_FECHADO)
+    try {
+      try {
+        await confirmarDoseRequest(token, dose.idHorario)
+      } catch (erroConfirmacao) {
+        if (!escopo.ativo) return
+        avisar('erro', erroConfirmacao.message || 'Não foi possível registrar a dose.')
+        await atualizarDoses(escopo)
+        return
+      }
+      if (!escopo.ativo) return
+
+      const novas = await atualizarDoses(escopo)
+      if (!escopo.ativo) return
+      const confirmada = novas?.find((item) => item.idHorario === dose.idHorario)
+      if (confirmada?.status === 'tomada') avisar('sucesso', 'Dose registrada!')
+      else avisar('erro', 'A dose foi enviada, mas não foi possível conferir o registro. Atualize a página.')
+    } finally {
+      escopo.ocupado = false
+      atualizar(escopo, (anterior) => ({ ...anterior, confirmandoDose: null }))
+    }
+  }
+
   // Separa falha da mutação de falha da leitura posterior; nunca repete uma gravação.
   async function executarMutacao(enviar, conferir, aoConfirmar) {
     const escopo = escopoRef.current
@@ -148,6 +240,8 @@ function ConteudoTratamentos({ token }) {
         return false
       }
       atualizar(escopo, (anterior) => ({ ...anterior, tratamentos: lista, erroOperacao: '' }))
+      // horários podem ter mudado: relê as doses de hoje (falha aqui não desfaz a operação)
+      await atualizarDoses(escopo)
       aoConfirmar()
       return true
     } finally {
@@ -216,15 +310,31 @@ function ConteudoTratamentos({ token }) {
             <Button type="button" variante="suave" larguraAuto disabled={processando} onClick={recarregar}>Tentar novamente</Button>
           </div>
         )}
+        {/* lista vazia: orientações e atalho para cadastrar o primeiro tratamento */}
+        {!carregando && !erro && !remoto.bloqueado && tratamentos.length === 0 && (
+          <EstadoVazioTratamentos
+            desabilitado={processando || bloqueado}
+            onAdicionar={() => abrirModal({ tipo: 'novo' })}
+          />
+        )}
         {!carregando && !erro && tratamentos.length > 0 && (
           <fieldset disabled={processando || bloqueado} className="mt-6 flex min-w-0 flex-col gap-2.5 lg:gap-3.5">
             {tratamentos.map((tratamento) => (
-              <CartaoTratamento
+              // vindo do Dashboard: o tratamento clicado fica em destaque (e a tela rola até ele)
+              <div
                 key={tratamento.id}
-                tratamento={tratamento}
-                onEditar={(t) => abrirModal({ tipo: 'editar', tratamento: t })}
-                onExcluir={(t) => abrirModal({ tipo: 'excluir', tratamento: t })}
-              />
+                id={`tratamento-${tratamento.id}`}
+                className={String(tratamento.id) === String(idDestacado) ? 'rounded-2xl ring-2 ring-primaria ring-offset-2 ring-offset-fundo-suave' : ''}
+              >
+                <CartaoTratamento
+                  tratamento={tratamento}
+                  indiceDoses={indiceDoses}
+                  confirmandoDose={confirmandoDose}
+                  onConfirmarDose={confirmarDose}
+                  onEditar={(t) => abrirModal({ tipo: 'editar', tratamento: t })}
+                  onExcluir={(t) => abrirModal({ tipo: 'excluir', tratamento: t })}
+                />
+              </div>
             ))}
           </fieldset>
         )}

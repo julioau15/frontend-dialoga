@@ -8,10 +8,27 @@
 //   linkTexto -> texto do link (ex.: "Agenda")
 //   linkPara  -> rota do link (ex.: "/profissional/agenda")
 //   vazio     -> texto mostrado quando não há itens (children vazio)
+// Exporta também ItemLink: uma linha (<li>) clicável que abre o item na tela dele.
 // ============================================================
 import { Children, useId } from 'react'
 import { Link } from 'react-router-dom'
 import { SetaDireita } from '../../../../../components/Icones'
+
+// linha clicável: o <li> inteiro é um link (para + state opcional)
+export function ItemLink({ para, state, rotulo, className = '', children }) {
+  return (
+    <li>
+      <Link
+        to={para}
+        state={state}
+        aria-label={rotulo}
+        className={`flex no-underline transition-colors duration-200 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primaria ${className}`}
+      >
+        {children}
+      </Link>
+    </li>
+  )
+}
 
 export default function CardLista({ icone: Icone, titulo, linkTexto, linkPara, vazio, className = '', children }) {
   const idTitulo = useId()

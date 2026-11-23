@@ -10,6 +10,8 @@
 //     e volta ao que era se a API recusar
 //   - controla um único aviso (toast) por vez, inclusive o
 //     "Preferências salvas!" que chega da tela de configurações
+//   - atualiza a lista em segundo plano a cada minuto e quando a aba volta a ficar visível
+//     (lembretes como "hora da dose" aparecem sem recarregar a página)
 // Uso: const notificacoes = useNotificacoes('paciente')
 //   perfil -> 'paciente' | 'profissional' (escolhe o destino do "Ver →" do vínculo)
 // ============================================================
@@ -30,6 +32,9 @@ import {
 import { converterNotificacoes } from '../utils/notificacoesRecebidas'
 
 const TOAST_FECHADO = { aberto: false, tipo: 'sucesso', mensagem: '' }
+
+// intervalo da atualização em segundo plano das notificações
+const INTERVALO_ATUALIZACAO_MS = 60 * 1000
 
 // Compartilha a lógica de notificações dos dois perfis.
 export function useNotificacoes(perfil) {
@@ -121,6 +126,62 @@ export function useNotificacoes(perfil) {
     }
   }, [token, perfil, chave, tentativa])
 
+  // Atualiza a lista em segundo plano a cada minuto e quando a aba volta a ficar visível.
+  // Não mostra "carregando" e descarta a resposta se uma marcação de leitura começou nesse meio-tempo.
+  useEffect(() => {
+    if (!token) return undefined
+    const controle = new AbortController()
+
+    // Relê as notificações só com a aba visível e sem marcação de leitura em andamento.
+    async function atualizarEmSegundoPlano() {
+      const escopo = escopoRef.current
+      if (
+        document.visibilityState !== 'visible' ||
+        !escopo?.ativo ||
+        !escopo.carregado ||
+        escopo.ocupado
+      ) {
+        return
+      }
+
+      const versao = escopo.versao ?? 0
+
+      try {
+        const { notificacoes, categorias } =
+          await listarNotificacoesRequest(token, controle.signal)
+
+        if (
+          controle.signal.aborted ||
+          escopoRef.current !== escopo ||
+          !escopo.ativo ||
+          escopo.ocupado ||
+          (escopo.versao ?? 0) !== versao
+        ) {
+          return
+        }
+
+        const lista = converterNotificacoes(notificacoes, categorias, perfil)
+
+        setRemoto((atual) =>
+          atual.chave === escopo.chave && atual.tentativa === escopo.tentativa
+            ? { ...atual, lista }
+            : atual,
+        )
+      } catch {
+        // falha silenciosa: mantém a lista que já está na tela
+      }
+    }
+
+    const intervalo = setInterval(atualizarEmSegundoPlano, INTERVALO_ATUALIZACAO_MS)
+    document.addEventListener('visibilitychange', atualizarEmSegundoPlano)
+
+    return () => {
+      controle.abort()
+      clearInterval(intervalo)
+      document.removeEventListener('visibilitychange', atualizarEmSegundoPlano)
+    }
+  }, [token, perfil])
+
   const dadosAtuais =
     remoto.chave === chave && remoto.tentativa === tentativa
 
@@ -179,6 +240,8 @@ export function useNotificacoes(perfil) {
     }
 
     escopo.ocupado = true
+    // invalida uma atualização em segundo plano que esteja em andamento
+    escopo.versao = (escopo.versao ?? 0) + 1
     const idsAlterados = new Set(ids)
 
     atualizarEscopo(escopo, (atual) => ({

@@ -45,6 +45,8 @@ function RespostaTarefa() {
   // aberta pelo "Histórico de tarefas" do perfil do paciente: volta para o perfil, já na aba Histórico;
   // aberta pelo Acompanhamento (ou pela lista de Tarefas): volta para o Acompanhamento
   const voltarPara = location.state?.voltarPara
+  // texto do botão: quem abriu a tela pode mandar o seu (ex.: "Voltar ao dashboard")
+  const rotuloVoltar = location.state?.rotuloVoltar ?? (voltarPara ? 'Voltar ao perfil' : 'Voltar ao acompanhamento')
   const voltar = () => (voltarPara ? navigate(voltarPara, { state: { aba: 'historico' } }) : navigate(ROTA_ACOMPANHAMENTO))
 
   // "Ver perfil do paciente" (e a foto): abre o perfil do paciente (idPerfil = id na lista de Pacientes)
@@ -56,7 +58,7 @@ function RespostaTarefa() {
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
     <div className="-m-6 min-h-svh bg-fundo-suave">
       <div className="mx-auto flex w-full max-w-[768px] flex-col gap-4 px-6 pt-6 pb-10 sm:pb-12">
-        <BotaoVoltar onClick={voltar}>{voltarPara ? 'Voltar ao perfil' : 'Voltar ao acompanhamento'}</BotaoVoltar>
+        <BotaoVoltar onClick={voltar}>{rotuloVoltar}</BotaoVoltar>
 
         {carregando ? (
           <p role="status" className="mt-1 py-10 text-center text-[13px] text-secundaria">Carregando resposta...</p>

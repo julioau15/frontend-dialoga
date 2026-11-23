@@ -37,6 +37,36 @@ const MIN_SENHA = 6
 // Deixa só os números de um texto
 const soNumeros = (texto) => texto.replace(/\D/g, '')
 
+// DDDs válidos da Anatel (mesma lista do back em controller/module/validarCelular.js)
+const DDDS_VALIDOS = new Set([
+  11, 12, 13, 14, 15, 16, 17, 18, 19,
+  21, 22, 24, 27, 28,
+  31, 32, 33, 34, 35, 37, 38,
+  41, 42, 43, 44, 45, 46, 47, 48, 49,
+  51, 53, 54, 55,
+  61, 62, 63, 64, 65, 66, 67, 68, 69,
+  71, 73, 74, 75, 77, 79,
+  81, 82, 83, 84, 85, 86, 87, 88, 89,
+  91, 92, 93, 94, 95, 96, 97, 98, 99,
+])
+
+// Só a máscara é permitida: dígitos, espaço, parênteses, hífen e o "+" do +55
+const CARACTERES_CELULAR = /^[\d\s()+-]*$/
+
+// Celular brasileiro (mesma regra do back): 11 dígitos sem a máscara, DDD existente,
+// terceiro dígito 9 e número (sem o DDD) que não é todo do mesmo dígito
+export function celularValido(texto) {
+  if (typeof texto !== 'string' || !CARACTERES_CELULAR.test(texto)) return false
+
+  const digitos = soNumeros(texto)
+  if (digitos.length !== 11) return false
+  if (!DDDS_VALIDOS.has(Number(digitos.slice(0, 2)))) return false
+  if (digitos[2] !== '9') return false
+  if (/^(\d)\1+$/.test(digitos.slice(2))) return false
+
+  return true
+}
+
 // Máscara de celular: (11) 99999-9999
 export function mascararCelular(valor) {
   const n = soNumeros(valor).slice(0, 11)
@@ -96,8 +126,7 @@ export function validarCadastroDados({ tipo, nome, email, celular, cpf, crp, esp
   else if (!REGEX_EMAIL.test(email.trim()) || email.length > MAX_EMAIL) erros.email = 'E-mail inválido.'
   else if (email.trim().length < MIN_EMAIL_CADASTRO) erros.email = `O e-mail deve ter pelo menos ${MIN_EMAIL_CADASTRO} caracteres.`
 
-  const digitos = soNumeros(celular).length
-  if (digitos < 10 || digitos > 11) erros.celular = 'Informe um celular válido com DDD.'
+  if (!celularValido(celular)) erros.celular = 'Informe um celular válido com DDD.'
 
   if (tipo === 'profissional') {
     if (soNumeros(cpf).length !== 11) erros.cpf = 'CPF deve ter 11 números.'

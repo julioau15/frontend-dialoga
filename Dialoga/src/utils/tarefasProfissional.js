@@ -9,7 +9,7 @@
 // (tarefasUtils.js) já reconhece todos eles.
 // Status do destinatário no banco: 'pendente' | 'andamento' | 'concluida'.
 // ============================================================
-import { dataLocalISO } from './formatadores'
+import { dataLocalISO } from './formatadores.js'
 
 const TIPOS_COM_OPCOES = ['multipla', 'unica']
 
@@ -78,11 +78,13 @@ export function statusAcompanhamentoDe(statusApi) {
 // Resume os destinatários de uma tarefa em um único status e prazo para a lista de Tarefas:
 //   respondida   -> todos concluíram
 //   atrasada     -> alguém que não concluiu passou do prazo
-//   em_andamento -> alguém começou (ou parte já concluiu)
-//   pendente     -> ninguém começou
+//   pendente     -> ninguém concluiu nem começou
+//   em_andamento -> tarefa de UM destinatário que já começou e ainda não concluiu
+//   parcial      -> vários destinatários e só parte respondeu (a tela mostra "x/y respondidas")
+// Também devolve respondidas e total (quantos concluíram / quantos receberam).
 // O prazo mostrado é o mais próximo entre quem ainda não concluiu.
 export function resumirDestinatarios(destinatarios, hoje = dataLocalISO()) {
-  if (destinatarios.length === 0) return { status: 'pendente', prazo: null }
+  if (destinatarios.length === 0) return { status: 'pendente', prazo: null, respondidas: 0, total: 0 }
 
   const abertos = destinatarios.filter((d) => !concluida(d.status))
   const prazos = (abertos.length > 0 ? abertos : destinatarios)
@@ -90,12 +92,16 @@ export function resumirDestinatarios(destinatarios, hoje = dataLocalISO()) {
     .filter(Boolean)
     .sort()
 
+  const total = destinatarios.length
+  const respondidas = total - abertos.length
+  const alguemComecou = respondidas > 0 || abertos.some((d) => emAndamento(d.status))
+
   let status = 'pendente'
   if (abertos.length === 0) status = 'respondida'
   else if (abertos.some((d) => (prazoParaIso(d.prazo) ?? '9999') < hoje)) status = 'atrasada'
-  else if (abertos.length < destinatarios.length || abertos.some((d) => emAndamento(d.status))) status = 'em_andamento'
+  else if (alguemComecou) status = total > 1 ? 'parcial' : 'em_andamento'
 
-  return { status, prazo: prazos[0] ?? null }
+  return { status, prazo: prazos[0] ?? null, respondidas, total }
 }
 
 // ---------- lista de Tarefas ----------
@@ -104,7 +110,9 @@ export function resumirDestinatarios(destinatarios, hoje = dataLocalISO()) {
 // idEnvio = destinatário que o ícone de respostas abre (a conclusão mais recente; senão o último enviado).
 export function tarefaApiParaLista(tarefa, destinatarios = []) {
   const rascunho = paraBooleano(tarefa.is_rascunho)
-  const { status, prazo } = rascunho ? { status: null, prazo: null } : resumirDestinatarios(destinatarios)
+  const { status, prazo, respondidas, total } = rascunho
+    ? { status: null, prazo: null, respondidas: 0, total: 0 }
+    : resumirDestinatarios(destinatarios)
 
   const concluidas = destinatarios
     .filter((d) => concluida(d.status) && d.data_conclusao)
@@ -117,6 +125,8 @@ export function tarefaApiParaLista(tarefa, destinatarios = []) {
     total_perguntas: tarefa.perguntas?.length ?? 0,
     prazo,
     status,
+    respondidas,
+    total,
     is_rascunho: rascunho ? 1 : 0,
     idEnvio,
   }

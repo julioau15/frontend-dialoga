@@ -66,12 +66,21 @@ export function CartaoConclusao({ conclusao }) {
 }
 
 // RF235: porcentagem de doses registradas de cada remédio
+// (percentual null = sem registros de dose disponíveis: mostra o remédio sem a barra)
 export function CartaoAderencia({ aderencia }) {
   return (
     <Card as="section" aria-label="Aderência ao tratamento" className="px-5 pt-[21px] pb-[21px]">
       <CabecalhoCartao icone={<span aria-hidden="true">💊</span>} titulo="Aderência ao tratamento" subtitulo="Dados informados pelo paciente" />
       <ul className="mt-4 flex flex-col gap-4">
         {aderencia.map((r) => {
+          if (r.percentual == null) {
+            return (
+              <li key={r.id} className="flex justify-between gap-3 text-[14px] leading-5">
+                <span className="text-texto">{r.nome}</span>
+                <span className="text-[12px] text-secundaria">Sem registros de dose</span>
+              </li>
+            )
+          }
           const bom = r.percentual >= 90
           return (
             <li key={r.id}>

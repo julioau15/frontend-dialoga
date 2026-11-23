@@ -9,6 +9,7 @@
 // Rota: /paciente/agenda
 // ============================================================
 import { useCallback, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import Button from '../../../components/Button'
 import Toast from '../../../components/Toast'
 import { IconeMais } from '../../../components/IconesAgenda'
@@ -29,9 +30,12 @@ function Agenda() {
   const agenda = useAgendaPaciente()
   const { consultas } = agenda
   const HOJE = useMemo(() => hojeNoBrasil(), []) // hoje no fuso do Brasil, o mesmo que o back usa
-  const [visao, setVisao] = useState('mes') // 'mes' | 'semana' | 'dia'
-  const [selecionado, setSelecionado] = useState(HOJE) // dia escolhido
-  const [ancora, setAncora] = useState(HOJE) // qualquer dia do período mostrado (mês, semana ou dia)
+  // vindo do Dashboard (clique numa consulta): abre na visão do dia daquela consulta
+  const { state } = useLocation()
+  const diaInicial = /^\d{4}-\d{2}-\d{2}$/.test(state?.data ?? '') ? state.data : null
+  const [visao, setVisao] = useState(diaInicial ? 'dia' : 'mes') // 'mes' | 'semana' | 'dia'
+  const [selecionado, setSelecionado] = useState(diaInicial ?? HOJE) // dia escolhido
+  const [ancora, setAncora] = useState(diaInicial ?? HOJE) // qualquer dia do período mostrado (mês, semana ou dia)
   const [novaAberta, setNovaAberta] = useState(false)
   const [consultaParaExcluir, setConsultaParaExcluir] = useState(null)
   const [toast, setToast] = useState({ aberto: false, tipo: 'sucesso', mensagem: '' })

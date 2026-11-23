@@ -8,7 +8,8 @@
 // "Adicionar tarefa" abre o pop-up "Nova tarefa" e cria uma autotarefa (POST /tarefas).
 // Os avisos (toasts) são "Atividade enviada com sucesso!" e "Tarefa criada com sucesso!".
 // ============================================================
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Button from '../../../components/Button'
 import AbasComContagem from '../../../components/AbasComContagem'
 import Toast from '../../../components/Toast'
@@ -36,6 +37,19 @@ function Tarefas() {
   const [modalNova, setModalNova] = useState(false)
   const [aviso, setAviso] = useState({ aberto: false, mensagem: '', tipo: 'sucesso' })
   const fecharAviso = useCallback(() => setAviso((a) => ({ ...a, aberto: false })), [])
+
+  // vindo do Dashboard (clique numa tarefa): abre aquela tarefa assim que a lista carregar
+  const location = useLocation()
+  const navigate = useNavigate()
+  const idParaAbrir = location.state?.abrirTarefa ?? null
+  const jaAbriuRef = useRef(false)
+  const montadoRef = useRef(true) // a resposta só abre a tarefa se a tela ainda estiver aberta
+  useEffect(() => {
+    montadoRef.current = true
+    return () => {
+      montadoRef.current = false
+    }
+  }, [])
 
   // ao trocar de tela, volta ao topo da página
   useEffect(() => {
@@ -71,6 +85,28 @@ function Tarefas() {
       setAbrindo(false)
     }
   }
+
+  useEffect(() => {
+    if (!idParaAbrir || jaAbriuRef.current || carregando) return
+    jaAbriuRef.current = true
+    // limpa o pedido da navegação, para não reabrir ao voltar ou recarregar
+    navigate(location.pathname, { replace: true, state: null })
+    const tarefa = tarefas.find((t) => String(t.id) === String(idParaAbrir))
+    // autotarefa não abre formulário (o botão dela conclui a tarefa): fica só a lista
+    if (!tarefa || tarefa.autotarefa) return
+
+    // busca as respostas salvas e abre a tarefa ("ver" se concluída, senão "preencher").
+    // Sem cancelamento no cleanup: limpar o state da navegação faz este efeito rodar de novo.
+    carregarRespostas(tarefa)
+      .then((respostas) => {
+        if (montadoRef.current) setTela({ tipo: tarefa.status === 'concluida' ? 'ver' : 'preencher', id: tarefa.id, respostas })
+      })
+      .catch((e) => {
+        if (montadoRef.current) setAviso({ aberto: true, mensagem: e.message, tipo: 'erro' })
+      })
+    // o efeito só precisa rodar quando a lista chega
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idParaAbrir, carregando, tarefas])
 
   async function criarTarefa(dados) {
     await criar(dados) // se falhar, o erro aparece dentro do pop-up

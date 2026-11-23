@@ -31,7 +31,7 @@ import FiltroChips from './components/FiltroChips'
 import FiltroPeriodo from './components/FiltroPeriodo'
 import ItemAcompanhamento from './components/ItemAcompanhamento'
 import { PERIODO_INICIAL, noPeriodo } from './components/filtros'
-import { FILTROS_STATUS } from './components/statusAcompanhamento'
+import { FILTROS_STATUS, passaNoFiltroStatus } from './components/statusAcompanhamento'
 
 // anos da lista do filtro "Ano": o ano atual e os três anteriores
 const ANO_ATUAL = new Date().getFullYear()
@@ -52,7 +52,11 @@ function AcompanhamentoTarefas() {
   const { itens, carregando, erro, recarregar } = useAcompanhamentoTarefas(auth?.token)
   const [busca, setBusca] = useState(() => location.state?.busca ?? '')
   const [periodo, setPeriodo] = useState(PERIODO_INICIAL)
-  const [status, setStatus] = useState('todos')
+  // filtro inicial pela URL (?status=pendente vem do card "Pendentes resp." do dashboard)
+  const [status, setStatus] = useState(() => {
+    const daUrl = new URLSearchParams(location.search).get('status')
+    return FILTROS_STATUS.some((f) => f.id === daUrl) ? daUrl : 'todos'
+  })
 
   // dias que têm tarefa (pontinhos do calendário do filtro "Dia")
   const diasComTarefa = useMemo(() => new Set(itens.map((item) => item.ultimaModificacao)), [itens])
@@ -72,7 +76,7 @@ function AcompanhamentoTarefas() {
       (item) =>
         (!termo || textoParaBusca(`${item.tarefa.titulo} ${item.paciente.nome}`).includes(termo)) &&
         noPeriodo(item.ultimaModificacao, periodo) &&
-        (status === 'todos' || item.status === status),
+        passaNoFiltroStatus(item.status, status),
     )
   }, [itens, busca, periodo, status])
 

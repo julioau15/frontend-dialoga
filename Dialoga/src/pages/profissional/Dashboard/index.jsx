@@ -65,10 +65,10 @@ export default function Dashboard() {
         {dados && (
           <>
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-              <CardIndicador icone={Usuarios} tom="primaria" valor={dados.resumo.pacientes_ativos} rotulo="Pacientes ativos" />
-              <CardIndicador icone={Calendario} tom="info" valor={dados.resumo.atendimentos_hoje} rotulo="Atendimentos hoje" />
-              <CardIndicador icone={CheckQuadrado} tom="sucesso" valor={dados.resumo.tarefas_enviadas} rotulo="Tarefas enviadas" />
-              <CardIndicador icone={Atividade} tom="alerta" valor={dados.resumo.pendentes_resposta} rotulo="Pendentes resp." />
+              <CardIndicador icone={Usuarios} tom="primaria" valor={dados.resumo.pacientes_ativos} rotulo="Pacientes ativos" para="/profissional/pacientes" />
+              <CardIndicador icone={Calendario} tom="info" valor={dados.resumo.atendimentos_hoje} rotulo="Atendimentos hoje" para="/profissional/agenda" />
+              <CardIndicador icone={CheckQuadrado} tom="sucesso" valor={dados.resumo.tarefas_enviadas} rotulo="Tarefas enviadas" para="/profissional/tarefas" />
+              <CardIndicador icone={Atividade} tom="alerta" valor={dados.resumo.pendentes_resposta} rotulo="Pendentes resp." para="/profissional/tarefas/acompanhamento?status=pendente" />
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
