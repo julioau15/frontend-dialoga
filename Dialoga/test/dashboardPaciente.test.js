@@ -66,3 +66,16 @@ test('itens trazem o que é preciso para abrir cada um', () => {
   const d = montarDashboardPaciente(RESPOSTAS, HOJE)
   assert.strictEqual(d.consultas[0].data, '2026-11-25')
 })
+
+test('cartões-resumo usam os totais, não as listas curtas', () => {
+  const muitas = {
+    ...RESPOSTAS,
+    tarefas: [1, 2, 3, 4, 5].map((id) => ({ id, titulo: `T${id}`, prazo: 'Sem prazo', status: 'pendente', progresso: 0 })),
+  }
+  const d = montarDashboardPaciente(muitas, HOJE)
+  assert.strictEqual(d.consultas.length, 2) // lista do cartão
+  assert.strictEqual(d.totalConsultas, 3) // 25/11, 02/12 e 09/12 (sem passada e sem cancelada)
+  assert.strictEqual(d.tarefas.length, 3) // lista do cartão
+  assert.strictEqual(d.totalTarefasPendentes, 5)
+  assert.strictEqual(montarDashboardPaciente(RESPOSTAS, HOJE).totalTarefasPendentes, 3)
+})

@@ -135,18 +135,13 @@ export function AuthProvider({ children }) {
   }, [auth])
 
   // Busca nome e foto na rota do nível do usuário (administrador, profissional ou paciente)
+  // Sem sessão (ou nível sem rota) o perfil exposto é null; ver "perfilAtual" abaixo
   useEffect(() => {
-    if (!auth) {
-      setPerfil(null)
-      return
-    }
+    if (!auth) return
 
     const rota = ROTA_POR_NIVEL[auth.nivel]
     const nivel = NIVEL[auth.nivel]
-    if (!rota) {
-      setPerfil(null)
-      return
-    }
+    if (!rota) return
 
     let cancelado = false
 
@@ -176,8 +171,10 @@ export function AuthProvider({ children }) {
     }
   }, [auth])
 
+  const perfilAtual = auth && ROTA_POR_NIVEL[auth.nivel] ? perfil : null
+
   return (
-    <AuthContext.Provider value={{ auth, perfil, login, logout, marcarPrimeiroAcessoConcluido, marcarSenhaDefinida, atualizarPerfilLocal }}>
+    <AuthContext.Provider value={{ auth, perfil: perfilAtual, login, logout, marcarPrimeiroAcessoConcluido, marcarSenhaDefinida, atualizarPerfilLocal }}>
       {children}
     </AuthContext.Provider>
   )

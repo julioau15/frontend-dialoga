@@ -7,8 +7,10 @@
 //   andamento -> etiqueta azul  | barra | "Continuar"
 //   atrasada  -> etiqueta verm. | barra | "Abrir tarefa"
 //   concluida -> etiqueta verde | sem barra | "Ver respostas" (verde claro)
-//   autotarefa pendente/andamento/atrasada -> botão "Marcar como concluído"
-// Props: tarefa, onAcao(tarefa) (clique no botão; quem decide a tela é a página Tarefas)
+//   autotarefa pendente/andamento/atrasada -> "Ver tarefa" e "Marcar como concluído"
+//   autotarefa concluída                   -> "Ver tarefa"
+// Props: tarefa, onAcao(tarefa) (clique no botão; quem decide a tela é a página Tarefas),
+//        onVer(tarefa) (autotarefa: abre a tarefa só para visualização)
 // ============================================================
 import { useId } from 'react'
 import Button from '../../../../components/Button'
@@ -21,7 +23,7 @@ import { STATUS } from './statusTarefa'
 // botão do card no tamanho do Figma (40px de altura, cantos 12px, texto 14px)
 const BOTAO_CARD = 'rounded-xl! text-[14px]!'
 
-export default function CartaoTarefa({ tarefa, onAcao }) {
+export default function CartaoTarefa({ tarefa, onAcao, onVer }) {
   const idTitulo = useId()
   const { titulo, profissional, autotarefa, prazo, status, progresso } = tarefa
   const config = STATUS[status]
@@ -44,8 +46,19 @@ export default function CartaoTarefa({ tarefa, onAcao }) {
 
       {config.barra && <BarraProgresso valor={progresso} />}
 
-      {/* autotarefa concluída não tem respostas para ver, então fica sem botão */}
-      {!(autotarefa && concluida) && (
+      {autotarefa ? (
+        // autotarefa: abre para visualizar (título, prazo, status e anexo) e, se aberta, pode ser concluída
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button type="button" variante="suave" className={BOTAO_CARD} onClick={() => onVer?.(tarefa)}>
+            Ver tarefa
+          </Button>
+          {!concluida && (
+            <Button type="button" variante="primario" className={BOTAO_CARD} onClick={() => onAcao?.(tarefa)}>
+              {textoAcao}
+            </Button>
+          )}
+        </div>
+      ) : (
         <Button
           type="button"
           variante={concluida ? 'sucesso-suave' : 'primario'}

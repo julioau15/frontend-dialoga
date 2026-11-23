@@ -13,14 +13,16 @@
 //   - tarefas deste período com prazo, status, progresso e "Ver todas" (RF208–RF210);
 //     só no desktop (os frames de Mobile terminam nas Anotações);
 //   - botão "Exportar Relatório" (RF211) ao lado do título: "📄 Exportar Relatório" no desktop
-//     e "📄 PDF" no mobile e no tablet. Só visual: ainda não gera o arquivo (sem integração).
+//     e "📄 PDF" no mobile e no tablet. Gera e baixa o PDF do período (utils/exportarRelatorio).
 // Desktop (a partir de 1280px): calendário à esquerda (297px) e gráficos à direita (528px);
 // em 1440px as posições são as do frame. Tablet e Mobile: tudo em uma coluna, na ordem do Figma.
 // ============================================================
 import { useMemo, useState } from 'react'
 import Button from '../../../components/Button'
+import { useAuth } from '../../../contexts/AuthContext'
 import { useRelatorios } from '../../../hooks/useRelatorios'
 import { hojeNoBrasil } from '../../../utils/datasAgenda'
+import { exportarRelatorioPdf } from '../../../utils/exportarRelatorio'
 import { periodoInicial, registrosDoPeriodo } from '../../../utils/relatorios'
 import CalendarioPeriodo from './components/CalendarioPeriodo'
 import CartaoAnotacoesPeriodo from './components/CartaoAnotacoesPeriodo'
@@ -31,19 +33,22 @@ import CartaoTarefasPeriodo from './components/CartaoTarefasPeriodo'
 
 // Botão "Exportar Relatório" (RF211), como no Figma: branco com borda lilás.
 // Desktop: "📄 Exportar Relatório" (42px de altura); mobile e tablet: "📄 PDF" (32px).
-// Só visual: ainda não gera o arquivo.
-function BotaoExportar() {
+// Gera o PDF do período escolhido (desabilitado enquanto os dados carregam ou o arquivo é gerado).
+function BotaoExportar({ onExportar, desabilitado = false, gerando = false }) {
   return (
     <button
       type="button"
       aria-label="Exportar relatório"
-      className="inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-borda bg-branco px-3 text-[13px] font-semibold text-texto shadow-sm hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria xl:h-[42px] xl:rounded-xl xl:px-4 xl:text-[14px]"
+      onClick={onExportar}
+      disabled={desabilitado || gerando}
+      aria-busy={gerando}
+      className="disabled:cursor-not-allowed disabled:opacity-60 inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-borda bg-branco px-3 text-[13px] font-semibold text-texto shadow-sm hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria xl:h-[42px] xl:rounded-xl xl:px-4 xl:text-[14px]"
     >
       <span aria-hidden="true" className="text-[12px] leading-none">
         📄
       </span>
-      <span className="xl:hidden">PDF</span>
-      <span className="max-xl:hidden">Exportar Relatório</span>
+      <span className="xl:hidden">{gerando ? 'Gerando...' : 'PDF'}</span>
+      <span className="max-xl:hidden">{gerando ? 'Gerando PDF...' : 'Exportar Relatório'}</span>
     </button>
   )
 }
@@ -60,12 +65,28 @@ function Relatorios() {
   const [periodo, setPeriodo] = useState(inicial.periodo)
   const [mesVisivel, setMesVisivel] = useState(inicial.mesVisivel)
   const rel = useRelatorios()
+  const { perfil } = useAuth()
+  const [exportando, setExportando] = useState(false)
+  const [erroExportar, setErroExportar] = useState('')
 
   // dias com registro (ponto no calendário)
   const diasComRegistro = useMemo(() => new Set(rel.registros.map((r) => r.data)), [rel.registros])
 
   // registros do período escolhido (enquanto falta o dia final, vale só o dia inicial)
   const registros = useMemo(() => registrosDoPeriodo(rel.registros, periodo), [rel.registros, periodo])
+
+  // RF211: baixa o PDF do período selecionado no calendário
+  async function exportar() {
+    setExportando(true)
+    setErroExportar('')
+    try {
+      await exportarRelatorioPdf({ nome: perfil?.nome, periodo, registros, tarefas: rel.tarefas })
+    } catch {
+      setErroExportar('Não foi possível gerar o PDF. Tente novamente.')
+    } finally {
+      setExportando(false)
+    }
+  }
 
   // avança ou volta um mês no calendário (vira o ano quando passa de dezembro/janeiro)
   function mudarMes(delta) {
@@ -87,8 +108,14 @@ function Relatorios() {
             <h1 className="text-[20px] font-extrabold leading-7 text-texto xl:text-[24px] xl:leading-[30px]">Relatórios</h1>
             <p className="mt-0.5 text-[14px] leading-5 text-secundaria xl:mt-[5px]">Seu histórico de saúde emocional</p>
           </div>
-          <BotaoExportar />
+          <BotaoExportar onExportar={exportar} desabilitado={rel.carregando} gerando={exportando} />
         </header>
+
+        {erroExportar && (
+          <p role="alert" className="mt-3 text-[13px] text-erro xl:pl-[33px]">
+            {erroExportar}
+          </p>
+        )}
 
         {rel.carregando && (
           <p role="status" className="mt-4 text-[13px] text-secundaria xl:pl-[33px]">Carregando seus relatórios...</p>
@@ -102,6 +129,9 @@ function Relatorios() {
           </div>
         )}
 
+        {/* enquanto carrega, os cartões não aparecem (senão mostrariam "Nenhum registro" antes da hora) */}
+        {!rel.carregando && (
+        <>
         {/* desktop: calendário | gráfico na 1ª linha; solicitações | sono na 2ª
             (mobile e tablet: calendário, gráfico, sono e solicitações, como no Figma) */}
         <div className="mt-[18px] flex flex-col gap-[18px] xl:mt-[11px] xl:grid xl:grid-cols-[297px_528px] xl:gap-x-4 xl:gap-y-[15px] xl:pl-[33px]">
@@ -122,7 +152,12 @@ function Relatorios() {
           </div>
           {/* no Figma este cartão é 5px mais largo que o calendário, para a esquerda */}
           <div className="min-w-0 xl:col-start-1 xl:row-start-2 xl:self-start">
-            <CartaoSolicitacoesAcesso solicitacoes={rel.solicitacoes} onResponder={rel.responderSolicitacao} />
+            <CartaoSolicitacoesAcesso
+              solicitacoes={rel.solicitacoes}
+              erro={rel.erroSolicitacoes}
+              onTentarNovamente={rel.recarregar}
+              onResponder={rel.responderSolicitacao}
+            />
           </div>
         </div>
 
@@ -133,6 +168,8 @@ function Relatorios() {
             <CartaoTarefasPeriodo periodo={periodo} tarefas={rel.tarefas} />
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   )

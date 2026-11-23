@@ -70,10 +70,10 @@ function Dashboard() {
   const resumo = dados
     ? [
         { rotulo: 'Tratamentos ativos', valor: dados.tratamentos.length, icone: 'remedio', cor: 'bg-fundo-card text-primaria', para: '/paciente/tratamentos' },
-        { rotulo: 'Próximas consultas', valor: dados.consultas.length, icone: 'calendario', cor: 'bg-info-fundo text-info', para: '/paciente/agenda' },
+        { rotulo: 'Próximas consultas', valor: dados.totalConsultas, icone: 'calendario', cor: 'bg-info-fundo text-info', para: '/paciente/agenda' },
         {
           rotulo: 'Tarefas pendentes',
-          valor: dados.tarefas.filter((t) => t.status !== 'concluida').length,
+          valor: dados.totalTarefasPendentes,
           icone: 'tarefa',
           cor: 'bg-sucesso-fundo text-sucesso',
           para: '/paciente/tarefas',
