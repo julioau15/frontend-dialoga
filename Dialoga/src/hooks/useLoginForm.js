@@ -11,7 +11,7 @@ import { validarLogin } from '../utils/validators'
 import { rotaInicialPorNivel, rotaAposLogin } from '../utils/rotasPorNivel'
 
 export function useLoginForm() {
-  const { login, logout } = useAuth()
+  const { login, loginGoogle, logout } = useAuth()
   const navigate = useNavigate()
 
   const [valores, setValores] = useState({ email: '', senha: '' })
@@ -37,10 +37,20 @@ export function useLoginForm() {
     if (Object.keys(erros).length > 0) return
 
     // 2) chama a API
+    await executarLogin(() => login(valores.email.trim(), valores.senha))
+  }
+
+  // Chamado pelo botão do Google quando ele devolve o credential (ID token)
+  async function entrarComGoogle(credential) {
+    await executarLogin(() => loginGoogle(credential))
+  }
+
+  // Parte comum aos dois logins: chama a API, trata os erros e redireciona
+  async function executarLogin(fazerLogin) {
     setCarregando(true)
     setErroGeral('')
     try {
-      const dados = await login(valores.email.trim(), valores.senha)
+      const dados = await fazerLogin()
       const rota = rotaInicialPorNivel(dados.nivel) && rotaAposLogin(dados)
 
       // nível sem tela no front (ex.: admin): desloga e avisa
@@ -73,5 +83,7 @@ export function useLoginForm() {
     alterarCampo,
     alternarSenha: () => setMostrarSenha((m) => !m),
     enviar,
+    entrarComGoogle,
+    erroGoogle: (mensagem) => setErroGeral(mensagem),
   }
 }
