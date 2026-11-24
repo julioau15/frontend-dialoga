@@ -214,6 +214,14 @@ export default function Cadastro() {
           )}
         </section>
 
+        {/* Aviso: ao criar a conta, a pessoa declara ter acesso aos documentos */}
+        <p className="text-center text-[11px] text-secundaria">
+          Ao criar sua conta, você declara ter lido os{' '}
+          <Link className="text-primaria font-bold no-underline hover:underline" to="/termos-de-uso" target="_blank" rel="noopener noreferrer">Termos de Uso</Link>
+          {' '}e a{' '}
+          <Link className="text-primaria font-bold no-underline hover:underline" to="/politica-de-privacidade" target="_blank" rel="noopener noreferrer">Política de Privacidade</Link>.
+        </p>
+
         <p className="text-center text-[12px] text-secundaria">
           Já tem conta? <Link className="text-primaria font-bold no-underline hover:underline" to="/login">Entrar</Link>
         </p>

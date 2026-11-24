@@ -17,6 +17,10 @@ import PerfilEmAnalise from '../pages/auth/PerfilEmAnalise'
 import RecuperarSenha from '../pages/auth/RecuperarSenha'
 import PersonalizarExperiencia from '../pages/auth/PersonalizarExperiencia'
 
+// Documentos legais (públicos)
+import TermosDeUso from '../pages/legal/TermosDeUso'
+import PoliticaDePrivacidade from '../pages/legal/PoliticaDePrivacidade'
+
 // Admin
 import AdministradoresAdmin from '../pages/admin/Administradores'
 import DashboardAdmin from '../pages/admin/Dashboard'
@@ -68,6 +72,8 @@ function AppRoutes() {
       {/* <Route path="/primeiro-acesso" element={<PrimeiroAcesso />} /> */}
       <Route path="/perfil-em-analise" element={<PerfilEmAnalise />} />
       <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+      <Route path="/termos-de-uso" element={<TermosDeUso />} />
+      <Route path="/politica-de-privacidade" element={<PoliticaDePrivacidade />} />
 
       {/* Primeiro acesso do administrador (logado, com a senha provisória ainda não trocada) */}
       <Route element={<RequireAuth nivel={NIVEL.ADMIN} exigirPrimeiroAcesso={false} />}>

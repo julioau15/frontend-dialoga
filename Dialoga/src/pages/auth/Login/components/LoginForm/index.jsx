@@ -90,9 +90,9 @@ export default function LoginForm() {
 
       {/* Rodapé fixo na parte de baixo do painel */}
       <footer className="flex gap-2.5 text-[10px] text-secundaria">
-        <a className="no-underline hover:underline" href="#termos">Termos de Uso</a>
+        <Link className="no-underline hover:underline" to="/termos-de-uso">Termos de Uso</Link>
         <span aria-hidden="true">|</span>
-        <a className="no-underline hover:underline" href="#privacidade">Política de Privacidade</a>
+        <Link className="no-underline hover:underline" to="/politica-de-privacidade">Política de Privacidade</Link>
       </footer>
     </section>
   )
