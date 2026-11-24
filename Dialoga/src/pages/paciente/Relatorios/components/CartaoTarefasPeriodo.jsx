@@ -1,8 +1,9 @@
 // ============================================================
 // CartaoTarefasPeriodo
 // "Tarefas deste período" (RF208–RF210), como no Figma: uma linha por tarefa com o título,
-// o prazo, a barrinha de progresso (some quando está concluída) e o status (Selo),
-// e o link "Ver todas" para a tela de Tarefas.
+// o prazo, a barrinha de progresso com a porcentagem e o status (Selo), e o link "Ver todas"
+// para a tela de Tarefas. O progresso é o real (respostas já salvas, mesma regra da tela
+// Tarefas; ver relatoriosService); a concluída aparece com 100%.
 // Usa as tarefas do paciente vindas da API e os status da tela de Tarefas do paciente.
 // Desktop: barra e status à direita. Mobile: barra e status embaixo do prazo.
 // Props:
@@ -53,6 +54,7 @@ export default function CartaoTarefasPeriodo({ periodo, tarefas: todas }) {
         <ul>
           {tarefas.map((t) => {
             const status = STATUS[t.status] ?? STATUS.pendente
+            const progresso = t.status === 'concluida' ? 100 : (t.progresso ?? 0)
             return (
               <li
                 key={t.id}
@@ -63,18 +65,19 @@ export default function CartaoTarefasPeriodo({ periodo, tarefas: todas }) {
                   <p className="text-[12px] leading-4 text-secundaria">Prazo: {t.prazo}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
-                  {status.barra && (
-                    <div
-                      role="progressbar"
-                      aria-label={`Progresso de ${t.titulo}`}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={t.progresso}
-                      className="h-1.5 flex-1 overflow-hidden rounded-full bg-borda sm:w-20 sm:flex-none"
-                    >
-                      <div className="h-full rounded-full bg-primaria" style={{ width: `${t.progresso}%` }} />
-                    </div>
-                  )}
+                  <div
+                    role="progressbar"
+                    aria-label={`Progresso de ${t.titulo}`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={progresso}
+                    className="h-1.5 flex-1 overflow-hidden rounded-full bg-borda sm:w-20 sm:flex-none"
+                  >
+                    <div className="h-full rounded-full bg-primaria" style={{ width: `${progresso}%` }} />
+                  </div>
+                  <span aria-hidden="true" className="w-9 shrink-0 text-right text-[12px] font-bold leading-4 text-texto">
+                    {progresso}%
+                  </span>
                   <span className={`${AJUSTE_SELO} ml-auto`}>
                     <Selo tom={status.tom}>{status.rotulo}</Selo>
                   </span>

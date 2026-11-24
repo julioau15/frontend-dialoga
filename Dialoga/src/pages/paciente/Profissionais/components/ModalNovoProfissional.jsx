@@ -6,6 +6,8 @@
 //   - "Nome completo *", "E-mail (opcional)" e "Especialidade *" (campo de texto; com o profissional
 //     achado pelo CPF, vira uma lista com as especialidades cadastradas por ele);
 //   - botões Cancelar e Salvar.
+// Busca por nome ou e-mail: campo "Buscar na plataforma" (GET /profissionais/busca, só aprovados,
+// a partir de 2 letras). Escolher um resultado tem o mesmo efeito de achar pelo CPF.
 // Busca por CPF (RF320): com os 11 números de um CPF válido, o pop-up consulta a API
 // ("Verificando CPF..."). Achando um profissional da plataforma, a ajuda dá lugar ao cartão
 // verde (nome, especialidade e ✓) e nome, e-mail e especialidade são preenchidos; ao salvar,
@@ -29,6 +31,8 @@ import Button from '../../../../components/Button'
 import { IconeCheck } from '../../../../components/Icones'
 import Modal from '../../../../components/Modal'
 import TextField from '../../../../components/TextField'
+import { useAuth } from '../../../../contexts/AuthContext'
+import { useBuscaProfissional } from '../../../../hooks/useBuscaProfissional'
 import { doisPrimeirosNomes, semTitulo } from '../../../../utils/formatadores'
 import { AJUSTE_CAMPO, AJUSTE_MODAL, BOTAO_CLARO, BOTAO_PRINCIPAL } from './estilosProfissionais'
 import { IconeChevronBaixo } from './iconesProfissionais'
@@ -40,6 +44,15 @@ const BOTAO_MOBILE = 'max-lg:h-8!'
 
 // avatar de 40px com as iniciais de 14px no cartão do profissional encontrado
 const AJUSTE_AVATAR = 'shrink-0 [&>div]:h-10 [&>div]:w-10 [&>div]:text-[14px]'
+
+// resultado de GET /profissionais/busca -> formato do "profissional encontrado"
+const paraEncontrado = (p) => ({
+  id: p.id,
+  nome: p.nome_completo,
+  email: '', // a busca não devolve o e-mail do profissional
+  // "Psicologia Clínica, TCC" -> ['Psicologia Clínica', 'TCC'] (sem repetidas)
+  especialidades: [...new Set(String(p.especialidades ?? '').split(',').map((e) => e.trim()).filter(Boolean))],
+})
 
 // asterisco vermelho dos campos obrigatórios
 const Obrigatorio = ({ children }) => (
@@ -63,6 +76,9 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
   const [verificando, setVerificando] = useState(false) // busca de CPF em andamento
   const [enviando, setEnviando] = useState(false)
   const [erroEnvio, setErroEnvio] = useState('')
+  const [termoBusca, setTermoBusca] = useState('') // busca por nome ou e-mail
+  const { auth } = useAuth()
+  const busca = useBuscaProfissional(encontrado ? '' : termoBusca, auth?.token)
 
   // fechou o pop-up no meio da busca: cancela a requisição
   useEffect(() => () => buscaCpf.current?.abort(), [])
@@ -113,6 +129,32 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
         setVerificando(false)
       }
     }
+  }
+
+  // escolheu um profissional na busca por nome/e-mail: mesmo efeito de achar pelo CPF
+  function escolherDaBusca(resultado) {
+    const achado = paraEncontrado(resultado)
+    if (achado.especialidades.length === 0) achado.especialidades = ['Especialidade não informada']
+    if ([...idsVinculados].some((id) => String(id) === String(achado.id))) {
+      setErroEnvio('Este profissional já está no seu acompanhamento.')
+      return
+    }
+    buscaCpf.current?.abort()
+    buscaCpf.current = null
+    setVerificando(false)
+    setErroEnvio('')
+    setEncontrado(achado)
+    setDados({ cpf: '', nome: achado.nome, email: '', especialidade: achado.especialidades[0] })
+    setErros({})
+  }
+
+  // desfaz a escolha (volta a poder buscar ou preencher um profissional fora da plataforma)
+  function limparEscolha() {
+    setEncontrado(null)
+    setTermoBusca('')
+    setDados(PROFISSIONAL_VAZIO)
+    setErros({})
+    setErroEnvio('')
   }
 
   // valida, mostra os erros e entrega os dados para a página (que chama a API)
@@ -174,6 +216,51 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
         {/* -my-1: o Modal tem 24px de respiro; no Figma são 20px em cima e embaixo */}
         <form id={idFormulario} noValidate onSubmit={enviar}>
           <fieldset disabled={enviando} className="-my-1 flex min-w-0 flex-col gap-5">
+          {/* busca por nome ou e-mail (só aparece enquanto nenhum profissional foi escolhido) */}
+          {!encontrado && (
+            <div className="flex flex-col">
+              <div className={AJUSTE_CAMPO}>
+                <TextField
+                  label="Buscar na plataforma (opcional)"
+                  placeholder="Nome ou e-mail do profissional"
+                  autoComplete="off"
+                  maxLength={100}
+                  value={termoBusca}
+                  onChange={(e) => {
+                    setTermoBusca(e.target.value)
+                    setErroEnvio('')
+                  }}
+                  ajuda={
+                    busca.termoCurto
+                      ? 'Digite ao menos 2 letras.'
+                      : busca.carregando
+                        ? 'Buscando profissionais...'
+                        : busca.erro ||
+                          (termoBusca.trim().length >= 2 && busca.resultados.length === 0
+                            ? 'Nenhum profissional encontrado. Preencha os dados abaixo.'
+                            : undefined)
+                  }
+                />
+              </div>
+              {busca.resultados.length > 0 && (
+                <ul aria-label="Profissionais encontrados" className="mt-2 flex max-h-48 flex-col overflow-y-auto rounded-xl border border-borda">
+                  {busca.resultados.map((r) => (
+                    <li key={r.id} className="border-b border-borda last:border-b-0">
+                      <button
+                        type="button"
+                        onClick={() => escolherDaBusca(r)}
+                        className="flex w-full cursor-pointer flex-col items-start px-3.5 py-2.5 text-left hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primaria"
+                      >
+                        <span className="text-[14px] font-semibold text-texto">{r.nome_completo}</span>
+                        <span className="text-[12px] text-secundaria">{r.especialidades || 'Especialidade não informada'}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
           <div className="flex flex-col">
             {/* a ajuda some quando o profissional é encontrado (o cartão verde fica no lugar) */}
             <div className={AJUSTE_CAMPO}>
@@ -211,6 +298,13 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
                 </div>
                 <IconeCheck tamanho={16} className="text-sucesso-escura [stroke-width:1.8]" />
                 <span className="sr-only">Profissional encontrado na plataforma</span>
+                <button
+                  type="button"
+                  onClick={limparEscolha}
+                  className="cursor-pointer text-[12px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+                >
+                  Trocar
+                </button>
               </div>
             )}
           </div>

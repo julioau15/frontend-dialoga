@@ -8,6 +8,7 @@
 //   agenda.salvarConsulta(dados, idConsulta?)  -> cria (ou edita, se vier o id) e recarrega
 //   agenda.excluirConsulta(id)
 //   agenda.adicionarDisponibilidade({ dias, inicio, fim, repetir, hoje })
+//   agenda.editarDisponibilidade(item, { dias, inicio, fim, repetir, data })
 //   agenda.removerDisponibilidade(item)
 // As ações lançam Error com .message pronta para a tela (vinda do back).
 // ============================================================
@@ -19,11 +20,12 @@ import {
   buscarPacientesDaAgenda,
   criarConsulta,
   criarDisponibilidade,
+  atualizarDisponibilidade,
   excluirConsulta as excluirConsultaApi,
   excluirDisponibilidade,
 } from '../services/agendaProfissionalService'
 import { buscarHorariosDoVinculo } from '../services/agendaPacienteService'
-import { proximaData } from '../utils/disponibilidade'
+import { diaDaSemana, proximaData } from '../utils/disponibilidade'
 
 const VAZIO = { consultas: [], pacientes: [], disponibilidades: [] }
 
@@ -78,10 +80,15 @@ export function useAgendaProfissional(token) {
     await atualizarListas().catch(() => {})
   }
 
-  // "Repetir semanalmente" desligado vira "Única vez" na próxima data (hoje inclusive) daquele dia da semana.
-  // Cria 1 registro por dia escolhido. Se algum falhar, os anteriores já foram salvos: a tela é recarregada e o erro avisa.
-  async function adicionarDisponibilidade({ dias, inicio, fim, repetir, hoje }) {
+  // "Repetir semanalmente" ligado: cria 1 registro semanal por dia escolhido.
+  // Desligado: "Única vez" na data escolhida (sem data, cai na próxima data daquele dia da semana).
+  // Se algum falhar, os anteriores já foram salvos: a tela é recarregada e o erro avisa.
+  async function adicionarDisponibilidade({ dias, inicio, fim, repetir, data, hoje }) {
     try {
+      if (!repetir && data) {
+        await criarDisponibilidade(token, { dia: diaDaSemana(data), inicio, fim, tipo: 'unica', data })
+        return
+      }
       for (const dia of dias) {
         await criarDisponibilidade(token, {
           dia,
@@ -96,13 +103,42 @@ export function useAgendaProfissional(token) {
     }
   }
 
-  // O back apaga o registro inteiro. Se ele tinha outros dias (cadastro antigo), recria esses dias.
-  async function removerDisponibilidade(item) {
-    await excluirDisponibilidade(token, item.idApi)
+  // o mesmo registro do back, só com os outros dias (mantém tipo e datas do período)
+  const manterIrmaos = (item) =>
+    atualizarDisponibilidade(token, item.idApi, {
+      dias: item.irmaos,
+      inicio: item.inicio,
+      fim: item.fim,
+      tipo: item.tipo,
+      data: item.data,
+      dataFinal: item.dataFinal,
+    })
+
+  // Edita um item da lista. Se o registro do back tem outros dias (irmaos), eles continuam como
+  // estavam e o dia editado vira um registro novo; senão, o próprio registro é atualizado (PUT).
+  async function editarDisponibilidade(item, { dias, inicio, fim, repetir, data }) {
+    const novo = repetir
+      ? { dias, inicio, fim, tipo: item.tipo === 'periodo' ? 'periodo' : 'semanal', data: item.data, dataFinal: item.dataFinal }
+      : { dias: [diaDaSemana(data)], inicio, fim, tipo: 'unica', data }
     try {
-      for (const dia of item.irmaos ?? []) {
-        await criarDisponibilidade(token, { dia, inicio: item.inicio, fim: item.fim, tipo: 'semanal' })
+      if (item.irmaos?.length) {
+        await manterIrmaos(item)
+        if (novo.tipo === 'unica') await criarDisponibilidade(token, { dia: novo.dias[0], inicio, fim, tipo: 'unica', data })
+        else for (const dia of novo.dias) await criarDisponibilidade(token, { dia, inicio, fim, tipo: 'semanal' })
+      } else {
+        await atualizarDisponibilidade(token, item.idApi, novo)
       }
+    } finally {
+      await atualizarListas().catch(() => {})
+    }
+  }
+
+  // Remove só o dia escolhido: se o registro do back tem outros dias, atualiza o registro sem este
+  // dia (PUT, mantendo tipo e datas); senão apaga o registro.
+  async function removerDisponibilidade(item) {
+    try {
+      if (item.irmaos?.length) await manterIrmaos(item)
+      else await excluirDisponibilidade(token, item.idApi)
     } finally {
       await atualizarListas().catch(() => {})
     }
@@ -117,6 +153,7 @@ export function useAgendaProfissional(token) {
     salvarConsulta,
     excluirConsulta,
     adicionarDisponibilidade,
+    editarDisponibilidade,
     removerDisponibilidade,
   }
 }

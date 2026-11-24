@@ -6,7 +6,10 @@
 //   - somenteLeitura (frame "Ver Resposta"): campos travados com as respostas.
 // As perguntas vêm da própria tarefa (tarefa.perguntas, carregadas da API).
 // Props: tarefa, respostasIniciais, somenteLeitura, salvando,
-//        onVoltar(), onSalvarRascunho(respostas), onEnviar(respostas)
+//        onVoltar(), onSalvarRascunho(respostas), onEnviar(respostas),
+//        onConcluir() (autotarefa: "Marcar como concluído")
+// Autotarefa (criada pelo próprio paciente, sem perguntas): mostra título, prazo, status e o anexo
+// (se houver) e, se não estiver concluída, o botão "Marcar como concluído".
 // Tipos de pergunta: emocoes | unica | multipla | texto | escala
 // ============================================================
 import { useId, useState } from 'react'
@@ -135,7 +138,7 @@ function Pergunta({ numero, pergunta, valor, erro, somenteLeitura, onChange }) {
   )
 }
 
-export default function FormularioTarefa({ tarefa, respostasIniciais, somenteLeitura = false, salvando = false, onVoltar, onSalvarRascunho, onEnviar }) {
+export default function FormularioTarefa({ tarefa, respostasIniciais, somenteLeitura = false, salvando = false, onVoltar, onSalvarRascunho, onEnviar, onConcluir }) {
   const perguntas = tarefa.perguntas
   const [respostas, setRespostas] = useState(respostasIniciais)
   const [erros, setErros] = useState({})
@@ -187,7 +190,21 @@ export default function FormularioTarefa({ tarefa, respostasIniciais, somenteLei
         </Card>
       )}
 
-      {perguntas.length === 0 && (
+      {/* só endereço completo (http/https) vira link; só o nome do arquivo não abre nada */}
+      {/^https?:\/\//i.test(tarefa.anexo ?? '') && (
+        <Card as="section" className="p-5">
+          <a
+            href={tarefa.anexo}
+            target="_blank"
+            rel="noopener noreferrer"
+            download
+            className="text-[13px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+          >
+            📎 Abrir anexo ({decodeURIComponent(tarefa.anexo.split('?')[0].split('/').pop()).replace(/^\d+-/, '')})
+          </a>
+        </Card>
+      )}
+      {perguntas.length === 0 && !tarefa.autotarefa && (
         <p className="rounded-xl bg-branco px-4 py-8 text-center text-[13px] text-secundaria">Esta tarefa não tem perguntas.</p>
       )}
 
@@ -203,7 +220,15 @@ export default function FormularioTarefa({ tarefa, respostasIniciais, somenteLei
         />
       ))}
 
-      {somenteLeitura ? (
+      {tarefa.autotarefa ? (
+        tarefa.status !== 'concluida' && onConcluir && (
+          <div>
+            <Button type="button" larguraAuto carregando={salvando} className="px-4" onClick={onConcluir}>
+              Marcar como concluído
+            </Button>
+          </div>
+        )
+      ) : somenteLeitura ? (
         // no frame "Ver Resposta" o botão aparece apagado: a tarefa já foi enviada
         <div>
           <Button type="button" larguraAuto disabled className="px-4">

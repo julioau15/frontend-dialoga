@@ -64,19 +64,16 @@ function iniciais(nome = '') {
 }
 
 function Avatar({ nome, foto }) {
-  const [erro, setErro] = useState(false)
-
-  // se a foto mudar, tenta carregar de novo
-  useEffect(() => {
-    setErro(false)
-  }, [foto])
+  // guarda QUAL foto falhou: se a foto mudar, tenta carregar de novo (sem setState em efeito)
+  const [fotoComErro, setFotoComErro] = useState(null)
+  const erro = fotoComErro === foto
 
   if (foto && !erro) {
     return (
       <img
         src={foto}
         alt={`Foto de ${nome}`}
-        onError={() => setErro(true)}
+        onError={() => setFotoComErro(foto)}
         className="h-16 w-16 rounded-full object-cover"
       />
     )
@@ -171,10 +168,12 @@ function Sidebar({ logo = logoPadrao, nome = '', foto, funcao = '', nivel, itens
 
   const fechar = () => setAberto(false)
 
-  // fecha ao navegar
-  useEffect(() => {
+  // fecha ao navegar (ajuste de estado durante a renderização, sem efeito)
+  const [rotaAtual, setRotaAtual] = useState(pathname)
+  if (rotaAtual !== pathname) {
+    setRotaAtual(pathname)
     setAberto(false)
-  }, [pathname])
+  }
 
   // fecha ao ir para o layout desktop (ex.: girar o tablet)
   useEffect(() => {

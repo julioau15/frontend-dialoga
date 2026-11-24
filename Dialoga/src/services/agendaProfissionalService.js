@@ -8,6 +8,7 @@
 //   PUT    /consultas/:id                     -> editar (reagendar)
 //   DELETE /consultas/:id                     -> excluir
 //   POST   /profissionais/me/disponibilidades -> nova disponibilidade
+//   PUT    /disponibilidades/:id              -> editar disponibilidade
 //   DELETE /disponibilidades/:id              -> remover disponibilidade
 // O back usa 404 para "lista vazia": aqui isso vira [].
 // As regras (data futura, horário livre, vínculo ativo, especialidade)
@@ -132,6 +133,22 @@ export const criarDisponibilidade = (token, { dia, inicio, fim, tipo, data }) =>
       ...(tipo === 'unica' ? { data_inicial: data, data_final: data } : { dias_da_semana: [dia + 1] }),
     },
     mensagemErro: 'Não foi possível adicionar a disponibilidade.',
+  })
+
+// Edita o registro inteiro do back.
+//   dias -> [0..6] (semanal/período); tipo 'unica' usa data; 'periodo' usa data e dataFinal
+export const atualizarDisponibilidade = (token, idApi, { dias = [], inicio, fim, tipo, data, dataFinal }) =>
+  requisicao(`/disponibilidades/${encodeURIComponent(idApi)}`, {
+    token,
+    method: 'PUT',
+    body: {
+      hora_inicio: inicio,
+      hora_fim: fim,
+      tipo_repeticao: tipo,
+      ...(tipo === 'unica' ? { data_inicial: data, data_final: data } : { dias_da_semana: dias.map((d) => d + 1) }),
+      ...(tipo === 'periodo' ? { data_inicial: data, data_final: dataFinal } : {}),
+    },
+    mensagemErro: 'Não foi possível atualizar a disponibilidade.',
   })
 
 export const excluirDisponibilidade = (token, idApi) =>

@@ -26,7 +26,7 @@ import { anoEMes, semanaDe } from '../../../utils/datasAgendaPaciente'
 import FiltroPeriodo from './components/FiltroPeriodo'
 import {
   acharConflito,
-  proximaData,
+  diaDaSemana,
   diasComDisponibilidade,
   ordenarDisponibilidades,
   siglaDoDia,
@@ -70,6 +70,7 @@ function Agenda() {
   const [selecionado, setSelecionado] = useState(diaInicial ?? hoje)
   // modal aberto: null | { tipo: 'nova' | 'detalhes' | 'editar' | 'excluir', consulta? }
   const [modal, setModal] = useState(null)
+  // pop-up de disponibilidade: false (fechado) | { item: null } (adicionar) | { item } (editar)
   const [modalDisponibilidade, setModalDisponibilidade] = useState(false)
   const [erroDisponibilidade, setErroDisponibilidade] = useState('')
   // disponibilidade aguardando confirmação no pop-up "Remover disponibilidade" (null = fechado)
@@ -158,12 +159,23 @@ function Agenda() {
     setErroDisponibilidade('')
   }
 
-  // Salvar: cria um item por dia escolhido. "Repetir semanalmente" desligado vira
-  // "Única vez" na próxima data (hoje inclusive) que cai naquele dia da semana.
-  async function salvarDisponibilidade({ dias, inicio, fim, repetir }) {
+  // Salvar: semanal cria um item por dia escolhido; "Repetir semanalmente" desligado vira
+  // "Única vez" na data escolhida. Editando, o item editado não conta como conflito.
+  async function salvarDisponibilidade({ dias, inicio, fim, repetir, data }) {
+    const editando = modalDisponibilidade?.item ?? null
     // confere conflito na tela antes de chamar a API (o back não confere sobreposição)
-    const novas = dias.map((dia) => ({ dia, inicio, fim, tipo: repetir ? 'semanal' : 'unica', ...(repetir ? {} : { data: proximaData(dia, hoje) }) }))
-    const conflito = acharConflito(novas, disponibilidades)
+    const novas = repetir
+      ? dias.map((dia) => ({
+          dia,
+          inicio,
+          fim,
+          tipo: editando?.tipo === 'periodo' ? 'periodo' : 'semanal',
+          data: editando?.data,
+          dataFinal: editando?.dataFinal,
+        }))
+      : [{ dia: diaDaSemana(data), inicio, fim, tipo: 'unica', data }]
+    const existentes = editando ? disponibilidades.filter((d) => d.id !== editando.id) : disponibilidades
+    const conflito = acharConflito(novas, existentes)
     if (conflito) {
       setErroDisponibilidade(
         `Já existe disponibilidade na ${siglaDoDia(conflito.dia)} em ${faixaDeHorario(conflito)}. Ajuste o horário.`,
@@ -172,13 +184,14 @@ function Agenda() {
     }
 
     try {
-      await agenda.adicionarDisponibilidade({ dias, inicio, fim, repetir, hoje })
+      if (editando) await agenda.editarDisponibilidade(editando, { dias, inicio, fim, repetir, data })
+      else await agenda.adicionarDisponibilidade({ dias, inicio, fim, repetir, data, hoje })
     } catch (erro) {
       setErroDisponibilidade(erro.message)
       return
     }
     fecharModalDisponibilidade()
-    mostrarToast('sucesso', 'Disponibilidade adicionada!')
+    mostrarToast('sucesso', editando ? 'Disponibilidade atualizada!' : 'Disponibilidade adicionada!')
   }
 
   // Só remove depois da confirmação no pop-up (RF37, RF40)
@@ -243,7 +256,8 @@ function Agenda() {
             <div className="min-w-0 md:col-start-2 md:row-span-2 md:row-start-1">
               <PainelDisponibilidade
                 itens={listaDisponibilidade}
-                onAdicionar={() => setModalDisponibilidade(true)}
+                onAdicionar={() => setModalDisponibilidade({ item: null })}
+                onEditar={(item) => setModalDisponibilidade({ item })}
                 onRemover={setDisponibilidadeRemover}
               />
             </div>
@@ -318,6 +332,9 @@ function Agenda() {
 
       {modalDisponibilidade && (
         <ModalDisponibilidade
+          key={modalDisponibilidade.item?.id ?? 'nova'}
+          inicial={modalDisponibilidade.item}
+          hoje={hoje}
           onFechar={fecharModalDisponibilidade}
           onSalvar={salvarDisponibilidade}
           erroGeral={erroDisponibilidade}

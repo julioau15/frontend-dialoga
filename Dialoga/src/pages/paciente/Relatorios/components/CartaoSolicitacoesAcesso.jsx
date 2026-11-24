@@ -14,6 +14,8 @@
 //     da lista; desktop (frame "Solicitação aprovada"): continua no mesmo lugar, sem clarear.
 // Props:
 //   solicitacoes -> [{ id, nome, especialidade, status, indicadores }] (vindas da API)
+//   erro         -> mensagem quando só as solicitações falharam (com "Tentar novamente")
+//   onTentarNovamente -> recarrega a tela
 //   onResponder(solicitacao, 'aprovado' | 'recusado', indicadores?) -> async; grava na API
 //     (se falhar, o pop-up continua aberto e o aviso vermelho mostra a mensagem)
 // ============================================================
@@ -83,7 +85,7 @@ function Linha({ solicitacao }) {
   )
 }
 
-export default function CartaoSolicitacoesAcesso({ solicitacoes, onResponder }) {
+export default function CartaoSolicitacoesAcesso({ solicitacoes, erro = '', onTentarNovamente, onResponder }) {
   const [aberta, setAberta] = useState(null) // solicitação no pop-up
   const [enviando, setEnviando] = useState(false)
   const [chave, setChave] = useState(0) // recomeça as marcações do pop-up a cada abertura
@@ -136,7 +138,22 @@ export default function CartaoSolicitacoesAcesso({ solicitacoes, onResponder }) 
         />
       </div>
 
-      {solicitacoes.length === 0 && (
+      {erro && (
+        <div role="alert" className="flex flex-col items-start gap-2 border-t border-borda px-5 py-4">
+          <p className="text-[13px] text-erro">{erro}</p>
+          {onTentarNovamente && (
+            <button
+              type="button"
+              onClick={onTentarNovamente}
+              className="cursor-pointer text-[13px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+            >
+              Tentar novamente
+            </button>
+          )}
+        </div>
+      )}
+
+      {!erro && solicitacoes.length === 0 && (
         <p className="border-t border-borda px-5 py-6 text-center text-[13px] text-secundaria">Nenhuma solicitação de acesso.</p>
       )}
 

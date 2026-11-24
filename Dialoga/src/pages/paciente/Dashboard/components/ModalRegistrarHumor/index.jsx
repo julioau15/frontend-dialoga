@@ -106,7 +106,16 @@ function Formulario({ token, onFechar, onSalvo }) {
 
   return (
     <div className={AJUSTE_MODAL}>
-      <Modal aberto comDivisores largura={LARGURA_FORMULARIO} titulo="Como você está hoje?" onFechar={onFechar} rodape={rodape}>
+      {/* enquanto salva, X, Esc e clique fora não fecham (senão o pop-up some e o humor é gravado mesmo assim) */}
+      <Modal
+        aberto
+        comDivisores
+        largura={LARGURA_FORMULARIO}
+        titulo="Como você está hoje?"
+        onFechar={onFechar}
+        bloquearFechamento={salvando}
+        rodape={rodape}
+      >
         {situacao.estado === 'verificando' && (
           <p role="status" className="text-[14px] text-secundaria">Verificando o registro de hoje...</p>
         )}

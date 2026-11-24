@@ -10,7 +10,10 @@
 //     profissionais -> profissionais do paciente com status ('ativo' | 'pendente' | 'inativo')
 //   }
 //   hoje -> 'AAAA-MM-DD'
-// Devolve { semRegistros, indicadores, sono, tratamentos, consultas, tarefas, totalProfissionais }.
+// Devolve { semRegistros, indicadores, sono, tratamentos, consultas, tarefas,
+//          totalConsultas, totalTarefasPendentes, totalProfissionais }.
+// "consultas" e "tarefas" são só as listas curtas dos cartões (2 e 3 itens); os números dos
+// cartões-resumo usam os totais (totalConsultas e totalTarefasPendentes).
 // ============================================================
 import { diaEMesAbreviado } from './datasAgenda.js'
 import { INDICADORES, media, notaMaxima, registroApiParaRelatorio } from './relatorios.js'
@@ -48,9 +51,10 @@ export function montarDashboardPaciente({ registros, tratamentos, consultas, tar
     .filter((r) => r.data >= inicioSemana && r.data <= hoje)
     .sort((a, b) => a.data.localeCompare(b.data))
 
-  const proximas = consultas
+  const futuras = consultas
     .filter((c) => String(c.status ?? 'agendada').toLowerCase() === 'agendada' && c.data >= hoje)
     .sort((a, b) => `${a.data}T${a.hora}`.localeCompare(`${b.data}T${b.hora}`))
+  const proximas = futuras
     .slice(0, 2)
     .map((c) => {
       const { dia, mes } = diaEMesAbreviado(c.data)
@@ -76,6 +80,8 @@ export function montarDashboardPaciente({ registros, tratamentos, consultas, tar
       .sort((a, b) => b.id - a.id)
       .slice(0, 3)
       .map((t) => ({ id: t.id, titulo: t.titulo, prazo: t.prazo, status: statusDoCartao(t.status), progresso: t.progresso })),
+    totalConsultas: futuras.length,
+    totalTarefasPendentes: tarefas.filter((t) => t.status !== 'concluida').length,
     totalProfissionais: profissionais.filter((p) => p.status === 'ativo').length,
   }
 }

@@ -20,6 +20,7 @@ import {
   removerPaciente,
   salvarAnotacao,
 } from '../services/perfilPacienteService'
+import { acessoDoPerfil } from '../utils/perfilPaciente'
 import {
   buscarPacienteExterno,
   ehPacienteExterno,
@@ -89,10 +90,15 @@ export function usePerfilPaciente(idPaciente) {
     await atualizarAnotacoes()
   }
 
-  // o pedido fica "Solicitação enviada" na tela (o paciente responde em Relatórios)
+  // O back reaproveita um pedido pendente ou já aprovado (200) e só cria um novo quando não há (201).
+  // A tela usa o status devolvido: 'pendente' -> "Solicitação enviada"; 'aprovado' -> recarrega os indicadores.
+  // Devolve o acesso final ('pendente' | 'aprovado').
   async function solicitarAcesso() {
-    await pedirAcesso(token, idPaciente)
-    setDados((atual) => ({ ...atual, perfil: atual.perfil && { ...atual.perfil, acesso: 'pendente' } }))
+    const resposta = await pedirAcesso(token, idPaciente)
+    const acesso = acessoDoPerfil(resposta?.response?.solicitacaoAcesso?.status) === 'aprovado' ? 'aprovado' : 'pendente'
+    if (acesso === 'aprovado') recarregar()
+    else setDados((atual) => ({ ...atual, perfil: atual.perfil && { ...atual.perfil, acesso } }))
+    return acesso
   }
 
   // externo sai do navegador (com as anotações); plataforma desfaz o vínculo no back

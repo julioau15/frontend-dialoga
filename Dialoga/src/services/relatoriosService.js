@@ -11,9 +11,9 @@
 // O back usa 404 para "lista vazia": aqui isso vira [].
 // ============================================================
 import { requisicao } from './pacienteService'
-import { listarMinhasTarefas, listarProfissionais } from './tarefaPacienteService'
+import { listarMinhasTarefas, listarProfissionais, listarRespostas } from './tarefaPacienteService'
 import { categoriasParaApi, registroApiParaRelatorio, solicitacaoApiParaTela } from '../utils/relatorios'
-import { tarefaApiParaTela } from '../pages/paciente/Tarefas/components/tarefasUtils'
+import { calcularProgresso, respostasApiParaTela, tarefaApiParaTela } from '../pages/paciente/Tarefas/components/tarefasUtils'
 
 const listaOuVazia = async (promessa) => {
   try {
@@ -93,7 +93,23 @@ export async function removerAcesso(token, id) {
 }
 
 // Tarefas do paciente no formato da tela de Tarefas ({ titulo, prazo, prazoIso, status, progresso })
+// O back não guarda a porcentagem: nas não concluídas, o progresso sai das respostas já salvas
+// (mesma regra da tela Tarefas). Se só as respostas de uma tarefa falharem, ela fica com 0%.
 export async function buscarTarefasDoPaciente(token, signal) {
   const [lista, profissionais] = await Promise.all([listarMinhasTarefas(token, signal), listarProfissionais(token, signal)])
-  return lista.map((t) => tarefaApiParaTela(t, profissionais))
+  return Promise.all(
+    lista.map(async (linha) => {
+      const t = tarefaApiParaTela(linha, profissionais)
+      if (t.status === 'concluida' || !t.idDestinatario || t.perguntas.length === 0) return t
+      try {
+        const respostas = await listarRespostas(token, t.idDestinatario, signal)
+        const progresso = calcularProgresso(t.perguntas, respostasApiParaTela(t.perguntas, respostas))
+        // pendente que já tem resposta aparece como "Em andamento"
+        return { ...t, progresso, status: t.status === 'pendente' && progresso > 0 ? 'andamento' : t.status }
+      } catch (erro) {
+        if (signal?.aborted) throw erro
+        return t
+      }
+    }),
+  )
 }
