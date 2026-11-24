@@ -17,13 +17,8 @@ import iconeOlho from '../../../../../assets/auth/icon_olho.png'
 export default function LoginForm() {
   const {
     valores, errosCampos, erroGeral, carregando, mostrarSenha,
-    alterarCampo, alternarSenha, enviar,
+    alterarCampo, alternarSenha, enviar, entrarComGoogle, erroGoogle,
   } = useLoginForm()
-
-  function entrarComGoogle() {
-    // TODO: integrar Google Identity e chamar POST /auth/login/google/:id_google
-    alert('Login com Google ainda não foi integrado.')
-  }
 
   return (
     <section className="flex flex-col items-center justify-between py-8 px-6 bg-fundo-login">
@@ -86,7 +81,7 @@ export default function LoginForm() {
         </form>
 
         <Divider texto="ou continue com" />
-        <GoogleButton onClick={entrarComGoogle} disabled={carregando} />
+        <GoogleButton onCredential={entrarComGoogle} onErro={erroGoogle} disabled={carregando} />
 
         <p className="text-center text-[11px] text-secundaria">
           Não tem conta? <Link className="text-[11px] text-primaria no-underline hover:underline font-bold" to="/cadastro">Cadastre-se</Link>

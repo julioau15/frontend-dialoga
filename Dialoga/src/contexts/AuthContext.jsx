@@ -5,12 +5,13 @@
 //   auth   -> { token, nivel, id, email } ou null (deslogado)
 //   perfil -> { nome, fotoUrl, nivel, funcao } do usuário logado ou null
 //             (funcao: 1ª especialidade do profissional, "Paciente" ou "Administrador")
-//   login  -> faz o login na API e salva a sessão
+//   login  -> faz o login (e-mail e senha) na API e salva a sessão
+//   loginGoogle -> faz o login com o credential do Google e salva a sessão
 //   logout -> apaga a sessão
 //   atualizarPerfilLocal -> troca nome/foto do menu lateral (depois de salvar o Perfil)
 // ============================================================
 import { createContext, useContext, useEffect, useState } from 'react'
-import { loginRequest } from '../services/authService'
+import { loginRequest, loginGoogleRequest } from '../services/authService'
 import { API_URL } from '../config/api'
 import { funcaoDoPerfil } from '../utils/formatadores'
 
@@ -81,11 +82,20 @@ export function AuthProvider({ children }) {
   const [auth, setAuth] = useState(lerSessaoSalva)
   const [perfil, setPerfil] = useState(null)
 
-  async function login(email, senha) {
-    const dados = await loginRequest(email, senha)
-    localStorage.setItem('auth', JSON.stringify(dados)) // mantém logado ao recarregar
+  // Salva a sessão (mantém logado ao recarregar) e atualiza o estado
+  function iniciarSessao(dados) {
+    localStorage.setItem('auth', JSON.stringify(dados))
     setAuth(dados)
     return dados
+  }
+
+  async function login(email, senha) {
+    return iniciarSessao(await loginRequest(email, senha))
+  }
+
+  // idToken = "credential" entregue pelo Google Identity Services
+  async function loginGoogle(idToken) {
+    return iniciarSessao(await loginGoogleRequest(idToken))
   }
 
   function logout() {
@@ -174,7 +184,7 @@ export function AuthProvider({ children }) {
   const perfilAtual = auth && ROTA_POR_NIVEL[auth.nivel] ? perfil : null
 
   return (
-    <AuthContext.Provider value={{ auth, perfil: perfilAtual, login, logout, marcarPrimeiroAcessoConcluido, marcarSenhaDefinida, atualizarPerfilLocal }}>
+    <AuthContext.Provider value={{ auth, perfil: perfilAtual, login, loginGoogle, logout, marcarPrimeiroAcessoConcluido, marcarSenhaDefinida, atualizarPerfilLocal }}>
       {children}
     </AuthContext.Provider>
   )
