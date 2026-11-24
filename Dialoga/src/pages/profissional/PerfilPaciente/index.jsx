@@ -164,9 +164,9 @@ function Perfil({ id }) {
   // RF225 e RF226: envia o pedido ao paciente e mostra "Solicitação enviada"
   async function enviarSolicitacao() {
     try {
-      await dados.solicitarAcesso()
+      const acesso = await dados.solicitarAcesso()
       setConfirmarAcesso(false)
-      avisar('Solicitação de acesso enviada ao paciente.')
+      avisar(acesso === 'aprovado' ? 'O paciente já autorizou o acesso aos indicadores.' : 'Solicitação de acesso enviada ao paciente.')
     } catch (erro) {
       setConfirmarAcesso(false)
       avisar(erro.message, 'erro')

@@ -9,7 +9,7 @@
 //   caixas uma embaixo da outra e rodapé com "Aprovar" (roxo, com ✓) e "Recusar".
 // Desktop (frame "Solicitação de acesso - Paciente"): 846px, sem a linha do título,
 //   pergunta "O que deseja compartilhar com este profissional?", caixas em 2 colunas e
-//   rodapé com "Cancelar" e "Aprovar".
+//   rodapé com "Cancelar", "Aprovar" e "Recusar" (RF206: recusar também no desktop).
 // "Aprovar" fica desabilitado quando nenhum indicador está marcado.
 // Usa o Modal e o Button compartilhados (sem alterar); o contêiner ajusta as medidas do Figma.
 // Props:
@@ -68,8 +68,8 @@ export default function ModalSolicitacaoAcesso({ aberto, solicitacao, onFechar, 
         <IconeCheck tamanho={14} />
         Aprovar
       </Button>
-      {/* mobile e tablet: "Recusar" à direita do "Aprovar" */}
-      <Button type="button" variante="suave" className={`${BOTAO} border-borda! text-secundaria! xl:hidden`} disabled={enviando} onClick={onRecusar}>
+      {/* "Recusar" à direita do "Aprovar" (em todas as larguras) */}
+      <Button type="button" variante="suave" className={`${BOTAO} border-borda! text-secundaria!`} disabled={enviando} onClick={onRecusar}>
         Recusar
       </Button>
     </>

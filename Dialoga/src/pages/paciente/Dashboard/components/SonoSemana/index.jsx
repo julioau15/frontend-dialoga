@@ -12,30 +12,17 @@
 import { useId } from 'react'
 import Card from '../../../../../components/Card'
 import { useLargura } from '../../../../../hooks/useLargura'
+import { MAX_ROTULOS, escalaSono, segmentosSuaves } from '../../../../../utils/graficoSono'
 
 export const ALTURA = 240
 const MARGEM = { topo: 30, direita: 16, baixo: 34, esquerda: 52 }
-const Y_MIN = 4
-const Y_MAX = 10
-const GUIAS = [4, 6, 8, 10]
-const MAX_ROTULOS = 7 // com mais dias, os rótulos de baixo pulam e os valores somem
+// escala do eixo Y e curva: utils/graficoSono (as mesmas contas do PDF de Relatórios)
 
 // Curva suave que passa por todos os pontos (Catmull-Rom -> Bézier)
 function caminhoSuave(pontos) {
   if (pontos.length < 2) return ''
-  let d = `M ${pontos[0].x} ${pontos[0].y}`
-  for (let i = 0; i < pontos.length - 1; i++) {
-    const p0 = pontos[i - 1] ?? pontos[i]
-    const p1 = pontos[i]
-    const p2 = pontos[i + 1]
-    const p3 = pontos[i + 2] ?? p2
-    const c1x = p1.x + (p2.x - p0.x) / 6
-    const c1y = p1.y + (p2.y - p0.y) / 6
-    const c2x = p2.x - (p3.x - p1.x) / 6
-    const c2y = p2.y - (p3.y - p1.y) / 6
-    d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`
-  }
-  return d
+  const curvas = segmentosSuaves(pontos).map((s) => ` C ${s.c1x} ${s.c1y}, ${s.c2x} ${s.c2y}, ${s.x} ${s.y}`)
+  return `M ${pontos[0].x} ${pontos[0].y}${curvas.join('')}`
 }
 
 // Desenha o gráfico de linha.
@@ -51,7 +38,8 @@ export function Grafico({ dias, ideal, largura, destacarUltimo = true }) {
   const areaLargura = Math.max(largura - MARGEM.esquerda - MARGEM.direita, 0)
   const topo = MARGEM.topo
   const base = ALTURA - MARGEM.baixo
-  const yDe = (horas) => base - ((horas - Y_MIN) / (Y_MAX - Y_MIN)) * (base - topo)
+  const { yMin, yMax, guias } = escalaSono(dias.map((d) => d.horas), ideal)
+  const yDe = (valor) => base - ((valor - yMin) / (yMax - yMin)) * (base - topo)
 
   // cada dia ocupa uma "faixa" e o ponto fica no centro dela (alinhado ao rótulo)
   const faixa = areaLargura / dias.length
@@ -81,7 +69,7 @@ export function Grafico({ dias, ideal, largura, destacarUltimo = true }) {
       </defs>
 
       {/* linhas-guia e horas do eixo Y */}
-      {GUIAS.map((h) => (
+      {guias.map((h) => (
         <g key={h}>
           <line x1={areaX} x2={areaX + areaLargura} y1={yDe(h)} y2={yDe(h)} className="stroke-borda" strokeWidth="1" />
           <text x={areaX - 8} y={yDe(h)} textAnchor="end" dominantBaseline="middle" className="fill-secundaria text-[11px]">

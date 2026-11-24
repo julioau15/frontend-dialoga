@@ -63,9 +63,13 @@ export function diasComDisponibilidade(lista, ano, mes) {
 }
 
 // Erros do formulário do pop-up: { campo: 'mensagem' } (vazio = tudo certo)
-export function validarDisponibilidade({ dias, inicio, fim }) {
+//   repetir = true  -> semanal: precisa de ao menos um dia da semana
+//   repetir = false -> data específica (AAAA-MM-DD): obrigatória e não pode ser antes de hoje
+export function validarDisponibilidade({ dias, inicio, fim, repetir = true, data = '', hoje = '' }) {
   const erros = {}
-  if (dias.length === 0) erros.dias = 'Selecione ao menos um dia da semana.'
+  if (repetir && dias.length === 0) erros.dias = 'Selecione ao menos um dia da semana.'
+  if (!repetir && !data) erros.data = 'Informe a data.'
+  if (!repetir && data && hoje && data < hoje) erros.data = 'Escolha hoje ou uma data futura.'
   if (!inicio) erros.inicio = 'Informe o início.'
   if (!fim) erros.fim = 'Informe o fim.'
   if (inicio && fim && fim <= inicio) erros.fim = 'O fim deve ser depois do início.'
@@ -74,10 +78,18 @@ export function validarDisponibilidade({ dias, inicio, fim }) {
 
 const sobrepoe = (a, b) => a.inicio < b.fim && b.inicio < a.fim
 
-// Duas disponibilidades se chocam quando são no mesmo dia, os horários se cruzam
-// e valem na mesma data (semanal vale sempre; única vez só na própria data).
-export const seChocam = (a, b) =>
-  a.dia === b.dia && sobrepoe(a, b) && (a.tipo === 'semanal' || b.tipo === 'semanal' || a.data === b.data)
+// Datas em que um item vale: semanal = sempre; período = entre data e dataFinal; única = só a data
+const intervaloDe = (d) =>
+  d.tipo === 'semanal' ? ['0000-00-00', '9999-12-31'] : [d.data, d.tipo === 'periodo' ? d.dataFinal : d.data]
+
+// Duas disponibilidades se chocam quando são no mesmo dia da semana, os horários se cruzam
+// e os intervalos de datas em que valem se cruzam.
+export const seChocam = (a, b) => {
+  if (a.dia !== b.dia || !sobrepoe(a, b)) return false
+  const [ia, fa] = intervaloDe(a)
+  const [ib, fb] = intervaloDe(b)
+  return ia <= fb && ib <= fa
+}
 
 // Primeira disponibilidade já cadastrada que conflita com alguma das novas (ou undefined)
 export const acharConflito = (novas, existentes) =>

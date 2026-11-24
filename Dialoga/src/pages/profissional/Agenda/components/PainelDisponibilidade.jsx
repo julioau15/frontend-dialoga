@@ -1,15 +1,17 @@
 // ============================================================
 // PainelDisponibilidade
 // Coluna da direita da aba Disponibilidade: título, botão "Adicionar"
-// e a lista de horários (um cartão por dia, com a lixeira para remover).
+// e a lista de horários (um cartão por dia, com o lápis para editar e a lixeira para remover).
 // Frames: Disponibilidade - Profissional | Remover disponibilidade - Profissional
-// Props: itens (já ordenados), onAdicionar, onRemover(item)
+// Props: itens (já ordenados), onAdicionar, onEditar(item), onRemover(item)
+// "Única vez" mostra também a data (DD/MM/AAAA).
 // ============================================================
 import Button from '../../../../components/Button'
 import Card from '../../../../components/Card'
 import Selo from '../../../../components/Selo'
 import { IconeLixeira } from '../../../../components/Icones'
 import { IconeMais } from '../../../../components/IconesAgenda'
+import { IconeLapis } from '../../../../components/IconesPerfil'
 import { faixaDeHorario, siglaDoDia } from '../../../../utils/disponibilidade'
 
 const SELOS = {
@@ -18,7 +20,10 @@ const SELOS = {
   periodo: { texto: 'Período', tom: 'alerta' },
 }
 
-export default function PainelDisponibilidade({ itens, onAdicionar, onRemover }) {
+// 'AAAA-MM-DD' -> 'DD/MM/AAAA'
+const dataBr = (iso) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : '')
+
+export default function PainelDisponibilidade({ itens, onAdicionar, onEditar, onRemover }) {
   return (
     <section aria-labelledby="titulo-disponibilidade" className="flex min-w-0 flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
@@ -48,8 +53,18 @@ export default function PainelDisponibilidade({ itens, onAdicionar, onRemover })
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
                   <span className="text-[13px] font-bold text-texto">{horario}</span>
-                  <Selo tom={selo.tom}>{selo.texto}</Selo>
+                  <Selo tom={selo.tom}>
+                    {item.tipo === 'unica' ? `${selo.texto} · ${dataBr(item.data)}` : selo.texto}
+                  </Selo>
                 </div>
+                <button
+                  type="button"
+                  aria-label={`Editar disponibilidade de ${siglaDoDia(item.dia)}, ${horario}`}
+                  onClick={() => onEditar(item)}
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-secundaria cursor-pointer hover:bg-fundo-suave-2 hover:text-primaria focus-visible:outline-2 focus-visible:outline-primaria"
+                >
+                  <IconeLapis tamanho={14} />
+                </button>
                 <button
                   type="button"
                   aria-label={`Remover disponibilidade de ${siglaDoDia(item.dia)}, ${horario}`}

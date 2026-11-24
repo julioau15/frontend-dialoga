@@ -38,6 +38,9 @@ function Tarefas() {
   const [aviso, setAviso] = useState({ aberto: false, mensagem: '', tipo: 'sucesso' })
   const fecharAviso = useCallback(() => setAviso((a) => ({ ...a, aberto: false })), [])
 
+  // autotarefa: abre só para visualizar (não tem perguntas nem respostas para buscar)
+  const verAutotarefa = (tarefa) => setTela({ tipo: 'ver', id: tarefa.id, respostas: {} })
+
   // vindo do Dashboard (clique numa tarefa): abre aquela tarefa assim que a lista carregar
   const location = useLocation()
   const navigate = useNavigate()
@@ -92,8 +95,14 @@ function Tarefas() {
     // limpa o pedido da navegação, para não reabrir ao voltar ou recarregar
     navigate(location.pathname, { replace: true, state: null })
     const tarefa = tarefas.find((t) => String(t.id) === String(idParaAbrir))
-    // autotarefa não abre formulário (o botão dela conclui a tarefa): fica só a lista
-    if (!tarefa || tarefa.autotarefa) return
+    if (!tarefa) return
+    // autotarefa abre direto na visualização (fora do corpo do efeito, como o .then abaixo)
+    if (tarefa.autotarefa) {
+      Promise.resolve().then(() => {
+        if (montadoRef.current) verAutotarefa(tarefa)
+      })
+      return
+    }
 
     // busca as respostas salvas e abre a tarefa ("ver" se concluída, senão "preencher").
     // Sem cancelamento no cleanup: limpar o state da navegação faz este efeito rodar de novo.
@@ -161,10 +170,11 @@ function Tarefas() {
             tarefa={tarefaAberta}
             somenteLeitura={tela.tipo === 'ver'}
             respostasIniciais={tela.respostas}
-            salvando={salvando}
+            salvando={salvando || abrindo}
             onVoltar={voltarLista}
             onSalvarRascunho={(respostas) => aoSalvarRascunho(tarefaAberta, respostas)}
             onEnviar={(respostas) => aoEnviar(tarefaAberta, respostas)}
+            onConcluir={() => aoAcionar(tarefaAberta)}
           />
         ) : (
         <>
@@ -191,7 +201,7 @@ function Tarefas() {
               <Button type="button" variante="suave" larguraAuto className="px-4 rounded-xl! text-[14px]!" onClick={recarregar}>Tentar novamente</Button>
             </div>
           ) : visiveis.length > 0 ? (
-            visiveis.map((tarefa) => <CartaoTarefa key={tarefa.id} tarefa={tarefa} onAcao={aoAcionar} />)
+            visiveis.map((tarefa) => <CartaoTarefa key={tarefa.id} tarefa={tarefa} onAcao={aoAcionar} onVer={verAutotarefa} />)
           ) : (
             <p className="rounded-xl bg-branco px-4 py-8 text-center text-[13px] text-secundaria">Nenhuma tarefa nesta aba.</p>
           )}
