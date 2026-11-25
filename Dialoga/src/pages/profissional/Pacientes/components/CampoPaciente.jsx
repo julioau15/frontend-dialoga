@@ -20,7 +20,7 @@ import IconeBusca from '../../../../components/IconeBusca'
 export default function CampoPaciente({ rotulo, comLupa = false, className = '', inputRef, acao, ...inputProps }) {
   return (
     <div
-      className={`flex items-center rounded-xl bg-branco shadow-[0_0_0_1px_var(--color-borda)] transition-shadow duration-200 focus-within:shadow-[0_0_0_1px_var(--color-primaria),0_0_0_4px_var(--color-primaria-alfa-20)] ${className}`}
+      className={`flex items-center rounded-xl bg-superficie shadow-[0_0_0_1px_var(--color-borda)] transition-shadow duration-200 focus-within:shadow-[0_0_0_1px_var(--color-primaria),0_0_0_4px_var(--color-primaria-alfa-20)] ${className}`}
     >
       {comLupa && <IconeBusca />}
       {/* sem o "x" nativo do type="search": não existe no Figma e ocupava espaço do placeholder */}

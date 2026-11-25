@@ -5,7 +5,7 @@
 // ============================================================
 export default function Card({ as: Tag = 'section', className = '', children, ...props }) {
   return (
-    <Tag className={`rounded-xl border border-borda bg-branco shadow-sm ${className}`} {...props}>
+    <Tag className={`rounded-xl border border-borda bg-superficie bg-cartao shadow-sm ${className}`} {...props}>
       {children}
     </Tag>
   )

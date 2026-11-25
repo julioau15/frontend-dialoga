@@ -5,6 +5,10 @@
 @import 'tailwindcss';
 @import './styles/variebles.css';
 
+/* Variante "dark:" do Tailwind, ligada ao tema escolhido no site (data-theme="dark" na tag <html>).
+   Use só para o que as variáveis de cor não resolvem. Ex.: dark:brightness-50 */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 /* Ajustes para manter o visual idêntico ao do CSS antigo
    (o reset do Tailwind muda alguns padrões do navegador) */
 @layer base {
@@ -17,4 +21,19 @@
 
   /* o Tailwind deixa svg como block; aqui continua inline como antes */
   svg { display: inline; vertical-align: baseline; }
+}
+
+/* ---------- Imagens no tema escuro ---------- */
+@layer utilities {
+  /* Logo (letras azul-marinho): no escuro inverte a luminosidade, mantendo o roxo do cérebro */
+  :root[data-theme='dark'] .logo-tema {
+    filter: invert(1) hue-rotate(180deg);
+  }
+
+  /* Ilustrações com fundo branco opaco (.png sem transparência): no escuro o branco vira
+     "nada" e a arte fica sobre o fundo do cartão, em vez de uma caixa branca. */
+  :root[data-theme='dark'] .ilustracao-tema {
+    filter: invert(1) hue-rotate(180deg);
+    mix-blend-mode: screen;
+  }
 }

@@ -55,7 +55,7 @@ function EditorOpcoes({ tipo, opcoes, numero, onMudar }) {
       <button
         type="button"
         onClick={() => onMudar([...opcoes, ''])}
-        className="mx-auto flex w-fit cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-[11.5px] font-bold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+        className="mx-auto flex w-fit cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-[11.5px] font-bold text-primaria-texto hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
       >
         <IconeMais tamanho={12} />
         Adicionar opção
@@ -77,7 +77,7 @@ function AmostraResposta({ tipo }) {
     return (
       <div aria-label="Amostra da escala de emoções" className="grid grid-cols-3 gap-2">
         {EMOCOES.map((e) => (
-          <span key={e.valor} className="flex h-9 items-center justify-center gap-1.5 rounded-xl bg-fundo-card text-[13px] font-bold text-primaria">
+          <span key={e.valor} className="flex h-9 items-center justify-center gap-1.5 rounded-xl bg-fundo-card text-[13px] font-bold text-primaria-texto">
             <span aria-hidden="true">{e.emoji}</span>
             {e.rotulo}
           </span>
@@ -88,7 +88,7 @@ function AmostraResposta({ tipo }) {
   return (
     <div aria-label="Amostra da escala de 0 a 10" className="flex flex-wrap gap-1">
       {NUMEROS_ESCALA.map((n) => (
-        <span key={n} className="grid h-8 w-8 place-items-center rounded-lg bg-fundo-card text-[11px] font-bold text-primaria">{n}</span>
+        <span key={n} className="grid h-8 w-8 place-items-center rounded-lg bg-fundo-card text-[11px] font-bold text-primaria-texto">{n}</span>
       ))}
     </div>
   )
@@ -209,7 +209,7 @@ export default function BlocoPergunta({ pergunta, numero, total, erro, onMudar, 
           <button
             type="button"
             onClick={() => inputImagem.current?.click()}
-            className="flex h-[34px] w-full cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-borda bg-branco text-[11.5px] text-secundaria transition-colors duration-200 hover:bg-fundo-suave-2 hover:text-primaria focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+            className="flex h-[34px] w-full cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-borda bg-superficie text-[11.5px] text-secundaria transition-colors duration-200 hover:bg-fundo-suave-2 hover:text-primaria-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
           >
             <span aria-hidden="true">🖼️</span>
             Adicionar imagem à pergunta
@@ -227,7 +227,7 @@ export default function BlocoPergunta({ pergunta, numero, total, erro, onMudar, 
           onChange={(e) => onMudar({ enunciado: e.target.value })}
           className={`${CAIXA} h-[46px] ${erroEnunciado ? 'border-erro' : 'border-borda'}`}
         />
-        {erroEnunciado && <span className="text-[11px] text-erro">{erroEnunciado}</span>}
+        {erroEnunciado && <span className="text-[11px] text-erro-texto">{erroEnunciado}</span>}
       </div>
 
       {temOpcoes(tipo) ? (
@@ -237,7 +237,7 @@ export default function BlocoPergunta({ pergunta, numero, total, erro, onMudar, 
       )}
 
       {/* erro das opções (o erro do enunciado já aparece abaixo do próprio campo) */}
-      {erro && enunciado.trim() && <p role="alert" className="text-[11px] text-erro">{erro}</p>}
+      {erro && enunciado.trim() && <p role="alert" className="text-[11px] text-erro-texto">{erro}</p>}
 
       <div className="flex items-center gap-2.5">
         <Interruptor ligado={obrigatoria} rotulo={`Resposta obrigatória na pergunta ${numero}`} onAlternar={(valor) => onMudar({ obrigatoria: valor })} />

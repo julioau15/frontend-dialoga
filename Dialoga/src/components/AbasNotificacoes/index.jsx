@@ -57,7 +57,7 @@ export default function AbasNotificacoes({ abas, ativa, onMudar, parentesesNoDes
               onClick={() => onMudar(aba.id)}
               onKeyDown={(evento) => aoTeclar(evento, indice)}
               className={`flex h-8 flex-1 items-center justify-center gap-1.5 rounded-[10px] border text-[11px] font-semibold cursor-pointer transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
-                selecionada ? 'border-borda bg-branco text-primaria shadow-sm' : 'border-transparent text-secundaria hover:text-texto'
+                selecionada ? 'border-borda bg-superficie text-primaria-texto shadow-sm' : 'border-transparent text-secundaria hover:text-texto'
               }`}
             >
               {aba.rotulo}

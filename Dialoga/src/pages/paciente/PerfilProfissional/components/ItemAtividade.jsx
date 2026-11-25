@@ -39,7 +39,7 @@ function PrazoMobile({ item }) {
 function StatusDescricao({ item }) {
   return (
     <>
-      <p className="mt-0.5 text-[12px] font-semibold leading-4 text-sucesso sm:text-[13px] sm:leading-[18px]">{item.status}</p>
+      <p className="mt-0.5 text-[12px] font-semibold leading-4 text-sucesso-texto sm:text-[13px] sm:leading-[18px]">{item.status}</p>
       <p className="mt-0.5 text-[12px] leading-4 text-secundaria sm:text-[13px] sm:leading-[18px]">{item.descricao}</p>
     </>
   )
@@ -60,7 +60,7 @@ export default function ItemAtividade({ item, icone, tituloInteiro = false }) {
       {/* no mobile o círculo tem 32px e o ícone 18px */}
       <span
         aria-hidden="true"
-        className="grid h-8 w-8 shrink-0 place-items-center self-start rounded-full bg-sucesso-fundo text-sucesso max-sm:[&_svg]:h-[18px] max-sm:[&_svg]:w-[18px] sm:h-10 sm:w-10 sm:self-center"
+        className="grid h-8 w-8 shrink-0 place-items-center self-start rounded-full bg-sucesso-fundo text-sucesso-texto max-sm:[&_svg]:h-[18px] max-sm:[&_svg]:w-[18px] sm:h-10 sm:w-10 sm:self-center"
       >
         {icone}
       </span>

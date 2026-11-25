@@ -17,7 +17,7 @@ export default function BoasVindas({ nome, escolha, onEscolher, onAcessar }) {
 
   return (
     <div className="flex flex-col items-center text-center">
-      <img className="h-auto max-w-full" src={ilustracao} width="260" height="165" alt="" />
+      <img className="ilustracao-tema h-auto max-w-full" src={ilustracao} width="260" height="165" alt="" />
 
       <h1 className="mt-4 text-[20px] font-extrabold text-texto">
         Bem-vindo ao Dialoga, {nome}! <span aria-hidden="true">👋</span>

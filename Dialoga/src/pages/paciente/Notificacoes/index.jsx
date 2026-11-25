@@ -27,7 +27,7 @@ function Notificacoes() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave px-4 py-6 sm:px-8">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina px-4 py-6 sm:px-8">
       <section className="mx-auto w-full max-w-[624px] py-2 lg:py-6">
         <CabecalhoNotificacoes
           naoLidas={notificacoes.totalNaoLidas}
@@ -52,7 +52,7 @@ function Notificacoes() {
             ) : notificacoes.erroCarregar ? (
               // Falha ao buscar: mostra o erro e permite tentar de novo
               <div role="alert" className="flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-5">
-                <p className="text-[14px] text-erro">{notificacoes.erroCarregar}</p>
+                <p className="text-[14px] text-erro-texto">{notificacoes.erroCarregar}</p>
                 <Button type="button" variante="suave" larguraAuto className="h-10" onClick={notificacoes.recarregar}>
                   Tentar novamente
                 </Button>

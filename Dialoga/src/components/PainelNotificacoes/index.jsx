@@ -37,7 +37,7 @@ export default function PainelNotificacoes({
   if (config.erroCarregar) {
     return (
       <div role="alert" className="flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-5">
-        <p className="text-[14px] text-erro">{config.erroCarregar}</p>
+        <p className="text-[14px] text-erro-texto">{config.erroCarregar}</p>
         <Button type="button" variante="suave" larguraAuto className="h-10" onClick={config.recarregar}>
           Tentar novamente
         </Button>
@@ -54,7 +54,7 @@ export default function PainelNotificacoes({
       >
         <div className="min-w-0 flex-1">
           <p className={`flex items-center gap-2 font-bold text-texto ${compacto ? 'text-[13px]' : 'text-[15px]'}`}>
-            <Icone nome="sino" tamanho={compacto ? 13 : 15} className="text-erro" />
+            <Icone nome="sino" tamanho={compacto ? 13 : 15} className="text-erro-texto" />
             Desligar todas
           </p>
           <p className="mt-1 text-[11px] text-secundaria">{descricaoDesligar}</p>
@@ -82,7 +82,7 @@ export default function PainelNotificacoes({
 
       {/* Erro ao salvar as preferências na API */}
       {config.erroSalvar && (
-        <p role="alert" className="text-[12px] text-erro">
+        <p role="alert" className="text-[12px] text-erro-texto">
           {config.erroSalvar}
         </p>
       )}

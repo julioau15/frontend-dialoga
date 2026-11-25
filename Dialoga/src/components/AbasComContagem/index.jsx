@@ -38,8 +38,8 @@ export default function AbasComContagem({ abas, ativa, onMudar, painel, rotulo =
             onClick={(e) => selecionar(e, aba.id)}
             className={`flex h-[38px] shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border px-4 text-[14px] font-semibold cursor-pointer shadow-sm transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
               selecionada
-                ? 'border-primaria bg-primaria text-branco'
-                : 'border-borda bg-branco text-[var(--color-secundaria-escura,var(--color-secundaria))] hover:bg-fundo-suave-2'
+                ? 'border-primaria bg-primaria bg-botao text-branco'
+                : 'border-borda bg-superficie text-[var(--color-secundaria-escura,var(--color-secundaria))] hover:bg-fundo-suave-2'
             }`}
           >
             {aba.rotulo}

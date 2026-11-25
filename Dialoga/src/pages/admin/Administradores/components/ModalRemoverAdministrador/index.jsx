@@ -41,14 +41,14 @@ export default function ModalRemoverAdministrador({ administrador, enviando = fa
       largura="max-w-[384px]"
     >
       <div className="flex flex-col items-center text-center">
-        <span className="grid place-items-center w-14 h-14 border rounded-xl bg-erro-fundo border-erro-borda text-erro">
+        <span className="grid place-items-center w-14 h-14 border rounded-xl bg-erro-fundo border-erro-borda text-erro-texto">
           <IconeLixeira tamanho={24} />
         </span>
         <p className="mt-4 text-[14px] font-bold text-texto">Remover {administrador?.nome}?</p>
         <p className="mt-1.5 text-[12px] text-secundaria">
           Esta conta perderá acesso à área administrativa. A ação não pode ser desfeita.
         </p>
-        {erro && <p role="alert" className="mt-3 text-[11px] text-erro">{erro}</p>}
+        {erro && <p role="alert" className="mt-3 text-[11px] text-erro-texto">{erro}</p>}
       </div>
     </Modal>
   )

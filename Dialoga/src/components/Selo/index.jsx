@@ -5,11 +5,11 @@
 //   tom -> 'sucesso' | 'info' | 'primaria' | 'erro' | 'alerta' | 'neutro' (padrão)
 // ============================================================
 const TONS = {
-  sucesso: 'bg-sucesso-fundo text-sucesso',
-  info: 'bg-info-fundo text-info',
-  primaria: 'bg-fundo-card text-primaria',
-  erro: 'bg-erro-fundo text-erro',
-  alerta: 'bg-alerta-fundo text-alerta-escura',
+  sucesso: 'bg-sucesso-fundo text-sucesso-texto',
+  info: 'bg-info-fundo text-info-texto',
+  primaria: 'bg-fundo-card text-primaria-texto',
+  erro: 'bg-erro-fundo text-erro-texto',
+  alerta: 'bg-alerta-fundo text-alerta-escura-texto',
   neutro: 'bg-cinza-100 text-secundaria',
 }
 

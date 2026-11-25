@@ -15,7 +15,7 @@ export default function ModalPacienteEncontrado({ aberto, nome, onFechar, onEnte
   return (
     <Modal aberto={aberto} titulo="Paciente encontrado!" onFechar={onFechar}>
       <div className="flex items-start gap-2 mt-4">
-        <svg className="mt-0.5 shrink-0 text-primaria" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        <svg className="mt-0.5 shrink-0 text-primaria-texto" width="16" height="16" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <rect x="3" y="5" width="18" height="14" rx="2" />
           <path d="m3 7 9 6 9-6" />

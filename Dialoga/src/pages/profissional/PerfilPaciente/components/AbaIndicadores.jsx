@@ -40,7 +40,7 @@ export default function AbaIndicadores({ paciente, onSolicitarAcesso }) {
       <CartaoConclusao conclusao={dados.conclusao} />
       {dados.aderencia && <CartaoAderencia aderencia={dados.aderencia} />}
       {dados.negadas?.length > 0 && (
-        <p role="note" className="rounded-xl border border-borda bg-branco px-[17px] py-[13px] text-[12px] leading-4 text-secundaria">
+        <p role="note" className="rounded-xl border border-borda bg-superficie px-[17px] py-[13px] text-[12px] leading-4 text-secundaria">
           🔒 O paciente não compartilhou: {dados.negadas.join(', ')}.
         </p>
       )}

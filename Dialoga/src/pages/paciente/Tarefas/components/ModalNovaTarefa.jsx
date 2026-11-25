@@ -16,7 +16,7 @@ import { IconeCalendario } from './iconesTarefas'
 
 const Obrigatorio = ({ children }) => (
   <>
-    {children} <span className="text-erro" aria-hidden="true">*</span>
+    {children} <span className="text-erro-texto" aria-hidden="true">*</span>
   </>
 )
 
@@ -142,13 +142,13 @@ export default function ModalNovaTarefa({ aberto, onFechar, onCriar }) {
           <button
             type="button"
             onClick={() => inputArquivo.current?.click()}
-            className="flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-borda bg-branco px-3 text-[12px] text-secundaria hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+            className="flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-borda bg-superficie px-3 text-[12px] text-secundaria hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
           >
             <span className="truncate">{arquivo ? arquivo.name : '+ Anexar arquivo'}</span>
           </button>
         </div>
 
-        {erroApi && <p role="alert" className="text-[12px] text-erro">{erroApi}</p>}
+        {erroApi && <p role="alert" className="text-[12px] text-erro-texto">{erroApi}</p>}
       </div>
     </Modal>
     </div>

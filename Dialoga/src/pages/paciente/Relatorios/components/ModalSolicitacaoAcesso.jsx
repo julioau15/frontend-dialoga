@@ -86,7 +86,7 @@ export default function ModalSolicitacaoAcesso({ aberto, solicitacao, onFechar, 
     </>
   ) : (
     <>
-      <Button type="button" variante="suave" className={`${BOTAO} border-erro-borda! text-erro!`} disabled={enviando} onClick={() => setConfirmandoRemocao(true)}>
+      <Button type="button" variante="suave" className={`${BOTAO} border-erro-borda! text-erro-texto!`} disabled={enviando} onClick={() => setConfirmandoRemocao(true)}>
         Remover acesso
       </Button>
       <Button type="button" className={`${BOTAO} shadow-sm`} disabled={marcados.length === 0 || enviando} onClick={() => onSalvar(marcados)}>
@@ -153,14 +153,14 @@ export default function ModalSolicitacaoAcesso({ aberto, solicitacao, onFechar, 
                     <label
                       key={ind.id}
                       className={`flex h-11 cursor-pointer items-center gap-3 rounded-xl border px-3 xl:h-12 xl:border-2 text-[14px] leading-5 text-texto has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primaria ${
-                        marcado ? 'border-primaria bg-fundo-card' : 'border-borda bg-branco hover:bg-fundo-suave-2'
+                        marcado ? 'border-primaria bg-fundo-card' : 'border-borda bg-superficie hover:bg-fundo-suave-2'
                       }`}
                     >
                       <input type="checkbox" className="sr-only" checked={marcado} onChange={() => alternar(ind.id)} />
                       <span
                         aria-hidden="true"
                         className={`grid h-5 w-5 shrink-0 place-items-center rounded-[5px] border ${
-                          marcado ? 'border-primaria bg-primaria text-branco' : 'border-borda bg-branco'
+                          marcado ? 'border-primaria bg-primaria bg-botao text-branco' : 'border-borda bg-superficie'
                         }`}
                       >
                         {marcado && <IconeCheck tamanho={11} />}

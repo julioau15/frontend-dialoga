@@ -31,7 +31,7 @@ const TIPOS = [
 
 // caixa branca dos campos do período (cantos de 12px e borda lilás, como no Figma)
 const CAIXA =
-  'h-[41px] rounded-xl border-2 border-borda bg-branco text-[13px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 focus-visible:border-primaria focus-visible:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]'
+  'h-[41px] rounded-xl border-2 border-borda bg-superficie text-[13px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 focus-visible:border-primaria focus-visible:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]'
 
 export default function FiltroPeriodo({ periodo, onMudar, diasComTarefa, mesInicial, anos }) {
   const idTitulo = useId()

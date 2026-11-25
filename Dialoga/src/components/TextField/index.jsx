@@ -20,7 +20,7 @@ export default function TextField({ label, icone, acao, erro, ajuda, ...inputPro
     <div className="flex flex-col gap-1.5 text-left">
       <label className="text-[11px] font-bold text-texto" htmlFor={id}>{label}</label>
 
-      <div className={`flex items-center gap-2 h-10 px-3 bg-branco border rounded-lg transition-[border-color,box-shadow] duration-200 ease-[ease] focus-within:border-primaria focus-within:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] ${erro ? 'border-erro' : 'border-borda'}`}>
+      <div className={`flex items-center gap-2 h-10 px-3 bg-superficie border rounded-lg transition-[border-color,box-shadow] duration-200 ease-[ease] focus-within:border-primaria focus-within:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] ${erro ? 'border-erro' : 'border-borda'}`}>
         {icone && (typeof icone === 'string'
           ? <img className="w-4 h-4 object-contain" src={icone} alt="" />
           : <span className="w-4 h-4">{icone}</span>)}
@@ -36,7 +36,7 @@ export default function TextField({ label, icone, acao, erro, ajuda, ...inputPro
 
       {ajuda && <span id={`${id}-ajuda`} className="text-[10px] text-secundaria">{ajuda}</span>}
 
-      {erro && <span id={`${id}-erro`} className="text-[11px] text-erro">{erro}</span>}
+      {erro && <span id={`${id}-erro`} className="text-[11px] text-erro-texto">{erro}</span>}
     </div>
   )
 }

@@ -9,7 +9,7 @@ import { capitalizarPalavras, dataPorExtenso } from '../../../../../utils/datas'
 export default function HeaderBoasVindas({ nome }) {
   return (
     <header className="rounded-2xl bg-principal px-6 py-6">
-      <p className="text-sm font-bold text-primaria">{capitalizarPalavras(dataPorExtenso())}</p>
+      <p className="text-sm font-bold text-primaria-texto">{capitalizarPalavras(dataPorExtenso())}</p>
       <h1 className="mt-2 text-2xl font-extrabold text-texto">
         Olá{nome ? `, ${nome}` : ''}! <span aria-hidden="true">👋</span>
       </h1>

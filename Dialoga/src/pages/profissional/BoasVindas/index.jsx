@@ -15,10 +15,10 @@ export default function BoasVindas() {
   const pa = usePrimeiroAcessoProfissional()
 
   return (
-    <main className="flex items-center justify-center min-h-svh py-8 px-4 bg-fundo-suave">
+    <main className="flex items-center justify-center min-h-svh py-8 px-4 bg-fundo-suave bg-pagina">
       <section
         aria-busy={pa.vinculandoId !== null || pa.acessando}
-        className="w-full max-w-[440px] p-6 bg-branco border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]"
+        className="w-full max-w-[440px] p-6 bg-superficie border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]"
       >
         <CardBoasVindas
           nome={pa.nome}

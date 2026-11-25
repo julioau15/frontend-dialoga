@@ -27,7 +27,7 @@ function BlocoConsulta({ consulta, indice, total }) {
         width: `calc(${100 / total}% - 4px)`,
       }}
     >
-      {consulta.titulo && <p className="truncate text-[8px] font-semibold text-primaria">{consulta.titulo}</p>}
+      {consulta.titulo && <p className="truncate text-[8px] font-semibold text-primaria-texto">{consulta.titulo}</p>}
       <p className="text-[9px] font-bold leading-tight text-texto">{consulta.profissional}</p>
       <p className="flex items-center gap-1 text-[9px] text-secundaria-escura">
         <IconeRelogioPequeno tamanho={8} />

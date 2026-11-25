@@ -17,19 +17,20 @@ export default function LoginHero() {
           --proporcao-num = largura / altura da ilustração (915 / 1024).
           O fundo lilás só aparece enquanto a imagem carrega. */
     <section
-      className="relative overflow-hidden bg-[#E7DBF5] [container-type:size] [--proporcao-num:0.8936] [@media(max-width:900px)]:hidden"
+      className="relative overflow-hidden bg-[#E7DBF5] dark:bg-fundo-card [container-type:size] [--proporcao-num:0.8936] [@media(max-width:900px)]:hidden"
       aria-label="Apresentação do Dialoga"
     >
       {/* Palco: cobre o painel todo (como "cover"), mantendo a proporção da arte */}
       <div className="absolute top-1/2 left-1/2 w-[max(100cqw,calc(100cqh_*_var(--proporcao-num)))] aspect-[915/1024] -translate-x-1/2 -translate-y-1/2 [container-type:inline-size]">
         {/* Imagem decorativa, por isso alt vazio */}
-        <img className="block w-full h-full" src={ilustracao} alt="" />
+        {/* no tema escuro a arte colorida é escurecida para combinar com o resto da tela */}
+        <img className="block w-full h-full dark:brightness-[.4] dark:saturate-[.9]" src={ilustracao} alt="" />
 
         <div className="absolute top-[14.5%] inset-x-0 px-[4%] text-center">
           <h1 className="text-[length:clamp(15px,4.7cqw,42px)] font-extrabold leading-[1.2] text-texto">
             Acompanhe suas emoções.<br />Compartilhe o que importa.
           </h1>
-          <p className="mt-[1.8cqw] text-[length:clamp(11px,2cqw,18px)] leading-[1.4] text-secundaria">
+          <p className="mt-[1.8cqw] text-[length:clamp(11px,2cqw,18px)] leading-[1.4] text-secundaria dark:text-texto">
             Um espaço seguro para você se conhecer,<br />refletir e cuidar da sua saúde mental.
           </p>
         </div>

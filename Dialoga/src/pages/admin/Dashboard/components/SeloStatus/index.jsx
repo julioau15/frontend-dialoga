@@ -4,9 +4,9 @@
 // Prop: status -> 'pendente' | 'aprovado' | 'recusado'
 // ============================================================
 const ESTILOS = {
-  pendente: { texto: 'Pendente', classes: 'bg-alerta-fundo border-alerta-borda text-alerta-escura' },
-  aprovado: { texto: 'Aprovado', classes: 'bg-sucesso-fundo border-sucesso-borda text-sucesso' },
-  recusado: { texto: 'Recusado', classes: 'bg-erro-fundo border-erro-borda text-erro' },
+  pendente: { texto: 'Pendente', classes: 'bg-alerta-fundo border-alerta-borda text-alerta-escura-texto' },
+  aprovado: { texto: 'Aprovado', classes: 'bg-sucesso-fundo border-sucesso-borda text-sucesso-texto' },
+  recusado: { texto: 'Recusado', classes: 'bg-erro-fundo border-erro-borda text-erro-texto' },
 }
 
 export default function SeloStatus({ status }) {

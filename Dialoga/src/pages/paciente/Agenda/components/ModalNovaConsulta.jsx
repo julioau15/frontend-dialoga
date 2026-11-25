@@ -22,7 +22,7 @@ import BuscaProfissional from './BuscaProfissional'
 
 const obrigatorio = (texto) => (
   <>
-    {texto} <span className="text-erro">*</span>
+    {texto} <span className="text-erro-texto">*</span>
   </>
 )
 
@@ -38,12 +38,12 @@ function CampoSelect({ rotulo, erro, children, ...props }) {
       <select
         id={id}
         aria-invalid={!!erro}
-        className={`h-10 w-full cursor-pointer rounded-lg border bg-branco px-3 text-[12px] text-texto outline-0 focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] disabled:cursor-not-allowed disabled:opacity-60 ${erro ? 'border-erro' : 'border-borda'}`}
+        className={`h-10 w-full cursor-pointer rounded-lg border bg-superficie px-3 text-[12px] text-texto outline-0 focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] disabled:cursor-not-allowed disabled:opacity-60 ${erro ? 'border-erro' : 'border-borda'}`}
         {...props}
       >
         {children}
       </select>
-      {erro && <span className="text-[11px] text-erro">{erro}</span>}
+      {erro && <span className="text-[11px] text-erro-texto">{erro}</span>}
     </div>
   )
 }
@@ -166,7 +166,7 @@ export default function ModalNovaConsulta({ profissionais, buscarHorarios, onFec
         />
 
         {horarios.carregando && <p role="status" className="text-[11px] text-secundaria">Carregando horários disponíveis...</p>}
-        {horarios.erro && <p role="alert" className="text-[11px] text-erro">{horarios.erro}</p>}
+        {horarios.erro && <p role="alert" className="text-[11px] text-erro-texto">{horarios.erro}</p>}
         {dados && !dados.cadastrouDisponibilidade && (
           <p role="status" className="rounded-lg bg-fundo-suave-2 px-3 py-2 text-[11px] text-secundaria">
             Este profissional ainda não cadastrou horários de atendimento.
@@ -218,7 +218,7 @@ export default function ModalNovaConsulta({ profissionais, buscarHorarios, onFec
           </CampoSelect>
         </div>
 
-        {erroGeral && <p role="alert" className="text-[11px] text-erro">{erroGeral}</p>}
+        {erroGeral && <p role="alert" className="text-[11px] text-erro-texto">{erroGeral}</p>}
       </div>
     </Modal>
     </div>

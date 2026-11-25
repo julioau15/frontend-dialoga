@@ -23,7 +23,7 @@ export default function AbasSegmentadas({ abas, ativa, onMudar }) {
             onClick={() => onMudar(aba.id)}
             className={`flex flex-1 items-center justify-center gap-1.5 h-8 px-4 rounded-lg text-[12px] font-bold cursor-pointer disabled:cursor-default transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
               selecionada
-                ? 'bg-branco text-primaria shadow-[0_1px_3px_0_rgb(0_0_0/0.1),0_1px_2px_-1px_rgb(0_0_0/0.1)]'
+                ? 'bg-superficie text-primaria-texto shadow-[0_1px_3px_0_rgb(0_0_0/0.1),0_1px_2px_-1px_rgb(0_0_0/0.1)]'
                 : 'text-secundaria-escura'
             }`}
           >

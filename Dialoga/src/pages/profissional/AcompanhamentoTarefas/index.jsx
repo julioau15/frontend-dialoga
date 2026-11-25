@@ -82,7 +82,7 @@ function AcompanhamentoTarefas() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       <div className="mx-auto flex w-full max-w-[768px] flex-col gap-5 px-6 pt-6 pb-10 sm:pb-12">
         <BotaoVoltar onClick={() => navigate('/profissional/tarefas')}>Voltar às tarefas</BotaoVoltar>
 
@@ -117,7 +117,7 @@ function AcompanhamentoTarefas() {
           <p role="status" className="py-10 text-center text-[13px] text-secundaria">Carregando respostas...</p>
         ) : erro ? (
           <Card as="section" role="alert" className="-mt-2 flex flex-col items-center gap-3 px-5 py-10 text-center">
-            <p className="text-[13px] text-erro">{erro}</p>
+            <p className="text-[13px] text-erro-texto">{erro}</p>
             <Button type="button" variante="suave" larguraAuto className="h-[42px]! rounded-xl! px-4! text-[14px]! font-bold!" onClick={recarregar}>
               Tentar novamente
             </Button>

@@ -32,13 +32,13 @@ export default function CartaoTarefasPeriodo({ periodo, tarefas: todas }) {
       <div className="flex min-h-[52px] items-center px-5 py-3 sm:min-h-[50px] sm:pr-[22px] xl:min-h-[53px]">
         <div className="w-full">
           <CabecalhoCartao
-            icone={<IconeTarefa tamanho={16} className="text-primaria" />}
+            icone={<IconeTarefa tamanho={16} className="text-primaria-texto" />}
             titulo="Tarefas deste período"
             direita={
               // RF210: leva para a lista completa
               <Link
                 to="/paciente/tarefas"
-                className="inline-flex items-center gap-1 rounded-sm text-[12px] font-semibold leading-5 text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+                className="inline-flex items-center gap-1 rounded-sm text-[12px] font-semibold leading-5 text-primaria-texto hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
               >
                 Ver todas
                 <IconeSetaDireita tamanho={12} />
@@ -73,7 +73,7 @@ export default function CartaoTarefasPeriodo({ periodo, tarefas: todas }) {
                     aria-valuenow={progresso}
                     className="h-1.5 flex-1 overflow-hidden rounded-full bg-borda sm:w-20 sm:flex-none"
                   >
-                    <div className="h-full rounded-full bg-primaria" style={{ width: `${progresso}%` }} />
+                    <div className="h-full rounded-full bg-primaria bg-progresso" style={{ width: `${progresso}%` }} />
                   </div>
                   <span aria-hidden="true" className="w-9 shrink-0 text-right text-[12px] font-bold leading-4 text-texto">
                     {progresso}%

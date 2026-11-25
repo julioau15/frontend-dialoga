@@ -30,12 +30,12 @@ export default function RecuperarSenha() {
   } = useRedefinirSenha()
 
   return (
-    <main className="flex flex-col items-center justify-center gap-2 min-h-svh py-8 px-4 bg-fundo-suave">
+    <main className="flex flex-col items-center justify-center gap-2 min-h-svh py-8 px-4 bg-fundo-suave bg-pagina">
       <Logo />
 
       {/* As etapas email e codigo têm o card mais estreito; a de senha usa a largura do Cadastro */}
       <section
-        className={`w-full p-6 bg-branco border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)] ${
+        className={`w-full p-6 bg-superficie border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)] ${
           etapa === 'senha' ? 'max-w-[440px]' : 'max-w-[384px]'
         }`}
       >

@@ -21,7 +21,7 @@ function Contato({ href, icone, children }) {
   return (
     <a
       href={href}
-      className="flex min-w-0 items-center gap-1.5 rounded-md text-[11.5px] text-secundaria hover:text-primaria focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+      className="flex min-w-0 items-center gap-1.5 rounded-md text-[11.5px] text-secundaria hover:text-primaria-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
     >
       {icone}
       <span className="truncate">{children}</span>
@@ -58,7 +58,7 @@ export default function CartaoPaciente({ paciente, status, onVerPerfil }) {
           <button
             type="button"
             onClick={onVerPerfil}
-            className="mt-0.5 hidden cursor-pointer rounded-md text-[11.5px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria sm:inline"
+            className="mt-0.5 hidden cursor-pointer rounded-md text-[11.5px] font-semibold text-primaria-texto hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria sm:inline"
           >
             Ver perfil do paciente
           </button>

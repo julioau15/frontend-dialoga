@@ -89,7 +89,7 @@ function FormularioPerfil({ dadosIniciais, opcoesEspecialidades }) {
               erro={p.erros.especialidades}
               ariaLabelledby={idRotuloEspecialidade}
             />
-            {p.erros.especialidades && <span className="text-[12px] text-erro">{p.erros.especialidades}</span>}
+            {p.erros.especialidades && <span className="text-[12px] text-erro-texto">{p.erros.especialidades}</span>}
           </div>
         ) : (
           <CampoPerfil

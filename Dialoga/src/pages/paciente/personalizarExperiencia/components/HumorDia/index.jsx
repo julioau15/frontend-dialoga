@@ -43,7 +43,7 @@ export default function HumorDia({ valores, onAlterarCampo, onSalvar, onAgoraNao
 
   return (
     <form className="flex flex-col items-center" onSubmit={onSalvar} noValidate>
-      <img className="h-[150px] w-[107px] object-contain" src={ilustracao} width="107" height="150" alt="" />
+      <img className="ilustracao-tema h-[150px] w-[107px] object-contain" src={ilustracao} width="107" height="150" alt="" />
 
       <h1 className="mt-4 text-[20px] font-extrabold text-center text-texto">Como você está hoje?</h1>
       <p className="mt-2 max-w-[360px] text-[13px] text-center text-secundaria">

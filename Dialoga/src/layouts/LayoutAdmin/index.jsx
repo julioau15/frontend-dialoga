@@ -10,6 +10,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import Logo from '../../components/Logo'
 import { iniciais } from '../../utils/formatadores'
 import Button from '../../components/Button'
+import BotaoTema from '../../components/BotaoTema'
 import { IconeAlerta, IconeCheck, IconeEscudo, IconeSair, IconeUsuario, IconeUsuarios } from '../../components/Icones'
 
 const LINKS = [
@@ -20,7 +21,7 @@ const LINKS = [
 
 const classeLink = ({ isActive }) =>
   `flex items-center gap-3 h-10 px-3.5 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-[background] duration-200 ease-[ease] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
-    isActive ? 'bg-primaria text-branco' : 'text-secundaria hover:bg-fundo-suave'
+    isActive ? 'bg-primaria bg-botao text-branco' : 'text-secundaria hover:bg-fundo-suave'
   }`
 
 // Foto do administrador no menu; sem foto (ou se a imagem não carregar) mostra as iniciais.
@@ -40,7 +41,7 @@ function AvatarAdmin({ nome, foto }) {
   }
 
   return (
-    <span className="grid place-items-center w-[60px] h-[60px] rounded-full bg-borda-forte text-[18px] font-extrabold text-primaria" aria-hidden="true">
+    <span className="grid place-items-center w-[60px] h-[60px] rounded-full bg-borda-forte text-[18px] font-extrabold text-primaria-texto" aria-hidden="true">
       {iniciais(nome)}
     </span>
   )
@@ -62,10 +63,13 @@ function LayoutAdmin() {
     <>
       {/* Regra de negócio: o administrador usa só computador.
           Abaixo de 1024px (lg) mostro apenas este aviso e o botão de sair. */}
-      <section className="lg:hidden grid place-items-center min-h-svh px-6 bg-fundo-suave text-center">
+      <section className="relative lg:hidden grid place-items-center min-h-svh px-6 bg-fundo-suave bg-pagina text-center">
+        <div className="absolute top-3 right-3">
+          <BotaoTema />
+        </div>
         <div className="flex flex-col items-center gap-3 max-w-[320px]">
           <Logo className="w-[150px]! h-[51px]!" />
-          <IconeAlerta tamanho={28} className="mt-4 text-primaria" />
+          <IconeAlerta tamanho={28} className="mt-4 text-primaria-texto" />
           <h1 className="text-[18px] font-extrabold text-texto">Acesse pelo computador</h1>
           <p className="text-[13px] text-secundaria">
             A área administrativa do Dialoga está disponível apenas no computador.
@@ -76,9 +80,9 @@ function LayoutAdmin() {
         </div>
       </section>
 
-      {/* Antes era "min-h-svh md:flex bg-fundo-suave": agora o painel só aparece a partir de 1024px */}
-      <div className="hidden lg:flex min-h-svh bg-fundo-suave">
-        <aside className="flex flex-col bg-branco border-b md:border-b-0 md:border-r border-borda md:w-[238px] md:shrink-0 md:sticky md:top-0 md:h-svh">
+      {/* Antes era "min-h-svh md:flex bg-fundo-suave bg-pagina": agora o painel só aparece a partir de 1024px */}
+      <div className="hidden lg:flex min-h-svh bg-fundo-suave bg-pagina">
+        <aside className="flex flex-col bg-superficie border-b md:border-b-0 md:border-r border-borda md:w-[238px] md:shrink-0 md:sticky md:top-0 md:h-svh">
           <div className="grid place-items-center py-3 border-b border-borda">
             {/* tamanho menor que o padrão do Logo (o "!" faz esta classe vencer) */}
             <Logo className="w-[150px]! h-[51px]!" />
@@ -87,7 +91,7 @@ function LayoutAdmin() {
           <div className="hidden md:flex flex-col items-center gap-1 px-4 py-5 border-b border-borda">
             <AvatarAdmin nome={nome} foto={foto} />
             <p className="mt-1 text-[13px] font-bold text-texto">{nome}</p>
-            <span className="inline-flex items-center gap-1 h-[22px] px-2.5 bg-alerta-fundo border border-alerta-borda rounded-full text-[10.5px] font-semibold text-alerta-escura">
+            <span className="inline-flex items-center gap-1 h-[22px] px-2.5 bg-alerta-fundo border border-alerta-borda rounded-full text-[10.5px] font-semibold text-alerta-escura-texto">
               <IconeEscudo tamanho={11} />
               Admin
             </span>
@@ -102,7 +106,8 @@ function LayoutAdmin() {
             ))}
           </nav>
 
-          <div className="md:mt-auto p-3 border-t border-borda">
+          <div className="md:mt-auto flex flex-col gap-1 p-3 border-t border-borda">
+            <BotaoTema comRotulo className="h-10 px-3.5! py-0! text-[12px]!" />
             <button
               type="button"
               onClick={sair}

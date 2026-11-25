@@ -22,12 +22,12 @@ export default function ProximasConsultas({ consultas, onExcluir }) {
             const { dia, mes } = diaEMesAbreviado(c.data)
             return (
               <li key={c.id} className="flex items-center gap-3 border-b border-borda px-4 py-3 last:border-b-0">
-                <span className="grid h-9 w-9 shrink-0 place-content-center rounded-lg bg-fundo-suave-2 text-center leading-tight text-primaria">
+                <span className="grid h-9 w-9 shrink-0 place-content-center rounded-lg bg-fundo-suave-2 text-center leading-tight text-primaria-texto">
                   <span className="text-[11px] font-extrabold">{dia}</span>
                   <span className="text-[8px]">{mes}</span>
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  {c.titulo && <span className="truncate text-[9px] font-semibold text-primaria">{c.titulo}</span>}
+                  {c.titulo && <span className="truncate text-[9px] font-semibold text-primaria-texto">{c.titulo}</span>}
                   <span className="truncate text-[10px] font-bold text-texto">{c.profissional}</span>
                   <span className="flex items-center gap-1 text-[9px] text-secundaria">
                     <IconeRelogioPequeno tamanho={9} />
@@ -38,7 +38,7 @@ export default function ProximasConsultas({ consultas, onExcluir }) {
                   type="button"
                   aria-label={`Excluir consulta com ${c.profissional} em ${diaEMesAbreviado(c.data).dia} de ${mes}`}
                   onClick={() => onExcluir(c)}
-                  className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-secundaria cursor-pointer hover:bg-fundo-suave hover:text-erro focus-visible:outline-2 focus-visible:outline-primaria"
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-secundaria cursor-pointer hover:bg-fundo-suave hover:text-erro-texto focus-visible:outline-2 focus-visible:outline-primaria"
                 >
                   <IconeLixeira tamanho={12} />
                 </button>

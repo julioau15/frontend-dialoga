@@ -130,7 +130,7 @@ export default function CartaoSolicitacoesAcesso({ solicitacoes, erro = '', onTe
           subtitulo="Profissionais solicitando ver seus indicadores"
           direita={
             pendentes.length > 0 && (
-              <p className="mt-[11px] inline-flex h-6 items-center rounded-full bg-erro-borda px-2.5 text-[13px] font-semibold text-erro xl:hidden">
+              <p className="mt-[11px] inline-flex h-6 items-center rounded-full bg-erro-borda px-2.5 text-[13px] font-semibold text-erro-texto xl:hidden">
                 {pendentes.length} {pendentes.length === 1 ? 'pendente' : 'pendentes'}
               </p>
             )
@@ -140,12 +140,12 @@ export default function CartaoSolicitacoesAcesso({ solicitacoes, erro = '', onTe
 
       {erro && (
         <div role="alert" className="flex flex-col items-start gap-2 border-t border-borda px-5 py-4">
-          <p className="text-[13px] text-erro">{erro}</p>
+          <p className="text-[13px] text-erro-texto">{erro}</p>
           {onTentarNovamente && (
             <button
               type="button"
               onClick={onTentarNovamente}
-              className="cursor-pointer text-[13px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+              className="cursor-pointer text-[13px] font-semibold text-primaria-texto hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
             >
               Tentar novamente
             </button>

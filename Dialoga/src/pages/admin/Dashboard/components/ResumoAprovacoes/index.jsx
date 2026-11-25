@@ -4,9 +4,9 @@
 // Props: pendentes, aprovados, recusados (números)
 // ============================================================
 const CARTOES = [
-  { chave: 'pendentes', rotulo: 'Pendentes', classes: 'bg-alerta-fundo border-alerta-borda-suave text-alerta' },
-  { chave: 'aprovados', rotulo: 'Aprovados', classes: 'bg-sucesso-fundo border-sucesso-borda-suave text-sucesso' },
-  { chave: 'recusados', rotulo: 'Recusados', classes: 'bg-erro-fundo border-erro-borda text-erro' },
+  { chave: 'pendentes', rotulo: 'Pendentes', classes: 'bg-alerta-fundo border-alerta-borda-suave text-alerta-texto' },
+  { chave: 'aprovados', rotulo: 'Aprovados', classes: 'bg-sucesso-fundo border-sucesso-borda-suave text-sucesso-texto' },
+  { chave: 'recusados', rotulo: 'Recusados', classes: 'bg-erro-fundo border-erro-borda text-erro-texto' },
 ]
 
 export default function ResumoAprovacoes({ pendentes, aprovados, recusados }) {

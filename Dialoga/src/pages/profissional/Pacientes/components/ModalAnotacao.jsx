@@ -94,10 +94,10 @@ export default function ModalAnotacao({ aberto, anotacao = null, nomePaciente, s
             maxLength={LIMITE_CONTEUDO}
             value={conteudo}
             onChange={(e) => setConteudo(e.target.value)}
-            className="h-[126px] w-full resize-none rounded-xl border-0 bg-branco px-[17px] py-[13px] text-[14px] leading-5 text-texto shadow-[0_0_0_1px_var(--color-borda)] outline-0 transition-shadow duration-200 placeholder:text-secundaria focus:shadow-[0_0_0_1px_var(--color-primaria),0_0_0_4px_var(--color-primaria-alfa-20)]"
+            className="h-[126px] w-full resize-none rounded-xl border-0 bg-superficie px-[17px] py-[13px] text-[14px] leading-5 text-texto shadow-[0_0_0_1px_var(--color-borda)] outline-0 transition-shadow duration-200 placeholder:text-secundaria focus:shadow-[0_0_0_1px_var(--color-primaria),0_0_0_4px_var(--color-primaria-alfa-20)]"
           />
           {erro && (
-            <p role="alert" className="mt-3 text-[12px] leading-4 font-semibold text-erro">
+            <p role="alert" className="mt-3 text-[12px] leading-4 font-semibold text-erro-texto">
               {erro}
             </p>
           )}

@@ -58,7 +58,7 @@ export default function InformarEmail({
 
         {/* erro vindo da API (ex.: e-mail não cadastrado) */}
         {erroGeral && (
-          <p className="text-[12px] text-erro" role="alert">
+          <p className="text-[12px] text-erro-texto" role="alert">
             {erroGeral}
           </p>
         )}

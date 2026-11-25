@@ -113,8 +113,8 @@ export default function AdministradoresAdmin() {
 
       {adm.erroLista && (
         <div role="alert" className="flex flex-col items-start gap-2 mt-6">
-          <p className="text-[12px] text-erro">{adm.erroLista}</p>
-          <button type="button" onClick={adm.tentarNovamente} className="text-[12px] text-primaria underline cursor-pointer">
+          <p className="text-[12px] text-erro-texto">{adm.erroLista}</p>
+          <button type="button" onClick={adm.tentarNovamente} className="text-[12px] text-primaria-texto underline cursor-pointer">
             Tentar novamente
           </button>
         </div>

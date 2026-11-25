@@ -28,7 +28,7 @@ export default function AbaAnotacoes({ anotacoes, onNova, onEditar, onExcluir })
     <Card as="section" aria-label="Anotações privadas" className="overflow-hidden">
       <div className="flex min-h-[61px] items-center justify-between gap-3 border-b border-borda px-5 py-3">
         <div className="flex min-w-0 items-start gap-2.5">
-          <IconeAnotacao className="mt-0.5 text-primaria" />
+          <IconeAnotacao className="mt-0.5 text-primaria-texto" />
           <div className="flex min-w-0 flex-wrap items-baseline gap-x-2.5">
             <h2 className="text-[14px] font-bold leading-5 text-texto">Anotações privadas</h2>
             <span className="text-[11px] leading-4 text-secundaria">(visíveis apenas para você)</span>
@@ -37,7 +37,7 @@ export default function AbaAnotacoes({ anotacoes, onNova, onEditar, onExcluir })
         <button
           type="button"
           onClick={onNova}
-          className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-bold text-primaria transition-colors duration-200 hover:bg-fundo-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+          className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-bold text-primaria-texto transition-colors duration-200 hover:bg-fundo-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
         >
           <IconeMaisFino tamanho={13} />
           Nova nota
@@ -72,7 +72,7 @@ export default function AbaAnotacoes({ anotacoes, onNova, onEditar, onExcluir })
                   type="button"
                   aria-label={`Editar anotação ${nota.titulo}`}
                   onClick={() => onEditar(nota)}
-                  className={`${BOTAO_ICONE} hover:bg-fundo-suave hover:text-primaria`}
+                  className={`${BOTAO_ICONE} hover:bg-fundo-suave hover:text-primaria-texto`}
                 >
                   <IconeEditar />
                 </button>
@@ -80,7 +80,7 @@ export default function AbaAnotacoes({ anotacoes, onNova, onEditar, onExcluir })
                   type="button"
                   aria-label={`Excluir anotação ${nota.titulo}`}
                   onClick={() => onExcluir(nota)}
-                  className={`${BOTAO_ICONE} hover:bg-erro-fundo hover:text-erro`}
+                  className={`${BOTAO_ICONE} hover:bg-erro-fundo hover:text-erro-texto`}
                 >
                   <IconeExcluir />
                 </button>

@@ -18,13 +18,13 @@ const ALTURA_MAXIMA = 90 // altura (px) da barra com o valor máximo
 
 // fundo da etiqueta em cima da barra: no verde uso o tom escuro, para o texto
 // branco de 12px passar no contraste mínimo (AA)
-const FUNDO_ETIQUETA = { positivo: 'bg-sucesso-escura', moderado: 'bg-primaria', atencao: 'bg-erro' }
+const FUNDO_ETIQUETA = { positivo: 'bg-sucesso-escura', moderado: 'bg-primaria bg-barra-moderado', atencao: 'bg-erro bg-barra-atencao' }
 
 export default function CartaoEmocionais({ emocionais, dias }) {
   return (
     <Card as="section" aria-label="Indicadores emocionais" className="px-5 pt-[21px] pb-[21px]">
       <CabecalhoCartao
-        icone={<IconeAtividade tamanho={15} className="text-primaria" />}
+        icone={<IconeAtividade tamanho={15} className="text-primaria-texto" />}
         titulo="Indicadores emocionais"
         subtitulo={`Média dos últimos ${dias} dias · dados do paciente`}
         direita={<p className="text-[12px] leading-5 text-secundaria">{emocionais.registros} registro(s)</p>}

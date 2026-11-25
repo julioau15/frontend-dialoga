@@ -4,7 +4,7 @@
 //
 // Há dois estilos de uso, mantidos dos dois projetos:
 //  1) Telas de paciente/profissional (tamanho via className do Tailwind):
-//       <Calendario className="h-4 w-4 text-primaria" />
+//       <Calendario className="h-4 w-4 text-primaria-texto" />
 //  2) Telas do administrador (prefixo "Icone", tamanho em px, padrão 16):
 //       <IconeCheck tamanho={14} />
 // ============================================================

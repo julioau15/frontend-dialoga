@@ -38,7 +38,7 @@ export default function CalendarioMes({
   const celulas = celulasDoMes(ano, mes)
 
   return (
-    <section aria-label="Calendário" className="w-full p-4 rounded-xl bg-branco shadow-[0_1px_3px_var(--color-sombra)]">
+    <section aria-label="Calendário" className="w-full p-4 rounded-xl bg-superficie shadow-[0_1px_3px_var(--color-sombra)]">
       <div className="flex items-center justify-between mb-3">
         <button type="button" className={BOTAO_SETA} aria-label="Mês anterior" onClick={() => onMudarMes(-1)}>
           <IconeSetaEsquerda tamanho={14} />
@@ -69,9 +69,9 @@ export default function CalendarioMes({
               onClick={() => onSelecionar(iso)}
               className={`relative mx-auto grid h-8 w-8 place-items-center rounded-lg text-[11px] font-semibold cursor-pointer focus-visible:outline-2 focus-visible:outline-primaria ${
                 ativo
-                  ? 'bg-primaria text-branco'
+                  ? 'bg-primaria bg-botao text-branco'
                   : temDisponibilidade
-                    ? 'bg-sucesso-alfa-10 text-sucesso-escura hover:bg-sucesso-alfa-20'
+                    ? 'bg-sucesso-alfa-10 text-sucesso-escura-texto hover:bg-sucesso-alfa-20'
                     : 'text-texto hover:bg-fundo-suave'
               }`}
             >

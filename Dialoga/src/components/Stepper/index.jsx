@@ -33,16 +33,16 @@ export default function Stepper({ passos, atual, className = '' }) {
             <span
               className={`relative z-10 grid place-items-center w-7 h-7 rounded-full text-[12px] font-bold ${
                 ativo
-                  ? 'bg-primaria text-branco shadow-[0_0_0_4px_var(--color-primaria-alfa-20)]'
+                  ? 'bg-primaria bg-botao text-branco shadow-[0_0_0_4px_var(--color-primaria-alfa-20)]'
                   : feito
-                    ? 'bg-primaria text-branco'
-                    : 'bg-branco border border-borda text-texto'
+                    ? 'bg-primaria bg-botao text-branco'
+                    : 'bg-superficie border border-borda text-texto'
               }`}
             >
               {feito ? '✓' : numero}
             </span>
 
-            <span className={`text-[11px] ${ativo ? 'font-semibold text-primaria' : 'text-texto'}`}>{nome}</span>
+            <span className={`text-[11px] ${ativo ? 'font-semibold text-primaria-texto' : 'text-texto'}`}>{nome}</span>
           </li>
         )
       })}

@@ -19,8 +19,8 @@ import { useId } from 'react'
 import { IconeCadeado } from '../IconesPerfil'
 
 const CAIXA = {
-  leitura: 'bg-branco border-borda',
-  edicao: 'bg-branco border-primaria shadow-[0_0_0_2px_var(--color-primaria-alfa-20)]',
+  leitura: 'bg-superficie border-borda',
+  edicao: 'bg-superficie border-primaria shadow-[0_0_0_2px_var(--color-primaria-alfa-20)]',
   bloqueado: 'bg-fundo-suave-2 border-borda',
 }
 
@@ -53,7 +53,7 @@ export default function CampoPerfil({ label, rotuloOpcional, icone, modo = 'leit
       </div>
 
       {ajuda && <span id={`${id}-ajuda`} className="text-[12px] text-secundaria">{ajuda}</span>}
-      {erro && <span id={`${id}-erro`} className="text-[12px] text-erro">{erro}</span>}
+      {erro && <span id={`${id}-erro`} className="text-[12px] text-erro-texto">{erro}</span>}
     </div>
   )
 }

@@ -48,7 +48,7 @@ export default function PainelDisponibilidade({ itens, onAdicionar, onEditar, on
             const horario = faixaDeHorario(item)
             return (
               <Card as="li" key={item.id} className="flex items-center gap-3 px-3 py-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-fundo-card text-[12px] font-extrabold text-primaria">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-fundo-card text-[12px] font-extrabold text-primaria-texto">
                   {siglaDoDia(item.dia)}
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
@@ -61,7 +61,7 @@ export default function PainelDisponibilidade({ itens, onAdicionar, onEditar, on
                   type="button"
                   aria-label={`Editar disponibilidade de ${siglaDoDia(item.dia)}, ${horario}`}
                   onClick={() => onEditar(item)}
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-secundaria cursor-pointer hover:bg-fundo-suave-2 hover:text-primaria focus-visible:outline-2 focus-visible:outline-primaria"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-secundaria cursor-pointer hover:bg-fundo-suave-2 hover:text-primaria-texto focus-visible:outline-2 focus-visible:outline-primaria"
                 >
                   <IconeLapis tamanho={14} />
                 </button>
@@ -69,7 +69,7 @@ export default function PainelDisponibilidade({ itens, onAdicionar, onEditar, on
                   type="button"
                   aria-label={`Remover disponibilidade de ${siglaDoDia(item.dia)}, ${horario}`}
                   onClick={() => onRemover(item)}
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-secundaria cursor-pointer hover:bg-erro-fundo hover:text-erro focus-visible:outline-2 focus-visible:outline-primaria"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-secundaria cursor-pointer hover:bg-erro-fundo hover:text-erro-texto focus-visible:outline-2 focus-visible:outline-primaria"
                 >
                   <IconeLixeira tamanho={14} />
                 </button>

@@ -21,7 +21,7 @@ export default function LoginForm() {
   } = useLoginForm()
 
   return (
-    <section className="flex flex-col items-center justify-between py-8 px-6 bg-fundo-login">
+    <section className="flex flex-col items-center justify-between py-8 px-6 bg-fundo-login bg-pagina">
       <div className="flex-1 flex flex-col justify-center gap-[18px] w-full max-w-[360px]">
         <Logo className="mx-auto" />
 
@@ -68,12 +68,12 @@ export default function LoginForm() {
             }
           />
 
-          <Link className="text-[11px] text-primaria no-underline hover:underline self-start" to="/recuperar-senha">
+          <Link className="text-[11px] text-primaria-texto no-underline hover:underline self-start" to="/recuperar-senha">
             Esqueceu sua senha?
           </Link>
 
           {/* Erro vindo da API (ex.: senha incorreta, servidor fora do ar) */}
-          {erroGeral && <p className="px-3 py-2.5 border border-erro-borda rounded-lg bg-erro-fundo text-[12px] text-erro" role="alert">{erroGeral}</p>}
+          {erroGeral && <p className="px-3 py-2.5 border border-erro-borda rounded-lg bg-erro-fundo text-[12px] text-erro-texto" role="alert">{erroGeral}</p>}
 
           <Button type="submit" carregando={carregando}>
             {carregando ? 'Entrando...' : 'Entrar'}
@@ -84,7 +84,7 @@ export default function LoginForm() {
         <GoogleButton onCredential={entrarComGoogle} onErro={erroGoogle} disabled={carregando} />
 
         <p className="text-center text-[11px] text-secundaria">
-          Não tem conta? <Link className="text-[11px] text-primaria no-underline hover:underline font-bold" to="/cadastro">Cadastre-se</Link>
+          Não tem conta? <Link className="text-[11px] text-primaria-texto no-underline hover:underline font-bold" to="/cadastro">Cadastre-se</Link>
         </p>
       </div>
 

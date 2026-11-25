@@ -19,8 +19,8 @@ const CHIP = 'inline-flex h-[22px] items-center gap-1 rounded-md px-2 text-[12px
 
 // botão "Tomar" ao lado do chip, na cor principal
 const BOTAO_TOMAR =
-  'inline-flex h-[22px] cursor-pointer items-center rounded-md bg-primaria px-2 text-[12px] font-bold text-branco ' +
-  'transition-colors duration-200 hover:bg-primaria-escura disabled:cursor-not-allowed disabled:opacity-60 ' +
+  'inline-flex h-[22px] cursor-pointer items-center rounded-md bg-primaria bg-botao px-2 text-[12px] font-bold text-branco ' +
+  'transition-[filter] duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
 // Desenha o chip conforme a situação da dose de hoje daquele horário.
@@ -30,7 +30,7 @@ export default function ChipHorarioDose({ hora, nome, dose, confirmando = null, 
   // dose já registrada hoje: chip verde com a hora em que foi confirmada
   if (dose?.status === 'tomada') {
     return (
-      <span className={`${CHIP} bg-sucesso-fundo text-sucesso-escura`}>
+      <span className={`${CHIP} bg-sucesso-fundo text-sucesso-escura-texto`}>
         <IconeCheck tamanho={11} />
         {horaCurta}
         {dose.horaConfirmacao && <span className="font-normal">· tomada às {dose.horaConfirmacao}</span>}
@@ -43,7 +43,7 @@ export default function ChipHorarioDose({ hora, nome, dose, confirmando = null, 
 
   return (
     <span className="inline-flex items-center gap-1">
-      <span className={`${CHIP} ${atrasada ? 'bg-alerta-fundo text-alerta-escura' : 'bg-borda text-texto'}`}>
+      <span className={`${CHIP} ${atrasada ? 'bg-alerta-fundo text-alerta-escura-texto' : 'bg-borda text-texto'}`}>
         <IconeRelogio tamanho={11} className={atrasada ? '' : 'text-secundaria'} />
         {horaCurta}
         {atrasada && <span className="font-normal">· atrasada</span>}

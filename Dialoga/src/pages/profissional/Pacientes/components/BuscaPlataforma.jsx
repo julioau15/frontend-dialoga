@@ -92,7 +92,7 @@ export default function BuscaPlataforma({ rotulo, placeholder, valor, onMudarVal
         onFocus={() => setAberta(true)}
         onBlur={() => setAberta(false)}
         onKeyDown={teclar}
-        acao={selecionadoId != null && !mostrarLista ? <IconeCheck tamanho={16} className="text-sucesso-escura" /> : null}
+        acao={selecionadoId != null && !mostrarLista ? <IconeCheck tamanho={16} className="text-sucesso-escura-texto" /> : null}
       />
 
       {mostrarLista && (
@@ -100,7 +100,7 @@ export default function BuscaPlataforma({ rotulo, placeholder, valor, onMudarVal
           id={idLista}
           role="listbox"
           aria-label={`Pacientes encontrados para ${rotulo.toLowerCase()}`}
-          className="absolute inset-x-0 top-full z-10 max-h-[176px] overflow-y-auto rounded-b-xl border-t border-borda bg-branco py-1 shadow-[0_0_0_1px_var(--color-primaria),0_8px_16px_var(--color-sombra)]"
+          className="absolute inset-x-0 top-full z-10 max-h-[176px] overflow-y-auto rounded-b-xl border-t border-borda bg-superficie py-1 shadow-[0_0_0_1px_var(--color-primaria),0_8px_16px_var(--color-sombra)]"
         >
           {resultados.length === 0 ? (
             <li role="option" aria-disabled="true" aria-selected="false" className="px-4 py-3 text-[12px] text-secundaria">
@@ -126,7 +126,7 @@ export default function BuscaPlataforma({ rotulo, placeholder, valor, onMudarVal
                     <span className="truncate text-[14px] font-bold leading-5 text-texto">{p.nome}</span>
                     <span className="truncate text-[12px] leading-4 text-secundaria">{p.email}</span>
                   </span>
-                  {escolhido && <IconeCheck tamanho={16} className="text-primaria" />}
+                  {escolhido && <IconeCheck tamanho={16} className="text-primaria-texto" />}
                 </li>
               )
             })

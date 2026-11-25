@@ -28,7 +28,7 @@ import ilustracao from '../../../../../assets/auth/ilustracaoEquipeSaude.png'
 // Mensagem pequena de status da busca
 function Aviso({ children, tipo = 'status' }) {
   return (
-    <p role={tipo} className={`text-[11px] text-center ${tipo === 'alert' ? 'text-erro' : 'text-secundaria'}`}>
+    <p role={tipo} className={`text-[11px] text-center ${tipo === 'alert' ? 'text-erro-texto' : 'text-secundaria'}`}>
       {children}
     </p>
   )
@@ -43,7 +43,7 @@ function ResultadosBusca({ busca, selecionado, onSelecionar }) {
     return (
       <div className="flex flex-col items-center gap-1">
         <Aviso tipo="alert">{busca.erro}</Aviso>
-        <button type="button" className="text-[11px] text-primaria underline cursor-pointer" onClick={busca.tentarNovamente}>
+        <button type="button" className="text-[11px] text-primaria-texto underline cursor-pointer" onClick={busca.tentarNovamente}>
           Tentar novamente
         </button>
       </div>
@@ -82,7 +82,7 @@ export default function EquipeSaude({
 
   return (
     <form className="flex flex-col items-center" onSubmit={onContinuar} noValidate>
-      <img className="h-[152px] w-[131px] object-contain" src={ilustracao} width="131" height="152" alt="" />
+      <img className="ilustracao-tema h-[152px] w-[131px] object-contain" src={ilustracao} width="131" height="152" alt="" />
 
       <h1 className="mt-4 text-[20px] font-extrabold text-center text-texto">Sua equipe de saúde</h1>
       <p className="mt-2 text-[13px] text-center text-secundaria" id={idPergunta}>
@@ -142,7 +142,7 @@ export default function EquipeSaude({
 
       {/* Erro ao criar o vínculo */}
       {erro && (
-        <p role="alert" className="w-full mt-4 text-[11px] text-center text-erro">{erro}</p>
+        <p role="alert" className="w-full mt-4 text-[11px] text-center text-erro-texto">{erro}</p>
       )}
 
       <div className="w-full mt-6">

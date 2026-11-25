@@ -32,7 +32,7 @@ export default function CalendarioDia({ ano, mes, selecionado, diasComTarefa, on
   return (
     <section
       aria-label="Calendário"
-      className="w-[287px] max-w-full rounded-[14px] border border-borda bg-branco px-[15px] pt-[18px] pb-4 shadow-[0_4px_14px_var(--color-sombra)]"
+      className="w-[287px] max-w-full rounded-[14px] border border-borda bg-superficie px-[15px] pt-[18px] pb-4 shadow-[0_4px_14px_var(--color-sombra)]"
     >
       <div className="mb-3 flex items-center justify-between px-2">
         <button type="button" className={BOTAO_SETA} aria-label="Mês anterior" onClick={() => onMudarMes(-1)}>

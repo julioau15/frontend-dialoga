@@ -19,7 +19,7 @@ export default function CartoesResumo({ resumo }) {
     <ul aria-label="Resumo do paciente" className="grid grid-cols-3 gap-2.5">
       {itens.map(({ id, rotulo, valor }) => (
         <Card as="li" key={id} className="flex flex-col items-center justify-center px-2 pt-[13px] pb-[14px] text-center">
-          <p className="text-[20px] font-extrabold leading-7 text-primaria">{valor}</p>
+          <p className="text-[20px] font-extrabold leading-7 text-primaria-texto">{valor}</p>
           <p className="mt-px text-[12px] leading-4 text-secundaria">{rotulo}</p>
         </Card>
       ))}

@@ -50,7 +50,7 @@ export default function ModalSolicitacao({ solicitacao, onFechar, onAprovar, onR
       {solicitacao && (
         <>
           <div className="flex items-start gap-3 pb-4 border-b border-borda">
-            <span className="grid place-items-center shrink-0 w-[52px] h-[52px] rounded-xl bg-borda-forte text-[18px] font-extrabold text-primaria" aria-hidden="true">
+            <span className="grid place-items-center shrink-0 w-[52px] h-[52px] rounded-xl bg-borda-forte text-[18px] font-extrabold text-primaria-texto" aria-hidden="true">
               {iniciais(solicitacao.nome)}
             </span>
             <div className="flex flex-col items-start gap-0.5 min-w-0">
@@ -69,7 +69,7 @@ export default function ModalSolicitacao({ solicitacao, onFechar, onAprovar, onR
           </div>
 
           {pendente && (
-            <p className="flex items-start gap-2 mt-4 p-3 bg-alerta-fundo border border-alerta-borda-suave rounded-lg text-[11px] text-alerta-escura">
+            <p className="flex items-start gap-2 mt-4 p-3 bg-alerta-fundo border border-alerta-borda-suave rounded-lg text-[11px] text-alerta-escura-texto">
               <IconeAlerta tamanho={13} className="mt-px shrink-0" />
               Confira os dados do profissional antes de aprovar ou recusar a solicitação.
             </p>

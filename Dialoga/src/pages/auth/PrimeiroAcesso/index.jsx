@@ -22,11 +22,11 @@ function PrimeiroAcesso() {
   } = usePrimeiroAcessoAdmin()
 
   return (
-    <main className="flex flex-col items-center justify-center gap-2 min-h-svh py-8 px-4 bg-fundo-suave">
+    <main className="flex flex-col items-center justify-center gap-2 min-h-svh py-8 px-4 bg-fundo-suave bg-pagina">
       <Logo />
 
       {/* Mesmo card da etapa de senha da Recuperação de senha */}
-      <section className="w-full max-w-[440px] p-6 bg-branco border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]">
+      <section className="w-full max-w-[440px] p-6 bg-superficie border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]">
         <DefinirSenha
           valores={valores}
           errosCampos={errosCampos}

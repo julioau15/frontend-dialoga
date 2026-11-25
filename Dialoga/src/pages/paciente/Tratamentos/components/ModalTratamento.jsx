@@ -51,7 +51,7 @@ const BOTAO_MOBILE = 'max-sm:h-8!'
 // asterisco vermelho dos campos obrigatórios
 const Obrigatorio = ({ children }) => (
   <>
-    {children} <span className="text-erro" aria-hidden="true">*</span>
+    {children} <span className="text-erro-texto" aria-hidden="true">*</span>
   </>
 )
 
@@ -253,7 +253,7 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
                 aria-describedby={erros.frequencia ? `${idFrequencia}-erro` : undefined}
                 value={campos.frequencia}
                 onChange={alterarFrequencia}
-                className="h-[46px] w-full cursor-pointer appearance-none rounded-xl border border-borda bg-branco pr-10 pl-5 text-[14px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
+                className="h-[46px] w-full cursor-pointer appearance-none rounded-xl border border-borda bg-superficie pr-10 pl-5 text-[14px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
               >
                 {!FREQUENCIAS.some((f) => f.rotulo === campos.frequencia) && (
                   <option value={campos.frequencia}>{campos.frequencia || 'Frequência não informada'}</option>
@@ -271,7 +271,7 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
             </div>
           </div>
 
-          {erros.frequencia && <p id={`${idFrequencia}-erro`} className="text-[12px] text-erro">{erros.frequencia}</p>}
+          {erros.frequencia && <p id={`${idFrequencia}-erro`} className="text-[12px] text-erro-texto">{erros.frequencia}</p>}
 
           {/* Horário: um campo de hora para cada vez ao dia */}
           <fieldset disabled={desabilitado} aria-describedby={erros.horarios ? idErroHorario : undefined}>
@@ -297,13 +297,13 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
                       aria-invalid={!!erros.horarios}
                       value={hora}
                       onChange={(e) => alterarHorario(indice, e.target.value)}
-                      className="h-[38px] w-24 rounded-[10px] border border-borda bg-branco px-2 text-[14px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 placeholder:text-secundaria focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
+                      className="h-[38px] w-24 rounded-[10px] border border-borda bg-superficie px-2 text-[14px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 placeholder:text-secundaria focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
                     />
                   </label>
                 )
               })}
             </div>
-            {erros.horarios && <p id={idErroHorario} className="mt-1.5 text-[12px] text-erro">{erros.horarios}</p>}
+            {erros.horarios && <p id={idErroHorario} className="mt-1.5 text-[12px] text-erro-texto">{erros.horarios}</p>}
             {avisoHorarios && <p role="status" className="mt-1.5 text-[12px] text-secundaria">{avisoHorarios}</p>}
           </fieldset>
 
@@ -322,8 +322,8 @@ export default function ModalTratamento({ modo = 'novo', tratamento, toast, onFe
               Ativar lembretes e notificações
             </span>
           </div>
-          {erros.lembrete && <p className="text-[12px] text-erro">{erros.lembrete}</p>}
-          {erroOperacao && <p role="alert" className="text-[12px] text-erro">{erroOperacao}</p>}
+          {erros.lembrete && <p className="text-[12px] text-erro-texto">{erros.lembrete}</p>}
+          {erroOperacao && <p role="alert" className="text-[12px] text-erro-texto">{erroOperacao}</p>}
           {bloqueado && erroOperacao && onRecarregar && (
             <Button type="button" variante="suave" larguraAuto disabled={processando} onClick={onRecarregar}>Atualizar lista</Button>
           )}

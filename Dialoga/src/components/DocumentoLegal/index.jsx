@@ -36,20 +36,20 @@ export default function DocumentoLegal({ documento, outro }) {
   const secoes = documento.blocos.filter((b) => b.t === 'h2')
 
   return (
-    <main className="min-h-svh py-8 px-4 bg-fundo-suave">
+    <main className="min-h-svh py-8 px-4 bg-fundo-suave bg-pagina">
       <div className="w-full max-w-[760px] mx-auto flex flex-col gap-5">
         <div className="flex items-center justify-between">
           <Logo />
           <button
             type="button"
-            className="p-0 border-0 bg-transparent text-[13px] font-bold text-primaria cursor-pointer hover:underline"
+            className="p-0 border-0 bg-transparent text-[13px] font-bold text-primaria-texto cursor-pointer hover:underline"
             onClick={voltar}
           >
             ← Voltar
           </button>
         </div>
 
-        <article className="p-6 sm:p-8 bg-branco border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]">
+        <article className="p-6 sm:p-8 bg-superficie border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]">
           <h1 className="text-[22px] font-extrabold text-texto">{documento.titulo}</h1>
           <p className="mt-1 text-[12px] text-secundaria">
             Versão {documento.versao} · Última atualização: {documento.atualizacao}
@@ -61,7 +61,7 @@ export default function DocumentoLegal({ documento, outro }) {
             <ol className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2 list-none p-0">
               {secoes.map((s) => (
                 <li key={s.x}>
-                  <a className="text-[12px] text-primaria no-underline hover:underline" href={`#${idDaSecao(s.x)}`}>{s.x}</a>
+                  <a className="text-[12px] text-primaria-texto no-underline hover:underline" href={`#${idDaSecao(s.x)}`}>{s.x}</a>
                 </li>
               ))}
             </ol>
@@ -93,7 +93,7 @@ export default function DocumentoLegal({ documento, outro }) {
 
         {outro && (
           <p className="text-center text-[12px] text-secundaria">
-            Veja também: <Link className="text-primaria font-bold no-underline hover:underline" to={outro.para}>{outro.texto}</Link>
+            Veja também: <Link className="text-primaria-texto font-bold no-underline hover:underline" to={outro.para}>{outro.texto}</Link>
           </p>
         )}
       </div>

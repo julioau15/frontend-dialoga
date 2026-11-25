@@ -181,6 +181,46 @@ export async function buscarProfissionais(token, termo, signal) {
     return dados.response?.profissional ?? []
 }
 
+// Profissionais APROVADOS de uma especialidade (idEspecialidade = id da tabela de especialidades).
+// Usa só rotas que já existem no back:
+//   1) GET /profissionais              -> todos, com as especialidades de cada um (filtro feito aqui)
+//   2) GET /profissionais/busca?q=nome -> confirma, um a um, quem é aprovado (a busca só devolve aprovados)
+// Devolve o mesmo formato da busca por nome: [{ id, nome_completo, foto_avatar, especialidades: "A, B" }]
+export async function buscarProfissionaisPorEspecialidade(token, idEspecialidade, signal) {
+    let todos
+    try {
+        const dados = await requisicao('/profissionais', {
+            token,
+            signal,
+            mensagemErro: 'Não foi possível buscar os profissionais da especialidade.',
+        })
+        todos = dados.response?.profissional ?? []
+    } catch (erro) {
+        if (erro.status === 404) return [] // o back responde 404 quando não há nenhum profissional
+        throw erro
+    }
+
+    const daArea = todos
+        .filter((p) => (p.especialidade ?? []).some((e) => Number(e.id) === Number(idEspecialidade)))
+        .slice(0, 30)
+
+    const confirmados = await Promise.all(
+        daArea.map(async (p) => {
+            const nome = String(p.nome_completo ?? '').trim().slice(0, 100)
+            if (nome.length < 2) return null
+            try {
+                const aprovados = await buscarProfissionais(token, nome, signal)
+                return aprovados.find((a) => Number(a.id) === Number(p.id)) ?? null
+            } catch (erro) {
+                if (signal?.aborted) throw erro
+                return null
+            }
+        }),
+    )
+
+    return confirmados.filter(Boolean).sort((a, b) => a.nome_completo.localeCompare(b.nome_completo, 'pt-BR'))
+}
+
 // POST /pacientes/me/profissionais/:id (sem corpo)
 // Cria o vínculo paciente-profissional; o profissional ainda precisa aceitar.
 export async function vincularProfissional(token, idProfissional) {

@@ -76,7 +76,7 @@ export default function ModalDisponibilidade({ onFechar, onSalvar, erroGeral, in
                     aria-label={nome}
                     onClick={() => alternarDia(id)}
                     className={`h-8 min-w-11 px-3 rounded-lg border text-[11px] font-semibold cursor-pointer transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
-                      marcado ? 'bg-primaria border-primaria text-branco' : 'bg-branco border-borda-forte text-secundaria hover:bg-fundo-suave-2'
+                      marcado ? 'bg-primaria border-primaria text-branco' : 'bg-superficie border-borda-forte text-secundaria hover:bg-fundo-suave-2'
                     }`}
                   >
                     {sigla}
@@ -84,7 +84,7 @@ export default function ModalDisponibilidade({ onFechar, onSalvar, erroGeral, in
                 )
               })}
             </div>
-            {erros.dias && <span className="text-[11px] text-erro">{erros.dias}</span>}
+            {erros.dias && <span className="text-[11px] text-erro-texto">{erros.dias}</span>}
           </div>
         ) : (
           <TextField
@@ -112,7 +112,7 @@ export default function ModalDisponibilidade({ onFechar, onSalvar, erroGeral, in
         </div>
         {!repetir && <p className="-mt-2 text-[11px] text-secundaria">Desligado: a disponibilidade vale só na data escolhida.</p>}
 
-        {erroGeral && <p role="alert" className="text-[11px] text-erro">{erroGeral}</p>}
+        {erroGeral && <p role="alert" className="text-[11px] text-erro-texto">{erroGeral}</p>}
       </div>
     </Modal>
   )

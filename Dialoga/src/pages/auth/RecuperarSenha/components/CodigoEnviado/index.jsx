@@ -93,7 +93,7 @@ export default function CodigoEnviado({
 
   return (
     <form className="flex flex-col items-center text-center" onSubmit={onSubmit} noValidate>
-      <span className="grid place-items-center w-14 h-14 rounded-2xl bg-sucesso-fundo text-sucesso">
+      <span className="grid place-items-center w-14 h-14 rounded-2xl bg-sucesso-fundo text-sucesso-texto">
         {IconeCheck}
       </span>
 
@@ -113,7 +113,7 @@ export default function CodigoEnviado({
           <input
             key={i}
             ref={(el) => (refs.current[i] = el)}
-            className="w-14 h-11 text-center bg-branco border border-borda rounded-lg text-[18px] font-bold leading-[normal] text-texto outline-0 transition-[border-color,box-shadow] duration-200 ease-[ease] focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
+            className="w-14 h-11 text-center bg-superficie border border-borda rounded-lg text-[18px] font-bold leading-[normal] text-texto outline-0 transition-[border-color,box-shadow] duration-200 ease-[ease] focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
             type="text"
             inputMode="numeric"
             maxLength={1}
@@ -130,11 +130,11 @@ export default function CodigoEnviado({
 
       {/* Mensagens: erro do campo, erro da API ou aviso de sucesso */}
       {(erro || erroGeral) && (
-        <p className="mt-3 text-[12px] text-erro" role="alert">
+        <p className="mt-3 text-[12px] text-erro-texto" role="alert">
           {erro || erroGeral}
         </p>
       )}
-      {mensagem && <p className="mt-3 text-[12px] text-sucesso">{mensagem}</p>}
+      {mensagem && <p className="mt-3 text-[12px] text-sucesso-texto">{mensagem}</p>}
 
       <div className="w-full mt-6">
         <Button type="submit" disabled={carregando}>

@@ -23,19 +23,19 @@ const BASE =
 // Variantes (classes escritas por extenso para o Tailwind encontrá-las)
 const VARIANTES = {
   // fundo roxo
-  primario: 'bg-primaria border border-primaria text-branco enabled:hover:bg-primaria-escura',
+  primario: 'bg-primaria bg-botao border border-primaria text-branco shadow-sm enabled:hover:brightness-110',
   // fundo branco e borda roxa
-  contorno: 'bg-branco border border-primaria text-texto enabled:hover:bg-fundo-suave-2',
+  contorno: 'bg-superficie border border-primaria text-texto enabled:hover:bg-fundo-suave-2',
   // fundo branco e borda lilás clara (ex.: botão Voltar)
-  suave: 'bg-branco border border-borda-forte text-texto enabled:hover:bg-fundo-suave-2',
+  suave: 'bg-superficie border border-borda-forte text-texto enabled:hover:bg-fundo-suave-2',
   // fundo verde (ex.: Aprovar)
-  sucesso: 'bg-sucesso border border-sucesso text-branco enabled:hover:brightness-95',
+  sucesso: 'bg-linear-to-br from-[#10B981] to-sucesso-escura border border-sucesso text-branco shadow-sm enabled:hover:brightness-95',
   // fundo verde bem claro e texto verde (ex.: Ver respostas, na lista de tarefas)
-  'sucesso-suave': 'bg-sucesso-fundo border border-sucesso-fundo text-sucesso-escura enabled:hover:brightness-97',
+  'sucesso-suave': 'bg-sucesso-fundo border border-sucesso-fundo text-sucesso-escura-texto enabled:hover:brightness-97',
   // fundo vermelho (ex.: Confirmar recusa)
-  perigo: 'bg-erro border border-erro text-branco enabled:hover:brightness-95',
+  perigo: 'bg-linear-to-br from-[#EF4444] to-[#B91C1C] border border-erro text-branco shadow-sm enabled:hover:brightness-95',
   // fundo branco, borda e texto vermelhos (ex.: Recusar)
-  'perigo-contorno': 'bg-branco border border-erro-borda text-erro enabled:hover:bg-erro-fundo',
+  'perigo-contorno': 'bg-superficie border border-erro-borda text-erro-texto enabled:hover:bg-erro-fundo',
 }
 
 export default function Button({ variante = 'primario', carregando = false, larguraAuto = false, className = '', children, ...props }) {

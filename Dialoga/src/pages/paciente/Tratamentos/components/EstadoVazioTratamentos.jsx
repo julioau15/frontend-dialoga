@@ -28,7 +28,7 @@ export default function EstadoVazioTratamentos({ onAdicionar, desabilitado = fal
 
   return (
     <Card as="section" aria-labelledby={idTitulo} className="mt-6 flex flex-col items-center px-6 py-10 text-center">
-      <span aria-hidden="true" className="grid h-14 w-14 place-items-center rounded-full bg-fundo-card text-primaria">
+      <span aria-hidden="true" className="grid h-14 w-14 place-items-center rounded-full bg-fundo-card text-primaria-texto">
         <Icone nome="remedio" tamanho={26} />
       </span>
 
@@ -42,7 +42,7 @@ export default function EstadoVazioTratamentos({ onAdicionar, desabilitado = fal
       <ul className="mt-4 flex max-w-[420px] flex-col gap-2 text-left">
         {BENEFICIOS.map((texto) => (
           <li key={texto} className="flex items-start gap-2 text-[14px] leading-5 text-texto">
-            <IconeCheck tamanho={16} className="mt-0.5 text-sucesso-escura" />
+            <IconeCheck tamanho={16} className="mt-0.5 text-sucesso-escura-texto" />
             {texto}
           </li>
         ))}

@@ -6,5 +6,5 @@
 import logo from '../../assets/auth/logo-dialoga.png'
 
 export default function Logo({ className = '' }) {
-  return <img className={`block w-[309px] h-[105px] ${className}`} src={logo} alt="Dialoga" />
+  return <img className={`logo-tema block w-[309px] h-[105px] ${className}`} src={logo} alt="Dialoga" />
 }

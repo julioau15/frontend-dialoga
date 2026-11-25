@@ -46,7 +46,7 @@ export default function CartaoAdministrador({ administrador, podeRemover, onRemo
           type="button"
           onClick={() => onRemover(administrador)}
           aria-label={`Remover ${nome}`}
-          className="grid place-items-center w-8 h-8 shrink-0 rounded-md border-0 bg-transparent text-secundaria cursor-pointer transition-[background,color] duration-200 ease-[ease] hover:bg-erro-fundo hover:text-erro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+          className="grid place-items-center w-8 h-8 shrink-0 rounded-md border-0 bg-transparent text-secundaria cursor-pointer transition-[background,color] duration-200 ease-[ease] hover:bg-erro-fundo hover:text-erro-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
         >
           <IconeLixeira tamanho={16} />
         </button>

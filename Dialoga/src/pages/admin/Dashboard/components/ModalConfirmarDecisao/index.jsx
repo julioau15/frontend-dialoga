@@ -19,7 +19,7 @@ const TEXTOS = {
     botao: 'Confirmar aprovação',
     variante: 'sucesso',
     Icone: IconeCheck,
-    classesIcone: 'bg-sucesso-fundo border-sucesso-borda-suave text-sucesso',
+    classesIcone: 'bg-sucesso-fundo border-sucesso-borda-suave text-sucesso-texto',
   },
   recusar: {
     titulo: 'Confirmar recusa',
@@ -28,7 +28,7 @@ const TEXTOS = {
     botao: 'Confirmar recusa',
     variante: 'perigo',
     Icone: IconeX,
-    classesIcone: 'bg-erro-fundo border-erro-borda text-erro',
+    classesIcone: 'bg-erro-fundo border-erro-borda text-erro-texto',
   },
 }
 

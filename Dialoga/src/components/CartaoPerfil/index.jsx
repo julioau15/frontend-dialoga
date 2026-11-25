@@ -23,7 +23,7 @@ function iniciaisPerfil(nome = '') {
 }
 
 // Avatar sem foto: lilás com a inicial roxa, igual ao da Sidebar
-const AVATAR_INICIAIS = 'bg-borda-forte text-primaria'
+const AVATAR_INICIAIS = 'bg-borda-forte text-primaria-texto'
 
 // Classes escritas por extenso para o Tailwind encontrá-las.
 // Todas as cores vêm de variebles.css. Os textos pequenos (selo e dica) foram
@@ -31,14 +31,14 @@ const AVATAR_INICIAIS = 'bg-borda-forte text-primaria'
 const TONS = {
   paciente: {
     faixa: 'bg-principal',
-    lapis: 'bg-primaria text-branco',
+    lapis: 'bg-primaria bg-botao text-branco',
     nome: 'text-texto', // no Figma o nome sobre o degradê claro é escuro
-    selo: 'bg-branco-alfa-80 text-primaria',
+    selo: 'bg-branco-alfa-80 text-primaria-fixa',
     dica: 'text-secundaria-escura',
   },
   profissional: {
-    faixa: 'bg-linear-to-br from-primaria to-primaria-escura',
-    lapis: 'bg-branco text-primaria',
+    faixa: 'bg-primaria bg-hero',
+    lapis: 'bg-branco text-primaria-fixa',
     nome: 'text-branco',
     selo: 'bg-preto/15 text-branco',
     dica: 'text-branco-alfa-90',
@@ -47,7 +47,7 @@ const TONS = {
     // Figma: degradê diagonal âmbar (alerta -> alerta-escura). Começa no alerta-escura
     // porque, sobre o alerta (#D97706), o texto branco pequeno não passa no contraste.
     faixa: 'bg-linear-to-br from-alerta-escura to-alerta-mais-escura',
-    lapis: 'bg-branco text-primaria',
+    lapis: 'bg-branco text-primaria-fixa',
     nome: 'text-branco',
     selo: 'bg-preto/15 text-branco',
     dica: 'text-branco',
@@ -67,7 +67,7 @@ export default function CartaoPerfil({ tom = 'paciente', nome, selo, fotoUrl, on
   }
 
   return (
-    <section className="overflow-hidden rounded-xl border border-borda bg-branco shadow-sm">
+    <section className="overflow-hidden rounded-xl border border-borda bg-superficie shadow-sm">
       <div className={`flex flex-col items-center gap-1.5 px-6 py-7 ${t.faixa}`}>
         <button
           type="button"

@@ -23,7 +23,7 @@ export default function TratamentosHoje({ tratamentos }) {
           </div>
           <div className="flex shrink-0 gap-2">
             {horarios.map((hora) => (
-              <span key={hora} className="rounded-md bg-fundo-card px-2 py-1 text-xs font-semibold text-primaria">
+              <span key={hora} className="rounded-md bg-fundo-card px-2 py-1 text-xs font-semibold text-primaria-texto">
                 {hora}
               </span>
             ))}

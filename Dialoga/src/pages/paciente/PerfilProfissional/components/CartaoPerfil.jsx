@@ -14,7 +14,7 @@ import Selo from '../../../../components/Selo'
 
 // avatar de 80px com as iniciais de 28px em negrito (no mobile: 56px e 20px; o AvatarIniciais não muda)
 const AJUSTE_AVATAR =
-  'shrink-0 [&>div]:h-14 [&>div]:w-14 [&>div]:text-[20px] [&>div]:font-bold [&>div]:text-primaria sm:[&>div]:h-20 sm:[&>div]:w-20 sm:[&>div]:text-[28px]'
+  'shrink-0 [&>div]:h-14 [&>div]:w-14 [&>div]:text-[20px] [&>div]:font-bold [&>div]:text-primaria-texto sm:[&>div]:h-20 sm:[&>div]:w-20 sm:[&>div]:text-[28px]'
 
 // selo do Figma: 19px de altura, texto de 12px seminegrito e 8px nas laterais (o Selo não muda)
 const AJUSTE_SELO = 'inline-flex shrink-0 [&>span]:h-[19px] [&>span]:px-2 [&>span]:py-0 [&>span]:text-[11.5px] [&>span]:font-bold'
@@ -50,7 +50,7 @@ export default function CartaoPerfil({ perfil }) {
           {especialidades.map((e) => (
             <li
               key={e}
-              className="inline-flex h-6 items-center rounded-md bg-fundo-suave px-2.5 text-[12px] sm:h-[27px] sm:px-3 sm:text-[13px] font-semibold text-primaria"
+              className="inline-flex h-6 items-center rounded-md bg-fundo-suave px-2.5 text-[12px] sm:h-[27px] sm:px-3 sm:text-[13px] font-semibold text-primaria-texto"
             >
               {e}
             </li>
@@ -63,7 +63,7 @@ export default function CartaoPerfil({ perfil }) {
         <div className="mt-4 border-t border-borda pt-4 sm:mt-[23px] sm:pt-6">
           <p className="text-[11px] font-bold uppercase leading-4 text-secundaria">Próxima consulta disponível</p>
           {/* verde do Figma */}
-          <p className="mt-1 text-[13px] font-bold leading-5 text-sucesso sm:text-[14px]">{proximaDisponivel}</p>
+          <p className="mt-1 text-[13px] font-bold leading-5 text-sucesso-texto sm:text-[14px]">{proximaDisponivel}</p>
         </div>
       )}
     </Card>

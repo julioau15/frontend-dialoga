@@ -288,7 +288,7 @@ function ConteudoTratamentos({ token }) {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       {/* conteúdo com 720px no desktop, centralizado na área ao lado do menu (Figma) */}
       <div className="mx-auto flex w-full max-w-[770px] flex-col px-6 pt-[22px] pb-12 lg:pt-[81px]">
         {/* RF332 e RF336: título e contagem à esquerda, botão à direita (também no mobile) */}
@@ -306,7 +306,7 @@ function ConteudoTratamentos({ token }) {
         {carregando && <p role="status" className="mt-6 text-[14px] text-secundaria">Carregando tratamentos...</p>}
         {!carregando && (erro || remoto.bloqueado) && (
           <div role="alert" className="mt-6 flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-4">
-            <p className="text-[14px] text-erro">{erro || erroOperacao}</p>
+            <p className="text-[14px] text-erro-texto">{erro || erroOperacao}</p>
             <Button type="button" variante="suave" larguraAuto disabled={processando} onClick={recarregar}>Tentar novamente</Button>
           </div>
         )}

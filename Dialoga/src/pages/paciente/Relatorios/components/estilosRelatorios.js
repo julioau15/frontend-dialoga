@@ -15,7 +15,7 @@ export const AVATAR_RESPONDIDA = `${AJUSTE_AVATAR} max-xl:[&>div]:h-9 max-xl:[&>
 const AJUSTE_SELO = 'inline-flex shrink-0 [&>span]:h-[22px] [&>span]:px-2 [&>span]:py-0 [&>span]:text-[13px]'
 
 // "Pendente": texto laranja do Figma
-export const AJUSTE_SELO_PENDENTE = `${AJUSTE_SELO} [&>span]:text-alerta`
+export const AJUSTE_SELO_PENDENTE = `${AJUSTE_SELO} [&>span]:text-alerta-texto`
 
 // "Aprovado" (verde, com ícone) e "Recusado" (cinza)
 export const AJUSTE_SELO_DECIDIDO = `${AJUSTE_SELO} [&>span]:gap-1`

@@ -56,7 +56,7 @@ function RespostaTarefa() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       <div className="mx-auto flex w-full max-w-[768px] flex-col gap-4 px-6 pt-6 pb-10 sm:pb-12">
         <BotaoVoltar onClick={voltar}>{rotuloVoltar}</BotaoVoltar>
 
@@ -64,7 +64,7 @@ function RespostaTarefa() {
           <p role="status" className="mt-1 py-10 text-center text-[13px] text-secundaria">Carregando resposta...</p>
         ) : erro ? (
           <Card as="section" role="alert" className="mt-1 flex flex-col items-center gap-3 px-5 py-10 text-center">
-            <p className="text-[13px] text-erro">{erro}</p>
+            <p className="text-[13px] text-erro-texto">{erro}</p>
             <Button type="button" variante="suave" larguraAuto className="h-[42px]! rounded-xl! px-4! text-[14px]! font-bold!" onClick={recarregar}>
               Tentar novamente
             </Button>
@@ -93,7 +93,7 @@ function RespostaTarefa() {
 
             <section aria-labelledby="titulo-respostas" className="flex flex-col gap-3">
               <h2 id="titulo-respostas" className="mt-1 flex items-center gap-2 text-[13px] font-bold text-texto">
-                <Atividade className="h-3.5 w-3.5 text-primaria" />
+                <Atividade className="h-3.5 w-3.5 text-primaria-texto" />
                 Respostas ({item.respostas.length})
               </h2>
               {item.respostas.map((resposta, i) => (

@@ -23,7 +23,7 @@ export default function BarraProgresso({ valor, rotulo = 'Progresso' }) {
         aria-valuenow={porcentagem}
         className="h-2 overflow-hidden rounded-full bg-borda"
       >
-        <div className="h-full rounded-full bg-primaria transition-[width] duration-300" style={{ width: `${porcentagem}%` }} />
+        <div className="h-full rounded-full bg-primaria bg-progresso transition-[width] duration-300" style={{ width: `${porcentagem}%` }} />
       </div>
     </div>
   )

@@ -154,7 +154,7 @@ function Pacientes() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       {/* conteúdo com 850px no desktop, centralizado na área ao lado do menu (Figma) */}
       <div className="mx-auto flex w-full max-w-[898px] flex-col px-6 pt-[21px] pb-12 lg:pt-[54px]">
         {/* RF299 e RF302: título e total à esquerda, botão à direita (também no mobile) */}

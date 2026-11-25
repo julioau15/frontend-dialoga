@@ -2,8 +2,10 @@
 // ModalNovoProfissional
 // Pop-up "Novo profissional" (RF320, RF321), como no Figma; quem chama a API é a página (pelas props)
 // ("Novo profissional - Paciente" e "Novo profissional - Paciente-1"):
+//   - "Especialidade *" é uma lista (dropdown) com as especialidades do site (GET /especialidades); só de
+//     escolher a especialidade, aparecem os profissionais aprovados da área e a pessoa escolhe um deles;
 //   - "CPF (opcional)" com máscara 000.000.000-00 e a ajuda "O CPF é usado para verificar...";
-//   - "Nome completo *", "E-mail (opcional)" e "Especialidade *" (campo de texto; com o profissional
+//   - "Nome completo *", "E-mail (opcional)" e "Especialidade *" (lista; com o profissional
 //     achado pelo CPF, vira uma lista com as especialidades cadastradas por ele);
 //   - botões Cancelar e Salvar.
 // Busca por nome ou e-mail: campo "Buscar na plataforma" (GET /profissionais/busca, só aprovados,
@@ -33,6 +35,8 @@ import Modal from '../../../../components/Modal'
 import TextField from '../../../../components/TextField'
 import { useAuth } from '../../../../contexts/AuthContext'
 import { useBuscaProfissional } from '../../../../hooks/useBuscaProfissional'
+import { useProfissionaisPorEspecialidade } from '../../../../hooks/useProfissionaisPorEspecialidade'
+import { listarEspecialidadesRequest } from '../../../../services/cadastroService'
 import { doisPrimeirosNomes, semTitulo } from '../../../../utils/formatadores'
 import { AJUSTE_CAMPO, AJUSTE_MODAL, BOTAO_CLARO, BOTAO_PRINCIPAL } from './estilosProfissionais'
 import { IconeChevronBaixo } from './iconesProfissionais'
@@ -57,13 +61,14 @@ const paraEncontrado = (p) => ({
 // asterisco vermelho dos campos obrigatórios
 const Obrigatorio = ({ children }) => (
   <>
-    {children} <span className="text-erro" aria-hidden="true">*</span>
+    {children} <span className="text-erro-texto" aria-hidden="true">*</span>
   </>
 )
 
 export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontrado, onBuscarCpf, idsVinculados }) {
   const idFormulario = useId() // liga o botão "Salvar" (no rodapé) ao formulário
   const idEspecialidade = useId()
+  const idEspecialidadeLista = useId()
   const refCpf = useRef(null)
   const refNome = useRef(null)
   const refEmail = useRef(null)
@@ -77,8 +82,23 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
   const [enviando, setEnviando] = useState(false)
   const [erroEnvio, setErroEnvio] = useState('')
   const [termoBusca, setTermoBusca] = useState('') // busca por nome ou e-mail
+  const [especialidades, setEspecialidades] = useState([]) // [{ id, especialidade }] do site
+  const [erroEspecialidades, setErroEspecialidades] = useState('')
   const { auth } = useAuth()
   const busca = useBuscaProfissional(encontrado ? '' : termoBusca, auth?.token)
+  // especialidade escolhida na lista -> id usado para listar os profissionais da área
+  const idDaEspecialidade = encontrado ? null : especialidades.find((e) => e.especialidade === dados.especialidade)?.id ?? null
+  const porEspecialidade = useProfissionaisPorEspecialidade(idDaEspecialidade, auth?.token)
+  const daArea = porEspecialidade.resultados.filter((r) => ![...idsVinculados].some((id) => String(id) === String(r.id)))
+
+  // carrega as especialidades que existem no site
+  useEffect(() => {
+    let ativo = true
+    listarEspecialidadesRequest()
+      .then((lista) => { if (ativo) setEspecialidades(lista) })
+      .catch((erro) => { if (ativo) setErroEspecialidades(erro.message) })
+    return () => { ativo = false }
+  }, [])
 
   // fechou o pop-up no meio da busca: cancela a requisição
   useEffect(() => () => buscaCpf.current?.abort(), [])
@@ -144,7 +164,9 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
     setVerificando(false)
     setErroEnvio('')
     setEncontrado(achado)
-    setDados({ cpf: '', nome: achado.nome, email: '', especialidade: achado.especialidades[0] })
+    // mantém a especialidade que a pessoa escolheu na lista, se o profissional atender nela
+    const escolhida = achado.especialidades.includes(dados.especialidade) ? dados.especialidade : achado.especialidades[0]
+    setDados({ cpf: '', nome: achado.nome, email: '', especialidade: escolhida })
     setErros({})
   }
 
@@ -216,6 +238,70 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
         {/* -my-1: o Modal tem 24px de respiro; no Figma são 20px em cima e embaixo */}
         <form id={idFormulario} noValidate onSubmit={enviar}>
           <fieldset disabled={enviando} className="-my-1 flex min-w-0 flex-col gap-5">
+          {/* Especialidade (lista do site): ao escolher, aparecem os profissionais da área */}
+          {!encontrado && (
+            <div className="flex flex-col">
+              <div className="flex flex-col gap-1">
+                <label htmlFor={idEspecialidadeLista} className="text-[14px] font-semibold leading-5 text-texto">
+                  <Obrigatorio>Especialidade</Obrigatorio>
+                </label>
+                <div className="relative">
+                  <select
+                    id={idEspecialidadeLista}
+                    ref={refEspecialidade}
+                    required
+                    value={dados.especialidade}
+                    onChange={(e) => { alterar('especialidade')(e); setErroEnvio('') }}
+                    aria-invalid={erros.especialidade ? true : undefined}
+                    className="h-[46px] w-full cursor-pointer appearance-none rounded-xl border border-borda bg-superficie pr-10 pl-4 text-[14px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
+                  >
+                    <option value="">Selecione uma especialidade</option>
+                    {especialidades.map((esp) => (
+                      <option key={esp.id} value={esp.especialidade}>
+                        {esp.especialidade}
+                      </option>
+                    ))}
+                  </select>
+                  <IconeChevronBaixo
+                    tamanho={14}
+                    className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-texto [stroke-width:2.2]"
+                  />
+                </div>
+                {(erros.especialidade || erroEspecialidades) && (
+                  <p role="alert" className="text-[12px] leading-4 text-erro-texto">{erros.especialidade || erroEspecialidades}</p>
+                )}
+                {!erros.especialidade && !erroEspecialidades && (
+                  <p className="text-[12px] leading-4 text-secundaria">
+                    {idDaEspecialidade
+                      ? porEspecialidade.carregando
+                        ? 'Buscando profissionais da área...'
+                        : porEspecialidade.erro ||
+                          (daArea.length === 0
+                            ? 'Nenhum profissional disponível nesta especialidade. Preencha os dados abaixo para adicionar um.'
+                            : 'Escolha um profissional da lista ou preencha os dados abaixo.')
+                      : 'Escolha a especialidade para ver os profissionais da área.'}
+                  </p>
+                )}
+              </div>
+              {daArea.length > 0 && (
+                <ul aria-label="Profissionais da especialidade" className="mt-2 flex max-h-48 flex-col overflow-y-auto rounded-xl border border-borda">
+                  {daArea.map((r) => (
+                    <li key={r.id} className="border-b border-borda last:border-b-0">
+                      <button
+                        type="button"
+                        onClick={() => escolherDaBusca(r)}
+                        className="flex w-full cursor-pointer flex-col items-start px-3.5 py-2.5 text-left hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primaria"
+                      >
+                        <span className="text-[14px] font-semibold text-texto">{r.nome_completo}</span>
+                        <span className="text-[12px] text-secundaria">{r.especialidades || 'Especialidade não informada'}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
           {/* busca por nome ou e-mail (só aparece enquanto nenhum profissional foi escolhido) */}
           {!encontrado && (
             <div className="flex flex-col">
@@ -296,12 +382,12 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
                   <p className="break-words text-[14px] font-semibold leading-5 text-texto">{encontrado.nome}</p>
                   <p className="text-[12px] leading-4 text-secundaria">{encontrado.especialidades.join(', ')}</p>
                 </div>
-                <IconeCheck tamanho={16} className="text-sucesso-escura [stroke-width:1.8]" />
+                <IconeCheck tamanho={16} className="text-sucesso-escura-texto [stroke-width:1.8]" />
                 <span className="sr-only">Profissional encontrado na plataforma</span>
                 <button
                   type="button"
                   onClick={limparEscolha}
-                  className="cursor-pointer text-[12px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+                  className="cursor-pointer text-[12px] font-semibold text-primaria-texto hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
                 >
                   Trocar
                 </button>
@@ -337,9 +423,8 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
             />
           </div>
 
-          {/* Especialidade: profissional achado pelo CPF -> lista com as especialidades cadastradas
-              por ele; senão, campo de texto livre */}
-          {encontrado ? (
+          {/* Especialidade do profissional achado: lista com as que ele cadastrou */}
+          {encontrado && (
             <div className="flex flex-col gap-1">
               <label htmlFor={idEspecialidade} className="text-[14px] font-semibold leading-5 text-texto">
                 <Obrigatorio>Especialidade</Obrigatorio>
@@ -351,7 +436,7 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
                   required
                   value={dados.especialidade}
                   onChange={alterar('especialidade')}
-                  className="h-[46px] w-full cursor-pointer appearance-none rounded-xl border border-borda bg-branco pr-10 pl-4 text-[14px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
+                  className="h-[46px] w-full cursor-pointer appearance-none rounded-xl border border-borda bg-superficie pr-10 pl-4 text-[14px] text-texto outline-0 transition-[border-color,box-shadow] duration-200 focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)]"
                 >
                   {encontrado.especialidades.map((esp) => (
                     <option key={esp} value={esp}>
@@ -365,25 +450,11 @@ export default function ModalNovoProfissional({ onFechar, onAdicionar, onEncontr
                 />
               </div>
             </div>
-          ) : (
-            <div className={AJUSTE_CAMPO}>
-              <TextField
-                ref={refEspecialidade}
-                label={<Obrigatorio>Especialidade</Obrigatorio>}
-                placeholder="Ex: Psicologia Clínica, Psiquiatria, TCC"
-                required
-                autoComplete="off"
-                maxLength={LIMITES_PROFISSIONAL.ESPECIALIDADE}
-                value={dados.especialidade}
-                onChange={alterar('especialidade')}
-                erro={erros.especialidade}
-              />
-            </div>
           )}
 
           {/* erro da API ao salvar (o pop-up continua aberto para tentar de novo) */}
           {erroEnvio && (
-            <p role="alert" className="-mt-2 rounded-xl border border-erro-borda bg-erro-fundo px-3.5 py-2.5 text-[13px] leading-5 text-erro">
+            <p role="alert" className="-mt-2 rounded-xl border border-erro-borda bg-erro-fundo px-3.5 py-2.5 text-[13px] leading-5 text-erro-texto">
               {erroEnvio}
             </p>
           )}

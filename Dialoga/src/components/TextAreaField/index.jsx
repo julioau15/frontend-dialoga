@@ -20,7 +20,7 @@ export default function TextAreaField({ label, erro, ajuda, ...textareaProps }) 
       <textarea
         id={id}
         rows={3}
-        className={`w-full min-h-[88px] px-3 py-2.5 bg-branco border rounded-lg resize-none outline-0 text-[12px] font-normal leading-normal text-texto placeholder:text-texto-alfa-50 transition-[border-color,box-shadow] duration-200 ease-[ease] focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] ${erro ? 'border-erro' : 'border-borda'}`}
+        className={`w-full min-h-[88px] px-3 py-2.5 bg-superficie border rounded-lg resize-none outline-0 text-[12px] font-normal leading-normal text-texto placeholder:text-texto-alfa-50 transition-[border-color,box-shadow] duration-200 ease-[ease] focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] ${erro ? 'border-erro' : 'border-borda'}`}
         aria-invalid={!!erro}
         aria-describedby={descricao}
         {...textareaProps}
@@ -28,7 +28,7 @@ export default function TextAreaField({ label, erro, ajuda, ...textareaProps }) 
 
       {ajuda && <span id={`${id}-ajuda`} className="text-[10px] text-secundaria">{ajuda}</span>}
 
-      {erro && <span id={`${id}-erro`} className="text-[11px] text-erro">{erro}</span>}
+      {erro && <span id={`${id}-erro`} className="text-[11px] text-erro-texto">{erro}</span>}
     </div>
   )
 }

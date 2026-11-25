@@ -26,8 +26,8 @@ export default function SeletorPeriodo({ opcoes, valor, onMudar }) {
               onClick={() => onMudar(opcao.id)}
               className={`h-8 cursor-pointer rounded-xl px-[15px] text-[12px] font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
                 marcada
-                  ? 'bg-primaria text-branco'
-                  : 'bg-branco text-secundaria shadow-[0_0_0_2px_var(--color-borda)] hover:bg-fundo-suave-2'
+                  ? 'bg-primaria bg-botao text-branco'
+                  : 'bg-superficie text-secundaria shadow-[0_0_0_2px_var(--color-borda)] hover:bg-fundo-suave-2'
               }`}
             >
               {opcao.rotulo}

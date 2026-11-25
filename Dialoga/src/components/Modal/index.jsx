@@ -35,7 +35,7 @@ export default function Modal({ aberto, titulo, onFechar, children, largura = 'm
     <dialog
       ref={ref}
       aria-labelledby={idTitulo}
-      className={`m-auto w-[calc(100%-2rem)] ${largura} p-0 bg-branco text-texto border border-borda rounded-2xl shadow-[0_8px_24px_var(--color-sombra-media)] backdrop:bg-overlay backdrop:backdrop-blur-[3px]`}
+      className={`m-auto w-[calc(100%-2rem)] ${largura} p-0 bg-superficie text-texto border border-borda rounded-2xl shadow-[0_8px_24px_var(--color-sombra-media)] backdrop:bg-overlay backdrop:backdrop-blur-[3px]`}
       onClose={solicitarFechamento}
       onCancel={(evento) => {
         if (bloquearFechamento) evento.preventDefault()

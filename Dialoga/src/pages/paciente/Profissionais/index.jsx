@@ -125,7 +125,7 @@ function Profissionais() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       {/* conteúdo com 720px no desktop, centralizado na área ao lado do menu (Figma) */}
       <div className="mx-auto flex w-full max-w-[770px] flex-col px-6 pt-[21px] pb-12 lg:pt-[78px]">
         {/* título e subtítulo à esquerda, botão à direita (também no mobile) */}

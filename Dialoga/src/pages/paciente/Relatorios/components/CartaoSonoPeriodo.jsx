@@ -70,7 +70,7 @@ export default function CartaoSonoPeriodo({ registros: todos }) {
               <dd>
                 {horas.length ? (
                   <>
-                    <strong className="text-primaria">{mediaSono}h</strong>/dia
+                    <strong className="text-primaria-texto">{mediaSono}h</strong>/dia
                   </>
                 ) : (
                   '—'
@@ -79,13 +79,13 @@ export default function CartaoSonoPeriodo({ registros: todos }) {
             </div>
             <div className="mt-2.5 flex gap-1">
               <dt>Mínimo:</dt>
-              <dd className={horas.length ? `font-bold ${foraDoRecomendado(minimo) ? 'text-erro' : 'text-sucesso'}` : ''}>
+              <dd className={horas.length ? `font-bold ${foraDoRecomendado(minimo) ? 'text-erro-texto' : 'text-sucesso-texto'}` : ''}>
                 {horas.length ? `${minimo}h` : '—'}
               </dd>
             </div>
             <div className="mt-1 flex gap-1">
               <dt>Máximo:</dt>
-              <dd className={horas.length ? `font-bold ${foraDoRecomendado(maximo) ? 'text-erro' : 'text-sucesso'}` : ''}>
+              <dd className={horas.length ? `font-bold ${foraDoRecomendado(maximo) ? 'text-erro-texto' : 'text-sucesso-texto'}` : ''}>
                 {horas.length ? `${maximo}h` : '—'}
               </dd>
             </div>
@@ -93,7 +93,7 @@ export default function CartaoSonoPeriodo({ registros: todos }) {
 
           {/* RF201 / RN75: alerta de sono abaixo do recomendado */}
           {alerta && (
-            <p role="alert" className="mt-[9px] rounded-lg border border-alerta-borda-suave bg-alerta-fundo px-2.5 py-2 text-[12px] leading-[15px] text-alerta">
+            <p role="alert" className="mt-[9px] rounded-lg border border-alerta-borda-suave bg-alerta-fundo px-2.5 py-2 text-[12px] leading-[15px] text-alerta-texto">
               <span aria-hidden="true">⚠️ </span>
               Abaixo do recomendado ({SONO_MINIMO}–{SONO_MAXIMO}h)
             </p>

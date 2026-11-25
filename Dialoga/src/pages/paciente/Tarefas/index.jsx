@@ -162,7 +162,7 @@ function Tarefas() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       <div className="mx-auto flex w-full max-w-[768px] flex-col gap-4 px-5 pt-6 pb-8 sm:gap-6 sm:px-6 sm:pt-14 sm:pb-12">
         {tarefaAberta ? (
           <FormularioTarefa
@@ -194,16 +194,16 @@ function Tarefas() {
 
         <div id={ID_PAINEL} role="tabpanel" aria-labelledby={`aba-${abaAtiva}`} className="flex flex-col gap-3">
           {carregando ? (
-            <p role="status" className="rounded-xl bg-branco px-4 py-8 text-center text-[13px] text-secundaria">Carregando tarefas...</p>
+            <p role="status" className="rounded-xl bg-superficie px-4 py-8 text-center text-[13px] text-secundaria">Carregando tarefas...</p>
           ) : erro ? (
-            <div role="alert" className="flex flex-col items-center gap-3 rounded-xl bg-branco px-4 py-8 text-center">
-              <p className="text-[13px] text-erro">{erro}</p>
+            <div role="alert" className="flex flex-col items-center gap-3 rounded-xl bg-superficie px-4 py-8 text-center">
+              <p className="text-[13px] text-erro-texto">{erro}</p>
               <Button type="button" variante="suave" larguraAuto className="px-4 rounded-xl! text-[14px]!" onClick={recarregar}>Tentar novamente</Button>
             </div>
           ) : visiveis.length > 0 ? (
             visiveis.map((tarefa) => <CartaoTarefa key={tarefa.id} tarefa={tarefa} onAcao={aoAcionar} onVer={verAutotarefa} />)
           ) : (
-            <p className="rounded-xl bg-branco px-4 py-8 text-center text-[13px] text-secundaria">Nenhuma tarefa nesta aba.</p>
+            <p className="rounded-xl bg-superficie px-4 py-8 text-center text-[13px] text-secundaria">Nenhuma tarefa nesta aba.</p>
           )}
         </div>
         </>

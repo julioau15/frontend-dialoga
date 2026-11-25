@@ -105,7 +105,7 @@ export default function ItemPaciente({ paciente, onAnotacao, onResponder, ocupad
         {paciente.proximaConsulta && (
           <div className="mr-4 hidden text-right lg:block">
             <p className="text-[12px] leading-4 text-secundaria">Próxima consulta</p>
-            <p className="text-[12px] font-bold leading-4 text-primaria">{formatarDataBR(paciente.proximaConsulta)}</p>
+            <p className="text-[12px] font-bold leading-4 text-primaria-texto">{formatarDataBR(paciente.proximaConsulta)}</p>
           </div>
         )}
 

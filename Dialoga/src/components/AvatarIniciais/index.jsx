@@ -11,7 +11,7 @@ import { iniciais } from '../../utils/formatadores'
 
 // Classes escritas por extenso para o Tailwind encontrá-las
 const TONS = {
-  lilas: 'bg-borda-forte text-primaria',
+  lilas: 'bg-borda-forte text-primaria-texto',
   rosa: 'bg-erro-fundo-2 text-avatar-vermelho',
 }
 

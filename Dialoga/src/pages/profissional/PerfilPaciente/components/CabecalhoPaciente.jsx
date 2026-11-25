@@ -28,7 +28,7 @@ const AJUSTE_AVATAR =
 
 // "Remover paciente": botão de texto vermelho discreto
 const BOTAO_REMOVER =
-  'flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-[12px] font-semibold text-erro transition-colors duration-200 hover:bg-erro-fundo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
+  'flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-[12px] font-semibold text-erro-texto transition-colors duration-200 hover:bg-erro-fundo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
 // botão de acesso ou o selo de pedido enviado (RF223 e RF226)
 function Acesso({ acesso, onSolicitarAcesso }) {
@@ -37,7 +37,7 @@ function Acesso({ acesso, onSolicitarAcesso }) {
       <button
         type="button"
         onClick={onSolicitarAcesso}
-        className="h-[34px] shrink-0 cursor-pointer whitespace-nowrap rounded-xl border border-borda-forte bg-fundo-card px-3 text-[12px] font-semibold text-primaria transition-colors duration-200 hover:bg-borda focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+        className="h-[34px] shrink-0 cursor-pointer whitespace-nowrap rounded-xl border border-borda-forte bg-fundo-card px-3 text-[12px] font-semibold text-primaria-texto transition-colors duration-200 hover:bg-borda focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
       >
         Solicitar acesso
       </button>
@@ -45,7 +45,7 @@ function Acesso({ acesso, onSolicitarAcesso }) {
   }
   if (acesso === 'pendente') {
     return (
-      <span className="inline-flex h-[30px] shrink-0 items-center whitespace-nowrap rounded-full border border-alerta-borda bg-alerta-fundo px-3 text-[12px] font-semibold text-alerta-escura">
+      <span className="inline-flex h-[30px] shrink-0 items-center whitespace-nowrap rounded-full border border-alerta-borda bg-alerta-fundo px-3 text-[12px] font-semibold text-alerta-escura-texto">
         Solicitação enviada
       </span>
     )
@@ -99,7 +99,7 @@ export default function CabecalhoPaciente({ paciente, onSolicitarAcesso, onRemov
             <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] leading-4 text-secundaria">
               <span>Desde {formatarMesAnoExtenso(paciente.desde)}</span>
               {paciente.proximaConsulta && (
-                <span className="flex items-center gap-1.5 font-semibold text-primaria">
+                <span className="flex items-center gap-1.5 font-semibold text-primaria-texto">
                   <IconeCalendarioPequeno tamanho={11} className="[stroke-width:1.8]" />
                   Próx. {formatarDataBR(paciente.proximaConsulta)}
                 </span>

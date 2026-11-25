@@ -31,7 +31,7 @@ export default function CardAtendimentosHoje({ atendimentos }) {
             <p className="truncate text-sm font-medium text-texto">{a.nome_paciente}</p>
             <p className="truncate text-xs text-secundaria">{a.titulo}</p>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-md bg-fundo-card px-2 py-1 text-xs font-semibold text-primaria">
+          <span className="inline-flex items-center gap-1 rounded-md bg-fundo-card px-2 py-1 text-xs font-semibold text-primaria-texto">
             <Relogio className="h-3 w-3" />
             {a.hora}
           </span>

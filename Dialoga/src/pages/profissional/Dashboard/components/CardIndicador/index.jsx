@@ -11,13 +11,13 @@
 import { Link } from 'react-router-dom'
 
 const TONS = {
-  primaria: 'bg-fundo-card text-primaria',
-  info: 'bg-info-fundo text-info',
-  sucesso: 'bg-sucesso-fundo text-sucesso',
-  alerta: 'bg-alerta-fundo text-alerta',
+  primaria: 'bg-fundo-card text-primaria-texto',
+  info: 'bg-info-fundo text-info-texto',
+  sucesso: 'bg-sucesso-fundo text-sucesso-texto',
+  alerta: 'bg-alerta-fundo text-alerta-texto',
 }
 
-const CLASSES_CARD = 'rounded-xl border border-borda bg-branco p-4 shadow-sm'
+const CLASSES_CARD = 'rounded-xl border border-borda bg-superficie p-4 shadow-sm'
 const CLASSES_LINK =
   'block no-underline transition-[border-color,box-shadow] duration-200 hover:border-primaria hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 

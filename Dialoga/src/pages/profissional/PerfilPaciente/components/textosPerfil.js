@@ -7,9 +7,9 @@
 // faixas dos indicadores (RF230): verde = Positivo, roxo = Moderado, vermelho = Atenção
 // (classes escritas por extenso para o Tailwind encontrá-las)
 export const FAIXAS = {
-  positivo: { rotulo: 'Positivo', fundo: 'bg-sucesso' },
-  moderado: { rotulo: 'Moderado', fundo: 'bg-primaria' },
-  atencao: { rotulo: 'Atenção', fundo: 'bg-erro' },
+  positivo: { rotulo: 'Positivo', fundo: 'bg-sucesso bg-barra-positivo' },
+  moderado: { rotulo: 'Moderado', fundo: 'bg-primaria bg-barra-moderado' },
+  atencao: { rotulo: 'Atenção', fundo: 'bg-erro bg-barra-atencao' },
 }
 
 // status das tarefas do Histórico (tom do componente Selo)

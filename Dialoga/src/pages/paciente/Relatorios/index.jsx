@@ -42,7 +42,7 @@ function BotaoExportar({ onExportar, desabilitado = false, gerando = false }) {
       onClick={onExportar}
       disabled={desabilitado || gerando}
       aria-busy={gerando}
-      className="disabled:cursor-not-allowed disabled:opacity-60 inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-borda bg-branco px-3 text-[13px] font-semibold text-texto shadow-sm hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria xl:h-[42px] xl:rounded-xl xl:px-4 xl:text-[14px]"
+      className="disabled:cursor-not-allowed disabled:opacity-60 inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-borda bg-superficie px-3 text-[13px] font-semibold text-texto shadow-sm hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria xl:h-[42px] xl:rounded-xl xl:px-4 xl:text-[14px]"
     >
       <span aria-hidden="true" className="text-[12px] leading-none">
         📄
@@ -98,7 +98,7 @@ function Relatorios() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       {/* em 1440px: 874px de conteúdo a 141px do menu, como no frame */}
       <div className="mx-auto w-full max-w-[770px] px-[21px] pt-[17px] pb-12 sm:px-6 xl:max-w-[922px] xl:pt-[78px] min-[1440px]:max-w-[1184px]! min-[1440px]:pr-[169px]! min-[1440px]:pl-[141px]!">
         {/* RF189 e RF211: título à esquerda e "Exportar Relatório" à direita */}
@@ -112,7 +112,7 @@ function Relatorios() {
         </header>
 
         {erroExportar && (
-          <p role="alert" className="mt-3 text-[13px] text-erro xl:pl-[33px]">
+          <p role="alert" className="mt-3 text-[13px] text-erro-texto xl:pl-[33px]">
             {erroExportar}
           </p>
         )}
@@ -122,7 +122,7 @@ function Relatorios() {
         )}
         {rel.erro && (
           <div role="alert" className="mt-4 flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-4 xl:ml-[33px]">
-            <p className="text-[13px] text-erro">{rel.erro}</p>
+            <p className="text-[13px] text-erro-texto">{rel.erro}</p>
             <Button type="button" variante="suave" larguraAuto onClick={rel.recarregar}>
               Tentar novamente
             </Button>

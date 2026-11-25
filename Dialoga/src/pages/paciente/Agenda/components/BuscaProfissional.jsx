@@ -55,7 +55,7 @@ export default function BuscaProfissional({ value, profissionais, onChange, onEs
   return (
     <div className="relative">
       <TextField
-        label={<>Profissional <span className="text-erro">*</span></>}
+        label={<>Profissional <span className="text-erro-texto">*</span></>}
         icone={<IconeBusca />}
         placeholder="Buscar profissional pelo nome"
         value={value}
@@ -82,7 +82,7 @@ export default function BuscaProfissional({ value, profissionais, onChange, onEs
           id={idLista}
           role="listbox"
           aria-label="Profissionais encontrados"
-          className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-borda bg-branco py-1 shadow-[0_4px_12px_var(--color-sombra-media)]"
+          className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-borda bg-superficie py-1 shadow-[0_4px_12px_var(--color-sombra-media)]"
         >
           {sugestoes.map((p, i) => (
             <li
@@ -106,7 +106,7 @@ export default function BuscaProfissional({ value, profissionais, onChange, onEs
       )}
 
       {semResultado && (
-        <p className="absolute inset-x-0 top-full z-10 mt-1 rounded-lg border border-borda bg-branco px-3 py-2 text-[12px] text-secundaria shadow-[0_4px_12px_var(--color-sombra-media)]">
+        <p className="absolute inset-x-0 top-full z-10 mt-1 rounded-lg border border-borda bg-superficie px-3 py-2 text-[12px] text-secundaria shadow-[0_4px_12px_var(--color-sombra-media)]">
           {profissionais.length === 0
             ? 'Você ainda não tem profissional com acompanhamento ativo.'
             : 'Nenhum profissional encontrado'}

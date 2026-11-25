@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import Icone from '../../../../../components/Icone'
 
 const CARD =
-  'block rounded-xl border border-borda bg-branco p-4 shadow-sm no-underline transition-[border-color,box-shadow] duration-200 hover:border-primaria hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
+  'block rounded-xl border border-borda bg-superficie p-4 shadow-sm no-underline transition-[border-color,box-shadow] duration-200 hover:border-primaria hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
 export default function ResumoCards({ itens }) {
   return (

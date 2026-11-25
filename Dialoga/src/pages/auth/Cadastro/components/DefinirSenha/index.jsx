@@ -92,7 +92,7 @@ export default function DefinirSenha({
         />
 
         {erroGeral && (
-          <p className="px-3 py-2.5 border border-erro-borda rounded-lg bg-erro-fundo text-[12px] text-erro" role="alert">
+          <p className="px-3 py-2.5 border border-erro-borda rounded-lg bg-erro-fundo text-[12px] text-erro-texto" role="alert">
             {erroGeral}
           </p>
         )}

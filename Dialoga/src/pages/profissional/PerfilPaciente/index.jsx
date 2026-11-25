@@ -51,7 +51,7 @@ const AJUSTE_ABAS = [
 function Moldura({ children, fora }) {
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       <div className="mx-auto flex w-full max-w-[770px] flex-col gap-[15px] px-6 pt-6 pb-12 lg:pt-[24px]">{children}</div>
       {fora}
     </div>
@@ -101,7 +101,7 @@ function Perfil({ id }) {
           <p role="status" className="text-[13px] text-secundaria">Carregando perfil...</p>
         ) : (
           <div role="alert" className="flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-4">
-            <p className="text-[13px] text-erro">{dados.erro}</p>
+            <p className="text-[13px] text-erro-texto">{dados.erro}</p>
             <Button type="button" variante="suave" larguraAuto onClick={dados.recarregar}>
               Tentar novamente
             </Button>

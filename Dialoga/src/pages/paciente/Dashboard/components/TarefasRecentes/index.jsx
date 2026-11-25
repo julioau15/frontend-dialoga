@@ -7,9 +7,9 @@
 import CardLista, { LinhaLink } from '../CardLista'
 
 const STATUS = {
-  andamento: { texto: 'Em andamento', classe: 'bg-info-fundo text-info' },
-  pendente: { texto: 'Pendente', classe: 'bg-fundo-card text-primaria' },
-  concluida: { texto: 'Concluída', classe: 'bg-sucesso-fundo text-sucesso' },
+  andamento: { texto: 'Em andamento', classe: 'bg-info-fundo text-info-texto' },
+  pendente: { texto: 'Pendente', classe: 'bg-fundo-card text-primaria-texto' },
+  concluida: { texto: 'Concluída', classe: 'bg-sucesso-fundo text-sucesso-texto' },
 }
 
 export default function TarefasRecentes({ tarefas }) {

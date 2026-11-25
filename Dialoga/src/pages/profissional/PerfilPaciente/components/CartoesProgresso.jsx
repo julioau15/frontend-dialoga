@@ -30,14 +30,14 @@ function Barra({ percentual, cor, altura, rotulo }) {
 // RF234: tarefas respondidas e em andamento sobre o total enviado
 export function CartaoConclusao({ conclusao }) {
   const linhas = [
-    { id: 'respondida', rotulo: 'Respondida', quantidade: conclusao.respondidas, cor: 'bg-sucesso' },
-    { id: 'andamento', rotulo: 'Em andamento', quantidade: conclusao.emAndamento, cor: 'bg-info-clara' },
+    { id: 'respondida', rotulo: 'Respondida', quantidade: conclusao.respondidas, cor: 'bg-sucesso bg-linear-to-r from-[#34D399] to-sucesso' },
+    { id: 'andamento', rotulo: 'Em andamento', quantidade: conclusao.emAndamento, cor: 'bg-info-clara bg-linear-to-r from-[#93C5FD] to-info-clara' },
   ]
 
   return (
     <Card as="section" aria-label="Conclusão de tarefas" className="px-5 pt-[21px] pb-[21px]">
       <CabecalhoCartao
-        icone={<IconeQuadradoCheck tamanho={15} className="text-primaria" />}
+        icone={<IconeQuadradoCheck tamanho={15} className="text-primaria-texto" />}
         titulo="Conclusão de tarefas"
         subtitulo={`Total de tarefas enviadas: ${conclusao.total}`}
       />
@@ -87,10 +87,10 @@ export function CartaoAderencia({ aderencia }) {
               <div className="flex justify-between gap-3 text-[14px] leading-5">
                 <span className="text-texto">{r.nome}</span>
                 {/* tom escuro do verde/laranja: texto de 14px passa no contraste mínimo (AA) */}
-                <span className={`font-bold ${bom ? 'text-sucesso-escura' : 'text-alerta-escura'}`}>{r.percentual}%</span>
+                <span className={`font-bold ${bom ? 'text-sucesso-escura-texto' : 'text-alerta-escura-texto'}`}>{r.percentual}%</span>
               </div>
               <div className="mt-1.5">
-                <Barra percentual={r.percentual} cor={bom ? 'bg-sucesso' : 'bg-alerta'} altura="h-2.5" rotulo={`${r.nome}: ${r.percentual}%`} />
+                <Barra percentual={r.percentual} cor={bom ? 'bg-sucesso bg-linear-to-r from-[#34D399] to-sucesso' : 'bg-alerta bg-linear-to-r from-[#FBBF24] to-alerta'} altura="h-2.5" rotulo={`${r.nome}: ${r.percentual}%`} />
               </div>
             </li>
           )

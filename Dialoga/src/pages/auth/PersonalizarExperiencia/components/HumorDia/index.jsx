@@ -40,7 +40,7 @@ function Grupo({ titulo, erro, children, className = 'flex flex-wrap gap-2' }) {
     <fieldset className="min-w-0 p-0 m-0 border-0 text-left" aria-describedby={erro ? `${id}-erro` : undefined}>
       <legend className="mb-2 p-0 text-[11px] font-bold text-texto">{titulo}</legend>
       <div className={className}>{children}</div>
-      {erro && <span id={`${id}-erro`} className="block mt-1.5 text-[11px] text-erro">{erro}</span>}
+      {erro && <span id={`${id}-erro`} className="block mt-1.5 text-[11px] text-erro-texto">{erro}</span>}
     </fieldset>
   )
 }
@@ -48,7 +48,7 @@ function Grupo({ titulo, erro, children, className = 'flex flex-wrap gap-2' }) {
 export default function HumorDia({ valores, erros = {}, erroGeral, enviando, onAlterarCampo, onSalvar, onAgoraNao, onVoltar }) {
   return (
     <form className="flex flex-col items-center" onSubmit={onSalvar} noValidate>
-      <img className="h-[150px] w-[107px] object-contain" src={ilustracao} width="107" height="150" alt="" />
+      <img className="ilustracao-tema h-[150px] w-[107px] object-contain" src={ilustracao} width="107" height="150" alt="" />
 
       <h1 className="mt-4 text-[20px] font-extrabold text-center text-texto">Como você está hoje?</h1>
       <p className="mt-2 max-w-[360px] text-[13px] text-center text-secundaria">
@@ -128,7 +128,7 @@ export default function HumorDia({ valores, erros = {}, erroGeral, enviando, onA
 
       {/* Erro geral: campos faltando ou falha ao salvar na API */}
       {erroGeral && (
-        <p role="alert" className="w-full mt-4 text-[11px] text-center text-erro">{erroGeral}</p>
+        <p role="alert" className="w-full mt-4 text-[11px] text-center text-erro-texto">{erroGeral}</p>
       )}
 
       <div className="w-full mt-6">

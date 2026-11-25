@@ -22,7 +22,7 @@ export default function SeletorVisao({ visao, onMudar }) {
             aria-selected={ativa}
             onClick={() => onMudar(opcao.id)}
             className={`h-6 rounded-md px-2.5 text-[10px] font-semibold cursor-pointer transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primaria ${
-              ativa ? 'bg-branco text-primaria shadow-sm' : 'text-secundaria-escura'
+              ativa ? 'bg-superficie text-primaria-texto shadow-sm' : 'text-secundaria-escura'
             }`}
           >
             {opcao.rotulo}

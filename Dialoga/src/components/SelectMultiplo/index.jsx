@@ -62,7 +62,7 @@ export default function SelectMultiplo({
           aria-expanded={aberto}
           aria-labelledby={ariaLabelledby}
           aria-invalid={!!erro}
-          className={`flex items-center gap-2 w-full h-10 px-3 bg-branco border rounded-lg text-left cursor-pointer transition-[border-color,box-shadow] duration-200 ease-[ease] focus-visible:outline-0 focus-visible:border-primaria focus-visible:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] disabled:opacity-60 disabled:cursor-not-allowed ${
+          className={`flex items-center gap-2 w-full h-10 px-3 bg-superficie border rounded-lg text-left cursor-pointer transition-[border-color,box-shadow] duration-200 ease-[ease] focus-visible:outline-0 focus-visible:border-primaria focus-visible:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] disabled:opacity-60 disabled:cursor-not-allowed ${
             erro ? 'border-erro' : aberto ? 'border-primaria' : 'border-borda'
           }`}
           onClick={() => setAberto((a) => !a)}
@@ -93,7 +93,7 @@ export default function SelectMultiplo({
           <ul
             role="listbox"
             aria-multiselectable="true"
-            className="absolute z-20 left-0 right-0 mt-1 max-h-60 overflow-y-auto p-1 bg-branco border border-borda rounded-lg shadow-[0_4px_12px_var(--color-sombra)]"
+            className="absolute z-20 left-0 right-0 mt-1 max-h-60 overflow-y-auto p-1 bg-superficie border border-borda rounded-lg shadow-[0_4px_12px_var(--color-sombra)]"
           >
             {opcoes.map(({ id, texto }) => {
               const marcada = selecionados.includes(id)
@@ -102,13 +102,13 @@ export default function SelectMultiplo({
                   <button
                     type="button"
                     className={`flex items-center gap-2 w-full px-2.5 py-2 rounded-md text-left text-[12px] cursor-pointer hover:bg-fundo-suave-2 focus-visible:outline-0 focus-visible:bg-fundo-suave-2 ${
-                      marcada ? 'text-primaria font-semibold' : 'text-texto'
+                      marcada ? 'text-primaria-texto font-semibold' : 'text-texto'
                     }`}
                     onClick={() => onAlternar?.(id)}
                   >
                     <span
                       className={`grid place-items-center w-4 h-4 shrink-0 rounded border text-[10px] leading-none ${
-                        marcada ? 'bg-primaria border-primaria text-branco' : 'bg-branco border-borda-forte'
+                        marcada ? 'bg-primaria border-primaria text-branco' : 'bg-superficie border-borda-forte'
                       }`}
                       aria-hidden="true"
                     >
@@ -129,13 +129,13 @@ export default function SelectMultiplo({
           {marcadas.map(({ id, texto }) => (
             <li
               key={id}
-              className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-fundo-card border border-borda-forte rounded-full text-[11px] font-medium text-primaria"
+              className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-fundo-card border border-borda-forte rounded-full text-[11px] font-medium text-primaria-texto"
             >
               {texto}
               <button
                 type="button"
                 aria-label={`Remover ${texto}`}
-                className="grid place-items-center w-4 h-4 p-0 border-0 rounded-full bg-transparent text-primaria cursor-pointer hover:bg-primaria-alfa-20"
+                className="grid place-items-center w-4 h-4 p-0 border-0 rounded-full bg-transparent text-primaria-texto cursor-pointer hover:bg-primaria-alfa-20"
                 onClick={() => onAlternar?.(id)}
               >
                 ×

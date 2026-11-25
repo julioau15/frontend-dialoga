@@ -15,7 +15,7 @@ import Button from '../Button'
 import { IconeCheck } from '../Icones'
 
 const CLASSE_ENGRENAGEM =
-  'h-9 w-9 shrink-0 place-items-center rounded-lg border border-borda bg-branco text-secundaria cursor-pointer hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
+  'h-9 w-9 shrink-0 place-items-center rounded-lg border border-borda bg-superficie text-secundaria cursor-pointer hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
 // Ícone de engrenagem (traço, estilo Lucide)
 function IconeEngrenagem() {
@@ -48,7 +48,7 @@ export default function CabecalhoNotificacoes({ naoLidas, onMarcarTodas, rotaCon
             larguraAuto
             carregando={salvando}
             onClick={onMarcarTodas}
-            className="h-9! gap-1.5! px-3! text-[11px]! text-primaria!"
+            className="h-9! gap-1.5! px-3! text-[11px]! text-primaria-texto!"
           >
             <IconeCheck tamanho={12} />
             {salvando ? 'Salvando...' : 'Marcar todas'}

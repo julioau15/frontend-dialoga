@@ -35,7 +35,7 @@ function Grupo({ titulo, erro, className = 'flex flex-wrap gap-2', children }) {
     <fieldset className="m-0 min-w-0 border-0 p-0 text-left">
       <legend className="mb-2 p-0 text-[13px] font-semibold text-texto">{titulo}</legend>
       <div className={className}>{children}</div>
-      {erro && <p className="mt-1.5 text-[12px] text-erro">{erro}</p>}
+      {erro && <p className="mt-1.5 text-[12px] text-erro-texto">{erro}</p>}
     </fieldset>
   )
 }
@@ -119,7 +119,7 @@ function Formulario({ token, onFechar, onSalvo }) {
         {situacao.estado === 'verificando' && (
           <p role="status" className="text-[14px] text-secundaria">Verificando o registro de hoje...</p>
         )}
-        {situacao.estado === 'erro' && <p role="alert" className="text-[14px] text-erro">{situacao.mensagem}</p>}
+        {situacao.estado === 'erro' && <p role="alert" className="text-[14px] text-erro-texto">{situacao.mensagem}</p>}
         {situacao.estado === 'ja_registrado' && (
           <p role="status" className="text-[14px] leading-5 text-secundaria">
             Você já registrou seu humor hoje. Volte amanhã para um novo registro. 💜
@@ -189,7 +189,7 @@ function Formulario({ token, onFechar, onSalvo }) {
               ))}
             </Grupo>
 
-            {erroGeral && <p role="alert" className="text-[12px] text-erro">{erroGeral}</p>}
+            {erroGeral && <p role="alert" className="text-[12px] text-erro-texto">{erroGeral}</p>}
           </div>
         )}
       </Modal>

@@ -27,7 +27,7 @@ export default function ConfiguracoesNotificacaoPaciente() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave px-4 py-6 sm:px-8">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina px-4 py-6 sm:px-8">
       <section className="mx-auto w-full max-w-[624px] py-2 lg:py-6">
         {/* Cabeçalho com a seta Voltar acima do título */}
         <header>

@@ -12,7 +12,7 @@ import ilustracao from '../../../../../assets/auth/iconAnalisePerfilProfissional
 
 export default function PerfilEmAnalise({ onCiente }) {
   return (
-    <section className="flex flex-col items-center p-6 bg-branco border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)] text-center">
+    <section className="flex flex-col items-center p-6 bg-superficie border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)] text-center">
       <img className="w-[156px] h-[110px]" src={ilustracao} alt="" />
 
       <h1 className="mt-3 max-w-[280px] text-[20px] font-extrabold leading-tight text-texto">
@@ -29,7 +29,7 @@ export default function PerfilEmAnalise({ onCiente }) {
 
       <p className="mt-4 text-[12px] text-secundaria">
         Voltar para o{' '}
-        <Link className="text-primaria font-bold no-underline hover:underline" to="/login">login</Link>
+        <Link className="text-primaria-texto font-bold no-underline hover:underline" to="/login">login</Link>
       </p>
     </section>
   )

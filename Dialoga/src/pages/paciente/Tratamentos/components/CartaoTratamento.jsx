@@ -69,7 +69,7 @@ export default function CartaoTratamento({ tratamento, onEditar, onExcluir, indi
             )}
             {/* verde escuro: texto de 12px passa no contraste mínimo (AA) */}
             {lembrete && (
-              <p className="inline-flex items-center gap-1 text-[12px] font-semibold text-sucesso-escura">
+              <p className="inline-flex items-center gap-1 text-[12px] font-semibold text-sucesso-escura-texto">
                 <IconeSino tamanho={11} />
                 Lembrete ativo
               </p>
@@ -84,7 +84,7 @@ export default function CartaoTratamento({ tratamento, onEditar, onExcluir, indi
           type="button"
           aria-label={`Editar ${nome}`}
           onClick={() => onEditar(tratamento)}
-          className={`${BOTAO_ICONE} hover:bg-fundo-suave hover:text-primaria`}
+          className={`${BOTAO_ICONE} hover:bg-fundo-suave hover:text-primaria-texto`}
         >
           <IconeEditar tamanho={15} />
         </button>
@@ -92,7 +92,7 @@ export default function CartaoTratamento({ tratamento, onEditar, onExcluir, indi
           type="button"
           aria-label={`Excluir ${nome}`}
           onClick={() => onExcluir(tratamento)}
-          className={`${BOTAO_ICONE} hover:bg-erro-fundo hover:text-erro`}
+          className={`${BOTAO_ICONE} hover:bg-erro-fundo hover:text-erro-texto`}
         >
           <IconeLixeira tamanho={15} />
         </button>

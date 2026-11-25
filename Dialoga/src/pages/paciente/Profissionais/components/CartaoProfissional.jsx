@@ -36,7 +36,7 @@ const AJUSTE_AVATAR = 'shrink-0 [&>div]:h-12 [&>div]:w-12 [&>div]:text-[14px]'
 // botão quadrado só com ícone (excluir)
 const BOTAO_ICONE =
   'relative z-10 mt-px mr-0.5 ml-auto grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-lg text-secundaria transition-colors duration-200 ' +
-  'hover:bg-erro-fundo hover:text-erro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
+  'hover:bg-erro-fundo hover:text-erro-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
 // botões "Aceitar" e "Recusar": 44px de altura, cantos de 12px e texto de 14px em negrito
 // (mesma medida dos botões dos pop-ups desta tela); ficam por cima do link do cartão (z-10)
@@ -91,7 +91,7 @@ export default function CartaoProfissional({ profissional, onExcluir, onAceitar,
         <p className="mt-2 flex flex-wrap items-center gap-x-[13px] gap-y-[11px] text-[12px] leading-4 text-secundaria">
           <span>Desde {formatarDesde(desde)}</span>
           {proximaConsulta && (
-            <span className="flex items-center gap-1 font-semibold text-primaria">
+            <span className="flex items-center gap-1 font-semibold text-primaria-texto">
               <IconeCalendario tamanho={11} />
               Próx. {formatarDataBR(proximaConsulta)}
             </span>

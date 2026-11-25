@@ -64,7 +64,7 @@ function PerfilProfissional() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       {/* no desktop: 1145px de conteúdo (627 + 48 + 470), como no frame de 1440px; no mobile, 16px nas laterais */}
       <div className="mx-auto w-full max-w-[770px] px-4 pt-4 pb-10 sm:px-6 sm:pt-[21px] sm:pb-12 xl:max-w-[1184px] xl:pt-[30px] xl:pr-[21px] xl:pl-[18px]">
         {!atual ? (

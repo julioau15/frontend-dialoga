@@ -96,7 +96,7 @@ export default function CalendarioPeriodo({ ano, mes, periodo, diasComRegistro, 
                 aria-label={`${dia} de ${tituloDoMes(ano, mes).split(' ')[0].toLowerCase()}${temRegistro ? ', com registro' : ''}`}
                 onClick={() => escolher(iso)}
                 className={`relative grid aspect-square w-full cursor-pointer place-items-center rounded-lg sm:mx-auto sm:aspect-auto sm:h-11 sm:w-11 xl:aspect-square xl:h-auto xl:w-full text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primaria ${
-                  ponta ? 'bg-primaria text-branco' : dentro ? 'bg-borda-forte text-primaria' : 'text-texto hover:bg-fundo-suave'
+                  ponta ? 'bg-primaria bg-botao text-branco' : dentro ? 'bg-borda-forte text-primaria-texto' : 'text-texto hover:bg-fundo-suave'
                 }`}
               >
                 {dia}

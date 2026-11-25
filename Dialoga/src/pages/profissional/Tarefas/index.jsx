@@ -95,7 +95,7 @@ function Tarefas() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       <div className="mx-auto flex w-full max-w-[768px] flex-col px-5 pt-6 pb-8 sm:px-6 sm:pt-14 sm:pb-12">
         <header className="flex flex-col gap-3.5 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
@@ -104,7 +104,7 @@ function Tarefas() {
           </div>
           <div className="flex flex-wrap gap-2 sm:shrink-0 sm:gap-[18px]">
             <Button type="button" variante="suave" larguraAuto className={BOTAO_CLARO} onClick={abrirAcompanhamento}>
-              <Usuarios className="h-4 w-4 text-primaria" />
+              <Usuarios className="h-4 w-4 text-primaria-texto" />
               Acompanhamento
             </Button>
             <Button type="button" larguraAuto className={`${BOTAO_BASE} shadow-sm`} onClick={novaTarefa}>
@@ -123,7 +123,7 @@ function Tarefas() {
             <p role="status" className="pt-16 text-center text-[13px] text-secundaria">Carregando tarefas...</p>
           ) : erro ? (
             <div role="alert" className="flex flex-col items-center gap-3 pt-16 text-center">
-              <p className="text-[13px] text-erro">{erro}</p>
+              <p className="text-[13px] text-erro-texto">{erro}</p>
               <Button type="button" variante="suave" larguraAuto className={BOTAO_CLARO} onClick={recarregar}>
                 Tentar novamente
               </Button>

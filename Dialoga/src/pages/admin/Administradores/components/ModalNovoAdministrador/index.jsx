@@ -120,7 +120,7 @@ export default function ModalNovoAdministrador({ aberto, enviando = false, onFec
             instruções para redefinir a senha no primeiro login.
           </p>
   
-          {erroGeral && <p role="alert" className="text-[11px] text-erro">{erroGeral}</p>}
+          {erroGeral && <p role="alert" className="text-[11px] text-erro-texto">{erroGeral}</p>}
         </form>
       </Modal>
     )

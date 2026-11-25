@@ -24,15 +24,15 @@ import ModalRegistrarHumor from './components/ModalRegistrarHumor'
 function Carregando() {
   return (
     <div className="flex flex-col gap-5" role="status" aria-label="Carregando dashboard">
-      <div className="h-40 animate-pulse rounded-xl bg-branco" />
+      <div className="h-40 animate-pulse rounded-xl bg-superficie" />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[0, 1, 2, 3].map((n) => (
-          <div key={n} className="h-24 animate-pulse rounded-xl bg-branco" />
+          <div key={n} className="h-24 animate-pulse rounded-xl bg-superficie" />
         ))}
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="h-48 animate-pulse rounded-xl bg-branco" />
-        <div className="h-48 animate-pulse rounded-xl bg-branco" />
+        <div className="h-48 animate-pulse rounded-xl bg-superficie" />
+        <div className="h-48 animate-pulse rounded-xl bg-superficie" />
       </div>
     </div>
   )
@@ -41,7 +41,7 @@ function Carregando() {
 function Erro({ mensagem, onTentarNovamente }) {
   return (
     <div role="alert" className="flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-4">
-      <p className="text-[13px] text-erro">{mensagem}</p>
+      <p className="text-[13px] text-erro-texto">{mensagem}</p>
       <div className="w-full max-w-xs">
         <Button variante="contorno" onClick={onTentarNovamente}>
           Tentar novamente
@@ -69,16 +69,16 @@ function Dashboard() {
 
   const resumo = dados
     ? [
-        { rotulo: 'Tratamentos ativos', valor: dados.tratamentos.length, icone: 'remedio', cor: 'bg-fundo-card text-primaria', para: '/paciente/tratamentos' },
-        { rotulo: 'Próximas consultas', valor: dados.totalConsultas, icone: 'calendario', cor: 'bg-info-fundo text-info', para: '/paciente/agenda' },
+        { rotulo: 'Tratamentos ativos', valor: dados.tratamentos.length, icone: 'remedio', cor: 'bg-fundo-card text-primaria-texto', para: '/paciente/tratamentos' },
+        { rotulo: 'Próximas consultas', valor: dados.totalConsultas, icone: 'calendario', cor: 'bg-info-fundo text-info-texto', para: '/paciente/agenda' },
         {
           rotulo: 'Tarefas pendentes',
           valor: dados.totalTarefasPendentes,
           icone: 'tarefa',
-          cor: 'bg-sucesso-fundo text-sucesso',
+          cor: 'bg-sucesso-fundo text-sucesso-texto',
           para: '/paciente/tarefas',
         },
-        { rotulo: 'Profissionais', valor: dados.totalProfissionais, icone: 'pessoas', cor: 'bg-alerta-fundo text-alerta', para: '/paciente/profissionais' },
+        { rotulo: 'Profissionais', valor: dados.totalProfissionais, icone: 'pessoas', cor: 'bg-alerta-fundo text-alerta-texto', para: '/paciente/profissionais' },
       ]
     : []
 

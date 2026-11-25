@@ -26,7 +26,7 @@ export default function ModalProfissionalEncontrado({ profissional, onFechar }) 
     <div className={AJUSTE_ENCONTRADO}>
       <Modal aberto largura="max-w-[384px]" titulo="Profissional encontrado" onFechar={onFechar}>
         <div className="mt-[30px] flex gap-3">
-          <IconeEmail tamanho={20} className="mt-0.5 shrink-0 text-primaria [stroke-width:1.6]" />
+          <IconeEmail tamanho={20} className="mt-0.5 shrink-0 text-primaria-texto [stroke-width:1.6]" />
           <p className="text-[14px] leading-[22.5px] text-texto">
             Seu profissional foi localizado e recebeu uma notificação informando que você deseja adicioná-lo.
           </p>

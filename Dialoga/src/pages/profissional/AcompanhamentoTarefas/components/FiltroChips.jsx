@@ -26,7 +26,7 @@ export default function FiltroChips({ id, rotulo, opcoes, valor, onMudar, childr
               aria-checked={marcada}
               onClick={() => onMudar(opcao.id)}
               className={`h-[30px] cursor-pointer whitespace-nowrap rounded-[10px] border-2 px-3 text-[12px] font-bold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria sm:h-8 ${
-                marcada ? 'border-primaria bg-primaria text-branco' : 'border-borda text-secundaria hover:bg-branco'
+                marcada ? 'border-primaria bg-primaria bg-botao text-branco' : 'border-borda text-secundaria hover:bg-superficie'
               }`}
             >
               {opcao.rotulo}

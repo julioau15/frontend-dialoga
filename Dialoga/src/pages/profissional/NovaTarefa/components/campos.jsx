@@ -13,7 +13,7 @@ export function Rotulo({ htmlFor, obrigatorio = false, opcional = false, childre
   return (
     <label htmlFor={htmlFor} className="text-[13px] font-semibold text-texto">
       {children}
-      {obrigatorio && <span className="text-erro" aria-hidden="true"> *</span>}
+      {obrigatorio && <span className="text-erro-texto" aria-hidden="true"> *</span>}
       {opcional && <span className="font-normal text-secundaria"> (opcional)</span>}
     </label>
   )
@@ -33,7 +33,7 @@ export function CampoTexto({ rotulo, obrigatorio, opcional, erro, multilinha = f
         className={`${CAIXA} ${multilinha ? 'h-[66px] resize-none py-3 leading-snug' : 'h-[46px]'} ${erro ? 'border-erro' : 'border-borda'}`}
         {...props}
       />
-      {erro && <span id={`${id}-erro`} className="text-[11px] text-erro">{erro}</span>}
+      {erro && <span id={`${id}-erro`} className="text-[11px] text-erro-texto">{erro}</span>}
     </div>
   )
 }

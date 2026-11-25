@@ -22,7 +22,7 @@ import { rotuloStatusTarefa } from './statusTarefa'
 
 // botões só com ícone (respostas e editar)
 const BOTAO_ICONE =
-  'grid h-8 w-8 shrink-0 place-items-center rounded-lg text-secundaria cursor-pointer transition-colors duration-200 hover:bg-fundo-suave-2 hover:text-primaria focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
+  'grid h-8 w-8 shrink-0 place-items-center rounded-lg text-secundaria cursor-pointer transition-colors duration-200 hover:bg-fundo-suave-2 hover:text-primaria-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
 // "1 pergunta" | "5 perguntas"
 function textoPerguntas(qtd) {

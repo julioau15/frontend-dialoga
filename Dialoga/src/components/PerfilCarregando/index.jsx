@@ -13,13 +13,13 @@ export default function PerfilCarregando({ erro, onTentarNovamente, subtitulo, c
     <PaginaPerfil subtitulo={subtitulo} compensarLayout={compensarLayout}>
       {erro ? (
         <div role="alert" className="flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-5">
-          <p className="text-[14px] text-erro">{erro}</p>
+          <p className="text-[14px] text-erro-texto">{erro}</p>
           <Button type="button" variante="suave" larguraAuto className="h-10" onClick={onTentarNovamente}>
             Tentar novamente
           </Button>
         </div>
       ) : (
-        <div role="status" aria-label="Carregando perfil" className="overflow-hidden rounded-xl border border-borda bg-branco shadow-sm">
+        <div role="status" aria-label="Carregando perfil" className="overflow-hidden rounded-xl border border-borda bg-superficie shadow-sm">
           <div className="h-[190px] animate-pulse bg-fundo-suave-2" />
           <div className="flex flex-col gap-5 p-5">
             {[1, 2, 3].map((n) => (

@@ -91,7 +91,7 @@ export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 've
                 type="button"
                 disabled={desabilitado}
                 onClick={() => onMarcarLida(notificacao.id)}
-                className="cursor-pointer rounded text-[11px] font-semibold text-primaria hover:underline disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+                className="cursor-pointer rounded text-[11px] font-semibold text-primaria-texto hover:underline disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
               >
                 Marcar como lida
               </button>
@@ -101,7 +101,7 @@ export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 've
             <Link
               to={resolverDestino(prefixoRota, notificacao.rota ?? categoria.rota)}
               aria-label={`Ver ${notificacao.titulo}`}
-              className="rounded text-[11px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+              className="rounded text-[11px] font-semibold text-primaria-texto hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
             >
               Ver <span aria-hidden="true">→</span>
             </Link>

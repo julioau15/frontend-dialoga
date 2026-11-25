@@ -32,8 +32,8 @@ export default function PersonalizarExperiencia() {
     // apelido/data vazios e apagaria o que ele já tivesse salvo.
     conteudo = (
       <div className="flex flex-col items-center gap-4">
-        <p role="alert" className="text-center text-[13px] text-erro">{pe.erroCarregamento}</p>
-        <button type="button" onClick={pe.tentarCarregarNovamente} className="text-[12px] text-primaria underline cursor-pointer">
+        <p role="alert" className="text-center text-[13px] text-erro-texto">{pe.erroCarregamento}</p>
+        <button type="button" onClick={pe.tentarCarregarNovamente} className="text-[12px] text-primaria-texto underline cursor-pointer">
           Tentar novamente
         </button>
       </div>
@@ -81,12 +81,12 @@ export default function PersonalizarExperiencia() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center gap-6 min-h-svh py-8 px-4 bg-fundo-suave">
+    <main className="flex flex-col items-center justify-center gap-6 min-h-svh py-8 px-4 bg-fundo-suave bg-pagina">
       <Stepper passos={PASSOS} atual={pe.etapa} />
 
       <section
         aria-busy={pe.carregando || pe.vinculando || pe.enviando}
-        className="w-full max-w-[440px] p-6 bg-branco border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]"
+        className="w-full max-w-[440px] p-6 bg-superficie border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]"
       >
         {conteudo}
       </section>

@@ -12,7 +12,7 @@ export default function PerfilEmAnalise() {
   const navigate = useNavigate()
 
   return (
-    <main className="flex items-center justify-center min-h-svh py-8 px-4 bg-fundo-suave">
+    <main className="flex items-center justify-center min-h-svh py-8 px-4 bg-fundo-suave bg-pagina">
       <div className="w-full max-w-[440px] h-fit">
         <PerfilEmAnaliseCard onCiente={() => navigate('/login')} />
       </div>

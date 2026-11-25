@@ -24,8 +24,8 @@ export default function FiltroPilulas({ rotulo, opcoes, valor, onMudar }) {
             onClick={() => onMudar(opcao.id)}
             className={`h-[42px] cursor-pointer whitespace-nowrap rounded-xl px-[13px] text-[12px] font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
               marcada
-                ? 'bg-primaria text-branco'
-                : 'bg-branco text-secundaria shadow-[0_0_0_1px_var(--color-borda)] hover:bg-fundo-suave-2'
+                ? 'bg-primaria bg-botao text-branco'
+                : 'bg-superficie text-secundaria shadow-[0_0_0_1px_var(--color-borda)] hover:bg-fundo-suave-2'
             }`}
           >
             {opcao.rotulo}

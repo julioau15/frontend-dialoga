@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { nomeDaSidebar } from '../../utils/formatadores'
 import { IconeUsuario } from '../Icones'
+import BotaoTema from '../BotaoTema'
 import logoPadrao from '../../assets/auth/logo-dialoga.png'
 
 // ajuste nomes e extensões para os arquivos reais de src/assets/sidebar
@@ -50,10 +51,10 @@ function IconeMenu({ nome, ativo = false, tamanho = 18 }) {
 }
 
 const classeLink = ({ isActive }) =>
-  `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7B4EA3] ${
+  `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
     isActive
-      ? 'bg-[#7B4EA3] text-white shadow-md'
-      : 'text-[#7D7490] hover:bg-[#F3EEF9]'
+      ? 'bg-primaria bg-botao text-branco shadow-md'
+      : 'text-secundaria hover:bg-fundo-card'
   }`
 
 function iniciais(nome = '') {
@@ -82,7 +83,7 @@ function Avatar({ nome, foto }) {
   return (
     <div
       aria-hidden="true"
-      className="flex h-16 w-16 items-center justify-center rounded-full bg-[#DDD0EF] text-xl font-bold text-[#7B4EA3]"
+      className="flex h-16 w-16 items-center justify-center rounded-full bg-borda-forte text-xl font-bold text-primaria-texto"
     >
       {iniciais(nome)}
     </div>
@@ -114,13 +115,13 @@ function ConteudoMenu({ nome, foto, funcao, nivel, itens, onSair }) {
     <>
       {/* Usuário */}
       {nome && (
-        <div className="flex flex-col items-center gap-2 border-b border-[#E8E3F0] px-4 py-6">
+        <div className="flex flex-col items-center gap-2 border-b border-borda px-4 py-6">
           <Avatar nome={nome} foto={foto} />
           <span className="flex flex-col items-center gap-1 text-center">
-            <span className="text-sm font-bold text-[#2B1B3D]">{nomeExibido}</span>
+            <span className="text-sm font-bold text-texto">{nomeExibido}</span>
             {/* função em selo de pílula, no mesmo formato do selo "Admin" do menu do administrador */}
             {funcao && (
-              <span className="inline-flex h-[22px] items-center gap-1 rounded-full border border-borda-forte bg-fundo-card px-2.5 text-[10.5px] font-semibold text-primaria">
+              <span className="inline-flex h-[22px] items-center gap-1 rounded-full border border-borda-forte bg-fundo-card px-2.5 text-[10.5px] font-semibold text-primaria-texto">
                 <IconeUsuario tamanho={11} />
                 {funcao}
               </span>
@@ -143,12 +144,13 @@ function ConteudoMenu({ nome, foto, funcao, nivel, itens, onSair }) {
         ))}
       </nav>
 
-      {/* Sair */}
-      <div className="border-t border-[#E8E3F0] px-3 py-3">
+      {/* Tema + Sair */}
+      <div className="flex flex-col gap-1 border-t border-borda px-3 py-3">
+        <BotaoTema comRotulo />
         <button
           type="button"
           onClick={onSair}
-          className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-[#7D7490] transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7B4EA3]"
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-secundaria transition-colors hover:bg-erro-fundo hover:text-erro-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
         >
           <IconeMenu nome="sair" />
           Sair da conta
@@ -217,7 +219,7 @@ function Sidebar({ logo = logoPadrao, nome = '', foto, funcao = '', nivel, itens
   return (
     <>
       {/* ===== Tablet / mobile: barra superior ===== */}
-      <header className="sticky top-0 z-30 grid h-16 grid-cols-[2.75rem_1fr_2.75rem] items-center border-b border-[#E8E3F0] bg-white px-3 lg:hidden">
+      <header className="sticky top-0 z-30 grid h-16 grid-cols-[2.75rem_1fr_2.75rem] items-center border-b border-borda bg-superficie px-3 lg:hidden">
         <button
           ref={botaoMenuRef}
           type="button"
@@ -225,12 +227,12 @@ function Sidebar({ logo = logoPadrao, nome = '', foto, funcao = '', nivel, itens
           aria-label="Abrir menu"
           aria-expanded={aberto}
           aria-controls="menu-gaveta"
-          className="flex h-11 w-11 items-center justify-center rounded-xl text-[#7D7490] transition-colors hover:bg-[#F3EEF9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7B4EA3]"
+          className="flex h-11 w-11 items-center justify-center rounded-xl text-secundaria transition-colors hover:bg-fundo-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
         >
           <IconeHamburguer />
         </button>
-        <img src={logo} alt="Dialoga" className="mx-auto h-9" />
-        <span aria-hidden="true" />
+        <img src={logo} alt="Dialoga" className="logo-tema mx-auto h-9" />
+        <BotaoTema />
       </header>
 
       {/* ===== Tablet / mobile: gaveta ===== */}
@@ -239,7 +241,7 @@ function Sidebar({ logo = logoPadrao, nome = '', foto, funcao = '', nivel, itens
         <div
           onClick={fechar}
           aria-hidden="true"
-          className={`fixed inset-0 z-40 bg-[#2B1B3D]/40 backdrop-blur-sm transition-opacity duration-300 ${
+          className={`fixed inset-0 z-40 bg-overlay backdrop-blur-sm transition-opacity duration-300 ${
             aberto ? 'opacity-100' : 'pointer-events-none opacity-0'
           }`}
         />
@@ -251,18 +253,18 @@ function Sidebar({ logo = logoPadrao, nome = '', foto, funcao = '', nivel, itens
           aria-modal="true"
           aria-label="Menu de navegação"
           aria-hidden={!aberto}
-          className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col rounded-r-3xl bg-white shadow-xl transition-[transform,visibility] duration-300 ease-out ${
+          className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col rounded-r-3xl bg-superficie shadow-xl transition-[transform,visibility] duration-300 ease-out ${
             aberto ? 'visible translate-x-0' : 'invisible -translate-x-full'
           }`}
         >
-          <div className="flex items-center justify-between border-b border-[#E8E3F0] py-3 pl-6 pr-3">
-            <img src={logo} alt="Dialoga" className="h-9" />
+          <div className="flex items-center justify-between border-b border-borda py-3 pl-6 pr-3">
+            <img src={logo} alt="Dialoga" className="logo-tema h-9" />
             <button
               ref={botaoFecharRef}
               type="button"
               onClick={fechar}
               aria-label="Fechar menu"
-              className="flex h-11 w-11 items-center justify-center rounded-xl text-[#7D7490] transition-colors hover:bg-[#F3EEF9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7B4EA3]"
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-secundaria transition-colors hover:bg-fundo-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
             >
               <IconeFechar />
             </button>
@@ -273,9 +275,9 @@ function Sidebar({ logo = logoPadrao, nome = '', foto, funcao = '', nivel, itens
       </div>
 
       {/* ===== Desktop: sidebar fixa ===== */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-[#E8E3F0] bg-white lg:flex">
-        <div className="flex items-center justify-center border-b border-[#E8E3F0] px-4 py-3">
-          <img src={logo} alt="Dialoga" className="h-9" />
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-borda bg-superficie lg:flex">
+        <div className="flex items-center justify-center border-b border-borda px-4 py-3">
+          <img src={logo} alt="Dialoga" className="logo-tema h-9" />
         </div>
 
         <ConteudoMenu nome={nome} foto={foto} funcao={funcao} nivel={nivel} itens={itens} onSair={onSair} />

@@ -32,7 +32,7 @@ export default function DadosPessoais({ valores, erros = {}, nomeCompleto, onAlt
   return (
     // noValidate: quem valida é o nosso código (mensagens em português e no padrão do sistema)
     <form className="flex flex-col items-center" onSubmit={onContinuar} noValidate>
-      <img className="h-[150px] w-[106px] object-contain" src={ilustracao} width="106" height="150" alt="" />
+      <img className="ilustracao-tema h-[150px] w-[106px] object-contain" src={ilustracao} width="106" height="150" alt="" />
 
       <h1 className="mt-4 text-[20px] font-extrabold text-center text-texto">Vamos personalizar sua experiência</h1>
       <p className="mt-2 max-w-[360px] text-[13px] text-center text-secundaria">

@@ -87,7 +87,7 @@ function Agenda() {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       {/* conteúdo limitado a ~976px e centralizado no desktop (como no Figma) */}
       <div className="mx-auto flex w-full max-w-[1040px] flex-col gap-5 px-4 py-8 sm:px-8">
         <header className="flex flex-wrap items-start justify-between gap-3">
@@ -105,7 +105,7 @@ function Agenda() {
           <p role="status" className="py-16 text-center text-[13px] text-secundaria">Carregando agenda...</p>
         ) : agenda.erro ? (
           <div role="alert" className="flex flex-col items-center gap-3 py-16 text-center">
-            <p className="text-[13px] text-erro">{agenda.erro}</p>
+            <p className="text-[13px] text-erro-texto">{agenda.erro}</p>
             <Button type="button" variante="suave" larguraAuto onClick={agenda.recarregar}>Tentar novamente</Button>
           </div>
         ) : (

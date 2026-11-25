@@ -40,7 +40,7 @@ export default function CartaoLista({ titulo, subtitulo, itens, icone, textoVazi
       {/* mt-auto: no desktop, com altura mínima, o link fica no pé do cartão (como no Figma) */}
       <Link
         to={link.para}
-        className="mt-4 w-fit rounded-sm text-[13px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria sm:mt-[22px] xl:mt-auto xl:pt-[19px]"
+        className="mt-4 w-fit rounded-sm text-[13px] font-semibold text-primaria-texto hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria sm:mt-[22px] xl:mt-auto xl:pt-[19px]"
       >
         {link.rotulo}
       </Link>

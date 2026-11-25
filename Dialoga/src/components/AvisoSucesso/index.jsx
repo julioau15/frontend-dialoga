@@ -10,8 +10,8 @@ import { IconeCheck } from '../Icones'
 
 export default function AvisoSucesso({ children = 'Alterações salvas com sucesso!' }) {
   return (
-    // text-sucesso-escura: o verde padrão sobre o fundo claro não passa no contraste AA
-    <div role="status" className="flex items-center gap-2 min-h-10 px-3 py-2 rounded-lg border border-sucesso-borda-suave bg-sucesso-fundo text-[12px] text-sucesso-escura">
+    // text-sucesso-escura-texto: o verde padrão sobre o fundo claro não passa no contraste AA
+    <div role="status" className="flex items-center gap-2 min-h-10 px-3 py-2 rounded-lg border border-sucesso-borda-suave bg-sucesso-fundo text-[12px] text-sucesso-escura-texto">
       <IconeCheck tamanho={13} className="shrink-0" />
       {children}
     </div>

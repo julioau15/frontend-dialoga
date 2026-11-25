@@ -113,10 +113,10 @@ export function Grafico({ dias, ideal, largura, destacarUltimo = true }) {
               strokeWidth={hoje ? 3 : 1.5}
               className={
                 hoje
-                  ? 'fill-primaria stroke-branco'
+                  ? 'fill-primaria stroke-superficie'
                   : abaixo
-                    ? 'fill-erro stroke-branco'
-                    : 'fill-branco stroke-primaria'
+                    ? 'fill-erro stroke-superficie'
+                    : 'fill-superficie stroke-primaria'
               }
             >
               <title>{`${p.rotulo}: ${p.horas}h dormidas`}</title>
@@ -171,11 +171,11 @@ export default function SonoSemana({ dias, ideal }) {
           Ideal ({ideal}h)
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-erro ring-2 ring-branco outline outline-erro" aria-hidden="true" />
+          <span className="h-2.5 w-2.5 rounded-full bg-erro ring-2 ring-superficie outline outline-erro" aria-hidden="true" />
           Abaixo do ideal
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="h-3.5 w-3.5 rounded-full border-2 border-branco bg-primaria shadow-[0_0_0_1.5px_var(--color-primaria)]" aria-hidden="true" />
+          <span className="h-3.5 w-3.5 rounded-full border-2 border-superficie bg-primaria shadow-[0_0_0_1.5px_var(--color-primaria)]" aria-hidden="true" />
           Hoje
         </li>
       </ul>

@@ -12,7 +12,7 @@ export default function Chip({ selecionado = false, className = '', children, ..
         type="button"
         aria-pressed={selecionado}
         className={`h-8 px-3 rounded-full text-[11px] font-medium leading-[normal] cursor-pointer transition-[background,border-color] duration-200 ease-[ease] hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
-          selecionado ? 'bg-fundo-card border border-primaria text-primaria' : 'bg-branco border border-borda text-secundaria'
+          selecionado ? 'bg-fundo-card border border-primaria text-primaria-texto' : 'bg-superficie border border-borda text-secundaria'
         } ${className}`}
         {...props}
       >

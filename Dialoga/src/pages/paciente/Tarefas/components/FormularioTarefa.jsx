@@ -32,7 +32,7 @@ function Pergunta({ numero, pergunta, valor, erro, somenteLeitura, onChange }) {
     <Card as="section" aria-labelledby={idTitulo} data-pergunta={pergunta.id} className={`p-5 ${erro && tipo !== 'texto' ? 'ring-1 ring-erro' : ''}`}>
       <h2 id={idTitulo} className="mb-3 text-[13px] font-semibold text-texto">
         {numero}. {titulo}
-        {obrigatoria && <span className="text-erro" aria-hidden="true"> *</span>}
+        {obrigatoria && <span className="text-erro-texto" aria-hidden="true"> *</span>}
         {obrigatoria && <span className="sr-only"> (obrigatória)</span>}
       </h2>
 
@@ -103,7 +103,7 @@ function Pergunta({ numero, pergunta, valor, erro, somenteLeitura, onChange }) {
           readOnly={somenteLeitura}
           placeholder={somenteLeitura ? '' : pergunta.placeholder}
           onChange={(e) => onChange(e.target.value)}
-          className={`min-h-[88px] w-full max-w-[520px] resize-none rounded-lg border bg-branco px-3 py-2.5 text-[12px] leading-normal text-texto outline-0 placeholder:text-texto-alfa-50 focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] ${erro ? 'border-erro' : 'border-borda'}`}
+          className={`min-h-[88px] w-full max-w-[520px] resize-none rounded-lg border bg-superficie px-3 py-2.5 text-[12px] leading-normal text-texto outline-0 placeholder:text-texto-alfa-50 focus:border-primaria focus:shadow-[0_0_0_3px_var(--color-primaria-alfa-20)] ${erro ? 'border-erro' : 'border-borda'}`}
         />
       )}
 
@@ -120,7 +120,7 @@ function Pergunta({ numero, pergunta, valor, erro, somenteLeitura, onChange }) {
                 onClick={() => onChange(n)}
                 className={`grid h-7 w-7 place-items-center rounded-md border text-[11px] font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
                   somenteLeitura ? 'cursor-default' : 'cursor-pointer hover:bg-fundo-suave-2'
-                } ${valor === n ? 'border-primaria bg-primaria text-branco hover:bg-primaria!' : 'border-borda bg-branco text-texto'}`}
+                } ${valor === n ? 'border-primaria bg-primaria bg-botao text-branco hover:bg-primaria!' : 'border-borda bg-superficie text-texto'}`}
               >
                 {n}
               </button>
@@ -133,7 +133,7 @@ function Pergunta({ numero, pergunta, valor, erro, somenteLeitura, onChange }) {
         </div>
       )}
 
-      {erro && <p role="alert" className="mt-2 text-[11px] text-erro">{MSG_OBRIGATORIA}</p>}
+      {erro && <p role="alert" className="mt-2 text-[11px] text-erro-texto">{MSG_OBRIGATORIA}</p>}
     </Card>
   )
 }
@@ -198,14 +198,14 @@ export default function FormularioTarefa({ tarefa, respostasIniciais, somenteLei
             target="_blank"
             rel="noopener noreferrer"
             download
-            className="text-[13px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+            className="text-[13px] font-semibold text-primaria-texto hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
           >
             📎 Abrir anexo ({decodeURIComponent(tarefa.anexo.split('?')[0].split('/').pop()).replace(/^\d+-/, '')})
           </a>
         </Card>
       )}
       {perguntas.length === 0 && !tarefa.autotarefa && (
-        <p className="rounded-xl bg-branco px-4 py-8 text-center text-[13px] text-secundaria">Esta tarefa não tem perguntas.</p>
+        <p className="rounded-xl bg-superficie px-4 py-8 text-center text-[13px] text-secundaria">Esta tarefa não tem perguntas.</p>
       )}
 
       {perguntas.map((pergunta, i) => (

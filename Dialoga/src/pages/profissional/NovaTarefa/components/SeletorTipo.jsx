@@ -66,7 +66,7 @@ export default function SeletorTipo({ valor, onMudar, rotulo }) {
         aria-expanded={aberto}
         aria-label={`${rotulo}: ${atual.rotulo}`}
         onClick={() => setAberto((a) => !a)}
-        className="flex h-[30px] max-w-full cursor-pointer items-center gap-1 rounded-lg border border-borda bg-branco px-2.5 text-[11.5px] sm:gap-1.5 sm:px-3 font-bold text-secundaria-escura transition-colors duration-200 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+        className="flex h-[30px] max-w-full cursor-pointer items-center gap-1 rounded-lg border border-borda bg-superficie px-2.5 text-[11.5px] sm:gap-1.5 sm:px-3 font-bold text-secundaria-escura transition-colors duration-200 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
       >
         <span aria-hidden="true">{atual.emoji}</span>
         <span className="truncate">{atual.rotulo}</span>
@@ -79,7 +79,7 @@ export default function SeletorTipo({ valor, onMudar, rotulo }) {
           role="listbox"
           aria-label={rotulo}
           onKeyDown={teclaNaLista}
-          className="absolute left-0 top-[calc(100%+4px)] z-20 w-[218px] overflow-hidden rounded-xl border border-borda bg-branco py-0.5 shadow-[0_8px_24px_var(--color-sombra)]"
+          className="absolute left-0 top-[calc(100%+4px)] z-20 w-[218px] overflow-hidden rounded-xl border border-borda bg-superficie py-0.5 shadow-[0_8px_24px_var(--color-sombra)]"
         >
           {TIPOS_PERGUNTA.map((tipo) => {
             const marcado = tipo.id === valor
@@ -97,7 +97,7 @@ export default function SeletorTipo({ valor, onMudar, rotulo }) {
                   }
                 }}
                 className={`flex h-10 cursor-pointer items-center gap-2.5 px-4 text-[13px] outline-0 transition-colors duration-150 hover:bg-fundo-suave-2 focus:bg-fundo-suave-2 ${
-                  marcado ? 'bg-fundo-card! text-primaria' : 'text-texto'
+                  marcado ? 'bg-fundo-card! text-primaria-texto' : 'text-texto'
                 }`}
               >
                 <span aria-hidden="true">{tipo.emoji}</span>

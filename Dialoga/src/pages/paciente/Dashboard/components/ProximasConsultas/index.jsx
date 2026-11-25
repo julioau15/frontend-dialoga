@@ -18,7 +18,7 @@ export default function ProximasConsultas({ consultas }) {
           rotulo={`Ver a consulta com ${profissional} em ${dia} ${mes} às ${hora}`}
           className="items-start gap-3 px-5 py-4"
         >
-          <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-fundo-card text-primaria">
+          <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-fundo-card text-primaria-texto">
             <span className="text-lg font-extrabold leading-none">{dia}</span>
             <span className="text-[11px] font-semibold leading-tight">{mes}</span>
           </div>

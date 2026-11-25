@@ -28,7 +28,7 @@ export default function EquipeSaude({
 
   return (
     <form className="flex flex-col items-center" onSubmit={onContinuar} noValidate>
-      <img className="h-[152px] w-[131px] object-contain" src={ilustracao} width="131" height="152" alt="" />
+      <img className="ilustracao-tema h-[152px] w-[131px] object-contain" src={ilustracao} width="131" height="152" alt="" />
 
       <h1 className="mt-4 text-[20px] font-extrabold text-center text-texto">Sua equipe de saúde</h1>
       <p className="mt-2 text-[13px] text-center text-secundaria" id={idPergunta}>

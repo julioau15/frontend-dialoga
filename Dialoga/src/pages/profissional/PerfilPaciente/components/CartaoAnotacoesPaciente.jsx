@@ -23,7 +23,7 @@ export default function CartaoAnotacoesPaciente({ anotacoes }) {
     <Card as="section" aria-label="Anotações do paciente" className="overflow-hidden">
       <div className="flex min-h-[54px] items-center justify-between gap-3 border-b border-borda px-5 py-3">
         <h3 className="flex items-center gap-2.5 text-[14px] font-bold leading-5 text-texto">
-          <IconeAnotacao className="text-primaria" />
+          <IconeAnotacao className="text-primaria-texto" />
           Anotações do paciente
         </h3>
         <p className="shrink-0 text-[12px] text-secundaria">{anotacoes.length} registro(s)</p>
@@ -49,11 +49,11 @@ export default function CartaoAnotacoesPaciente({ anotacoes }) {
               <div className="min-w-0 flex-1">
                 <ul aria-label="Como o paciente se sentiu" className="flex flex-wrap gap-1.5">
                   {a.etiquetas.map((etiqueta) => (
-                    <li key={etiqueta} className={`${ETIQUETA} bg-fundo-card text-primaria`}>
+                    <li key={etiqueta} className={`${ETIQUETA} bg-fundo-card text-primaria-texto`}>
                       {etiqueta}
                     </li>
                   ))}
-                  <li className={`${ETIQUETA} gap-1 bg-info-fundo text-info`}>
+                  <li className={`${ETIQUETA} gap-1 bg-info-fundo text-info-texto`}>
                     <span aria-hidden="true">🌙</span>
                     {a.sono}h sono
                   </li>

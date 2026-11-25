@@ -11,6 +11,9 @@
   --color-primaria-transparente: #7B4FA600;
   --color-primaria-alfa-20: #7B4FA633;
   --color-primaria-alfa-22: #7B4FA638;
+  --color-primaria-fixa: #7B4FA6; /* roxo que NÃO muda no tema escuro (texto sobre fundos claros fixos) */
+  --color-primaria-texto: #7B4FA6; /* roxo para TEXTO: no tema escuro fica mais claro para dar contraste */
+  --color-primaria-escura-texto: #5E3480;
   
   /* ---------- Secundária (cinza-arroxeado) ---------- */
   --color-secundaria: #7C6B8A;
@@ -28,6 +31,7 @@
   --color-fundo-suave: #F5F0FF;
   --color-fundo-suave-2: #F8F5FF;
   --color-fundo-card: #F3EDF9;
+  --color-superficie: #FFFFFF; /* cards, modais, menus, campos: branco no claro, roxo-escuro no escuro */
   
   /* ---------- Bordas ---------- */
   --color-borda: #E8DFF0;
@@ -42,6 +46,8 @@
   --color-sucesso-alfa-10: #0596691A;
   --color-sucesso-alfa-20: #05966933;
   --color-sucesso-alfa-30: #0596694D;
+  --color-sucesso-texto: #059669; /* verde para TEXTO (no escuro fica mais claro) */
+  --color-sucesso-escura-texto: #047857;
   
   /* ---------- Erro (vermelho) ---------- */
   --color-erro: #DC2626;
@@ -50,6 +56,7 @@
   --color-erro-borda: #FFC9C9;
   --color-erro-borda-2: #FDBBB9;
   --color-avatar-vermelho: #B84040;
+  --color-erro-texto: #DC2626; /* vermelho para TEXTO (no escuro fica mais claro) */
   
   /* ---------- Alerta (âmbar) ---------- */
   --color-alerta: #D97706;
@@ -58,11 +65,14 @@
   --color-alerta-fundo: #FFFBEB;
   --color-alerta-borda: #FEE685;
   --color-alerta-borda-suave: #FEF3C6;
+  --color-alerta-texto: #D97706; /* âmbar para TEXTO (no escuro fica mais claro) */
+  --color-alerta-escura-texto: #B45309;
   
   /* ---------- Informação (azul) ---------- */
   --color-info: #155DFC;
   --color-info-clara: #51A2FF;
   --color-info-fundo: #EFF6FF;
+  --color-info-texto: #155DFC; /* azul para TEXTO (no escuro fica mais claro) */
   
   /* ---------- Neutras ---------- */
   --color-cinza-50: #F9FAFB;
@@ -85,8 +95,114 @@
   --color-sombra-forte: #00000080;
   --color-overlay: #2D1B454D;
   
-  /* ---------- Gradiente (lavanda → rosa) ---------- */
-  --color-gradiente-inicio: #DFCDE9;
+  /* ---------- Gradientes ----------
+     Viram utilitários bg-xxx (ex.: bg-botao). No tema escuro o bloco :root[data-theme='dark']
+     lá embaixo troca as cores. Use JUNTO de uma cor de fundo (ex.: "bg-primaria bg-botao"),
+     que serve de reserva. */
+  --color-gradiente-inicio: #E3D2F3;
+  --color-gradiente-meio: #F2D3E8;
   --color-gradiente-fim: #FBBCBD;
-  --background-image-principal: linear-gradient(135deg, var(--color-gradiente-inicio), var(--color-gradiente-fim));
-  }
+  --background-image-principal: linear-gradient(135deg, var(--color-gradiente-inicio), var(--color-gradiente-meio) 50%, var(--color-gradiente-fim)); /* topo do dashboard do paciente */
+  --background-image-botao: linear-gradient(135deg, #8E63BD 0%, #7B4FA6 50%, #6B3F96 100%); /* botões e itens ativos roxos */
+  --background-image-hero: linear-gradient(135deg, #8E63BD 0%, #6B3F96 60%, #5E3480 100%); /* faixa roxa grande (boas-vindas do profissional) */
+  --background-image-progresso: linear-gradient(90deg, #A47AD3, #7B4FA6); /* barras de progresso */
+  --background-image-cartao: linear-gradient(180deg, #FFFFFF 0%, #FCFAFF 100%); /* cartões */
+  --background-image-pagina: radial-gradient(900px 480px at 100% 0%, #E9D8FA80, transparent 65%), radial-gradient(760px 520px at 0% 100%, #FBD6E666, transparent 65%); /* brilho suave atrás das telas */
+  --background-image-barra-positivo: linear-gradient(180deg, #34D399 0%, #059669 100%); /* barras do gráfico */
+  --background-image-barra-moderado: linear-gradient(180deg, #A97FD8 0%, #7B4FA6 100%);
+  --background-image-barra-atencao: linear-gradient(180deg, #F87171 0%, #DC2626 100%);
+}
+
+/* ============================================================
+   TEMA ESCURO
+   Ativado quando a tag <html> tem data-theme="dark" (ver utils/tema.js).
+   Só redefine as variáveis: todas as classes (bg-fundo, text-texto...) continuam iguais.
+   Cores tiradas da tela de cadastro no modo escuro.
+
+   Regra de ouro:
+   - bg-superficie  -> cards, modais, menus e campos (NÃO use bg-branco para isso)
+   - bg-branco / text-branco -> só o branco "de verdade" (texto sobre botão roxo, bolinha do interruptor)
+   - text-primaria-texto, text-erro-texto, text-sucesso-texto... -> cor do TEXTO (mais clara no escuro)
+   - bg-primaria, bg-erro, bg-sucesso... -> cor de PREENCHIMENTO (igual nos dois temas)
+   ============================================================ */
+:root[data-theme='dark'] {
+  color-scheme: dark; /* barras de rolagem, calendário nativo e campos do navegador escuros */
+
+  /* Primária */
+  --color-primaria: #8B5BBE;
+  --color-primaria-escura: #6F44A3;
+  --color-primaria-transparente: #8B5BBE00;
+  --color-primaria-alfa-20: #8B5BBE40;
+  --color-primaria-alfa-22: #8B5BBE45;
+  --color-primaria-texto: #B59CE0;
+  --color-primaria-escura-texto: #C9B2EE;
+
+  /* Secundária */
+  --color-secundaria: #BAB1C6;
+  --color-secundaria-alfa-50: #BAB1C680;
+  --color-secundaria-escura: #D3CADF;
+
+  /* Texto */
+  --color-texto: #F6EFFF;
+  --color-texto-alfa-50: #F6EFFF80;
+
+  /* Fundos */
+  --color-fundo: #17111F;
+  --color-fundo-login: #17111F;
+  --color-fundo-suave: #17111F;
+  --color-fundo-suave-2: #241C2E;
+  --color-fundo-card: #2A2136;
+  --color-superficie: #1F1828;
+
+  /* Bordas */
+  --color-borda: #383048;
+  --color-borda-forte: #483E59;
+
+  /* Sucesso */
+  --color-sucesso-texto: #34D399;
+  --color-sucesso-escura-texto: #6EE7B7;
+  --color-sucesso-fundo: #0F2A22;
+  --color-sucesso-borda: #14543F;
+  --color-sucesso-borda-suave: #123D30;
+
+  /* Erro */
+  --color-erro-texto: #F87171;
+  --color-erro-fundo: #2D1518;
+  --color-erro-fundo-2: #381A1E;
+  --color-erro-borda: #5C2429;
+  --color-erro-borda-2: #6B2A30;
+
+  /* Alerta */
+  --color-alerta-texto: #FBBF24;
+  --color-alerta-escura-texto: #FCD34D;
+  --color-alerta-fundo: #2B2010;
+  --color-alerta-borda: #5C4310;
+  --color-alerta-borda-suave: #45330F;
+
+  /* Informação */
+  --color-info-texto: #60A5FA;
+  --color-info-fundo: #0F1E3D;
+
+  /* Neutras */
+  --color-cinza-50: #241C2E;
+  --color-cinza-100: #2A2136;
+
+  /* Sombras e fundo atrás de modais */
+  --color-sombra: #00000066;
+  --color-sombra-media: #00000099;
+  --color-sombra-forte: #000000CC;
+  --color-overlay: #000000A6;
+
+  /* Gradientes no escuro */
+  --color-gradiente-inicio: #38245C;
+  --color-gradiente-meio: #4A2A6E;
+  --color-gradiente-fim: #5C2A58;
+  --background-image-botao: linear-gradient(135deg, #9D72D0 0%, #8B5BBE 50%, #7646AD 100%);
+  --background-image-hero: linear-gradient(135deg, #7B4FB5 0%, #5A3590 60%, #3D2466 100%);
+  --background-image-progresso: linear-gradient(90deg, #B08AE0, #8B5BBE);
+  --background-image-cartao: linear-gradient(180deg, #231B2F 0%, #1C1526 100%);
+  --background-image-pagina: radial-gradient(900px 480px at 100% 0%, #8B5BBE2E, transparent 65%), radial-gradient(760px 520px at 0% 100%, #C0408A1A, transparent 65%);
+  --background-image-barra-positivo: linear-gradient(180deg, #4ADEAA 0%, #0E9F6E 100%);
+  --background-image-barra-moderado: linear-gradient(180deg, #B48DE3 0%, #8B5BBE 100%);
+  --background-image-barra-atencao: linear-gradient(180deg, #FB8A8A 0%, #DC2626 100%);
+}

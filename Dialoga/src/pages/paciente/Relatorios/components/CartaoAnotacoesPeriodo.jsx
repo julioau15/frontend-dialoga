@@ -18,9 +18,9 @@ import { INDICADORES, diaMes, faixaDe, notaMaxima } from '../../../../utils/rela
 
 // quadrado do humor do dia, pela faixa da nota do humor
 const HUMOR_DO_DIA = {
-  positivo: { emoji: '😊', fundo: 'bg-sucesso' },
-  moderado: { emoji: '😐', fundo: 'bg-primaria' },
-  atencao: { emoji: '😟', fundo: 'bg-erro' },
+  positivo: { emoji: '😊', fundo: 'bg-sucesso bg-barra-positivo' },
+  moderado: { emoji: '😐', fundo: 'bg-primaria bg-barra-moderado' },
+  atencao: { emoji: '😟', fundo: 'bg-erro bg-barra-atencao' },
 }
 const INDICADOR_HUMOR = INDICADORES.find((i) => i.id === 'humor')
 
@@ -49,12 +49,12 @@ function ItemAnotacao({ registro }) {
       <div className="min-w-0 flex-1">
         <ul aria-label="Como foi o dia" className="flex flex-wrap gap-1.5">
           {ORDEM_ETIQUETAS.filter((id) => registro[id]).map((id) => (
-            <li key={id} className={`${ETIQUETA} bg-fundo-card text-primaria`}>
+            <li key={id} className={`${ETIQUETA} bg-fundo-card text-primaria-texto`}>
               {registro[id]}
             </li>
           ))}
           {typeof registro.sono === 'number' && (
-            <li className={`${ETIQUETA} gap-0.5 bg-info-fundo text-info`}>
+            <li className={`${ETIQUETA} gap-0.5 bg-info-fundo text-info-texto`}>
               <span aria-hidden="true" className="text-[10px]">
                 🌙
               </span>
@@ -73,7 +73,7 @@ function ItemAnotacao({ registro }) {
         aria-expanded={aberto}
         aria-controls={idTexto}
         onClick={() => setAberto((a) => !a)}
-        className="hidden shrink-0 cursor-pointer self-center rounded-sm text-[12px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria xl:block"
+        className="hidden shrink-0 cursor-pointer self-center rounded-sm text-[12px] font-semibold text-primaria-texto hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria xl:block"
       >
         {aberto ? 'Ver menos' : 'Ver mais'}
       </button>
@@ -89,7 +89,7 @@ export default function CartaoAnotacoesPeriodo({ registros }) {
       <div className="flex min-h-[52px] items-center px-5 py-3 xl:min-h-[53px] xl:pr-[22px] xl:pl-[21px]">
         <div className="w-full">
           <CabecalhoCartao
-            icone={<IconeAnotacao tamanho={16} className="text-primaria" />}
+            icone={<IconeAnotacao tamanho={16} className="text-primaria-texto" />}
             titulo="Anotações"
             direita={<p className="text-[12px] leading-5 text-secundaria">{anotacoes.length} registro(s)</p>}
           />

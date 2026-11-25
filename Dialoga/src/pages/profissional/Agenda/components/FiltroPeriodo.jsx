@@ -23,8 +23,8 @@ export default function FiltroPeriodo({ periodo, onMudar }) {
             onClick={() => onMudar(opcao.id)}
             className={`h-10 rounded-lg border px-2.5 sm:px-3 text-[12px] font-bold cursor-pointer transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
               ativa
-                ? 'border-primaria bg-primaria text-branco shadow-[0_1px_3px_0_rgb(0_0_0/0.1),0_1px_2px_-1px_rgb(0_0_0/0.1)]'
-                : 'border-borda bg-branco text-texto'
+                ? 'border-primaria bg-primaria bg-botao text-branco shadow-[0_1px_3px_0_rgb(0_0_0/0.1),0_1px_2px_-1px_rgb(0_0_0/0.1)]'
+                : 'border-borda bg-superficie text-texto'
             }`}
           >
             {opcao.rotulo}

@@ -62,7 +62,7 @@ export default function ModalPrazo({ nome, onSemPrazo, onAdicionar, onFechar }) 
         }}
         className={`${CAIXA} mt-4 h-[46px] ${erro ? 'border-erro' : 'border-borda'}`}
       />
-      {erro && <p role="alert" className="mt-1.5 text-[11px] text-erro">{erro}</p>}
+      {erro && <p role="alert" className="mt-1.5 text-[11px] text-erro-texto">{erro}</p>}
     </Modal>
   )
 }

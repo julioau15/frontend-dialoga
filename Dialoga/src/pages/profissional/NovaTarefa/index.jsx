@@ -225,7 +225,7 @@ function NovaTarefa({ editando = false, inicial = null }) {
 
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       <div className="mx-auto flex w-full max-w-[768px] flex-col gap-5 px-6 pt-6 pb-10 sm:pb-12">
         {modo === 'previa' ? (
           <PreVisualizacao dados={dados} perguntas={perguntas} onEditar={() => setModo('edicao')} onVoltarLista={() => navigate(ROTA_LISTA)} />
@@ -278,12 +278,12 @@ function NovaTarefa({ editando = false, inicial = null }) {
               ))}
 
               {/* sem perguntas a tarefa pode ser só um arquivo (RF289); sem os dois, não dá para enviar */}
-              {erros.conteudo && <p role="alert" data-erro="true" className="-mt-2 text-[11px] text-erro">{erros.conteudo}</p>}
+              {erros.conteudo && <p role="alert" data-erro="true" className="-mt-2 text-[11px] text-erro-texto">{erros.conteudo}</p>}
 
               <button
                 type="button"
                 onClick={adicionarPergunta}
-                className="flex h-[46px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-borda-forte text-[14px] font-bold text-primaria transition-colors duration-200 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+                className="flex h-[46px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-borda-forte text-[14px] font-bold text-primaria-texto transition-colors duration-200 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
               >
                 <IconeMais tamanho={16} />
                 Adicionar pergunta

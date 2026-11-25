@@ -23,7 +23,7 @@ export default function AbasTarefas({ abas, ativa, onMudar, painel }) {
             aria-controls={painel}
             onClick={() => onMudar(aba.id)}
             className={`h-[29px] flex-1 cursor-pointer rounded-[9px] text-[11px] font-bold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
-              selecionada ? 'bg-branco text-primaria shadow-[0_1px_3px_var(--color-sombra)]' : 'text-secundaria hover:text-texto'
+              selecionada ? 'bg-superficie text-primaria-texto shadow-[0_1px_3px_var(--color-sombra)]' : 'text-secundaria hover:text-texto'
             }`}
           >
             {aba.rotulo} ({aba.contagem})

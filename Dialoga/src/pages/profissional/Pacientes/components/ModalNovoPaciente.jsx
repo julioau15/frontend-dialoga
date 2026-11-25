@@ -218,7 +218,7 @@ export default function ModalNovoPaciente({ aberto, token, idsVinculados, onFech
 
           {/* erro devolvido pela API ao adicionar (ex.: vínculo já existe) */}
           {erro && (
-            <p role="alert" className="mt-3 text-[12px] leading-4 font-semibold text-erro">
+            <p role="alert" className="mt-3 text-[12px] leading-4 font-semibold text-erro-texto">
               {erro}
             </p>
           )}

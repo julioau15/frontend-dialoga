@@ -87,7 +87,7 @@ export default function DadosGerais({ dados, erros, onMudar, pacientes, carregan
           <button
             type="button"
             onClick={() => inputArquivo.current?.click()}
-            className="flex h-11 w-full cursor-pointer items-center justify-center rounded-xl border border-dashed border-borda-forte bg-branco px-3 text-[13px] text-secundaria transition-colors duration-200 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+            className="flex h-11 w-full cursor-pointer items-center justify-center rounded-xl border border-dashed border-borda-forte bg-superficie px-3 text-[13px] text-secundaria transition-colors duration-200 hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
           >
             + Anexar arquivo à tarefa
           </button>

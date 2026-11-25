@@ -30,7 +30,7 @@ export default function ModalExcluirTratamento({ onFechar, onConfirmar, processa
         <p className="-my-1 text-[14px] leading-5 text-secundaria">
           Tem certeza que deseja excluir este tratamento? Esta ação não pode ser desfeita.
         </p>
-        {erroOperacao && <p role="alert" className="mt-4 text-[12px] text-erro">{erroOperacao}</p>}
+        {erroOperacao && <p role="alert" className="mt-4 text-[12px] text-erro-texto">{erroOperacao}</p>}
         {bloqueado && erroOperacao && onRecarregar && (
           <Button type="button" variante="suave" larguraAuto disabled={processando} onClick={onRecarregar}>Atualizar lista</Button>
         )}

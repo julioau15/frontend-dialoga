@@ -34,7 +34,7 @@ export default function GradeMes({ ano, mes, selecionado, hoje, diasComConsulta,
               aria-label={`${dia}${ehHoje ? ', hoje' : ''}${temConsulta ? ', com consulta' : ''}`}
               onClick={() => onSelecionar(iso)}
               className={`mx-px flex h-11 flex-col items-center justify-center gap-1 rounded-xl text-[11px] cursor-pointer focus-visible:outline-2 focus-visible:outline-primaria sm:h-[76px] ${
-                ativo ? 'bg-primaria text-branco' : ehHoje ? 'bg-erro-borda-2 text-texto' : 'text-texto hover:bg-fundo-suave'
+                ativo ? 'bg-primaria bg-botao text-branco' : ehHoje ? 'bg-erro-borda-2 text-texto' : 'text-texto hover:bg-fundo-suave'
               }`}
             >
               <span className={ativo ? '' : 'font-semibold'}>{dia}</span>

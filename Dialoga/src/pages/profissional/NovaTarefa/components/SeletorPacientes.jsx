@@ -81,8 +81,8 @@ export default function SeletorPacientes({ pacientes = [], carregando = false, e
         </select>
         <IconeChevronBaixo tamanho={16} className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-texto" />
       </div>
-      {erro && <span className="text-[11px] text-erro">{erro}</span>}
-      {erroLista && <span role="alert" className="text-[11px] text-erro">{erroLista}</span>}
+      {erro && <span className="text-[11px] text-erro-texto">{erro}</span>}
+      {erroLista && <span role="alert" className="text-[11px] text-erro-texto">{erroLista}</span>}
 
       {selecionados.length > 0 && (
         <ul aria-label="Pacientes selecionados" className="mt-0.5 flex flex-col gap-2">

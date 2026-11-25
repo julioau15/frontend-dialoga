@@ -15,7 +15,7 @@ const iniciaisDe = (nome) => doisPrimeirosNomes(nome).map((parte) => parte[0]).j
 
 function Informacao({ icone, rotulo, children }) {
   return (
-    <div className="flex flex-col gap-1.5 rounded-xl border border-borda bg-branco p-3">
+    <div className="flex flex-col gap-1.5 rounded-xl border border-borda bg-superficie p-3">
       <span className="flex items-center gap-1 text-[10px] text-secundaria">{icone}{rotulo}</span>
       <span className="text-[12px] font-bold text-texto">{children}</span>
     </div>
@@ -48,7 +48,7 @@ export default function ModalDetalhes({ consulta, onFechar, onEditar, onExcluir 
             {iniciaisDe(paciente)}
           </span>
           <div className="flex min-w-0 flex-col">
-            {titulo && <span className="truncate text-[10px] font-semibold text-primaria">{titulo}</span>}
+            {titulo && <span className="truncate text-[10px] font-semibold text-primaria-texto">{titulo}</span>}
             <span className="truncate text-[13px] font-extrabold text-texto">{paciente}</span>
             {especialidade && <span className="text-[10px] text-secundaria">{especialidade}</span>}
           </div>
@@ -68,7 +68,7 @@ export default function ModalDetalhes({ consulta, onFechar, onEditar, onExcluir 
 
         {lembrete !== undefined && (
           <p className="flex items-center gap-1.5 text-[10px] text-secundaria">
-            <IconeSino tamanho={11} className="text-primaria" />
+            <IconeSino tamanho={11} className="text-primaria-texto" />
             {lembrete ? 'Lembrete ativado' : 'Lembrete desativado'}
           </p>
         )}

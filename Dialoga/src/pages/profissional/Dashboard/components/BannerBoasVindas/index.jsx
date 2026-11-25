@@ -10,7 +10,7 @@ import { formatarDataExtenso } from '../../../../../utils/formatadores'
 
 export default function BannerBoasVindas({ data, nome, mensagem }) {
   return (
-    <header className="rounded-2xl bg-linear-to-b from-primaria to-[#6B4891] px-6 py-6 text-branco shadow-md">
+    <header className="rounded-2xl bg-primaria bg-hero px-6 py-6 text-branco shadow-md">
       {/* "capitalize" deixa cada palavra com inicial maiúscula, como no layout */}
       <p className="text-sm capitalize text-branco-alfa-80">{formatarDataExtenso(data)}</p>
       <h1 className="mt-1 text-2xl font-bold">

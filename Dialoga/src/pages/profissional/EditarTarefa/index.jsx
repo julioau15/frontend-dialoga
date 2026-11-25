@@ -24,7 +24,7 @@ function Aviso({ children }) {
   const navigate = useNavigate()
   return (
     // -m-6 anula o padding do LayoutComSidebar para o fundo lilás preencher a área toda
-    <div className="-m-6 min-h-svh bg-fundo-suave">
+    <div className="-m-6 min-h-svh bg-fundo-suave bg-pagina">
       <div className="mx-auto flex w-full max-w-[768px] flex-col gap-5 px-6 pt-6 pb-10">
         <BotaoVoltar onClick={() => navigate(ROTA_LISTA)}>Voltar às tarefas</BotaoVoltar>
         {children}
@@ -50,7 +50,7 @@ function EditarCarregada({ id, onTentarDeNovo }) {
     return (
       <Aviso>
         <Card as="section" role="alert" className="flex flex-col items-center gap-3 px-5 py-10 text-center">
-          <p className="text-[13px] text-erro">{erro}</p>
+          <p className="text-[13px] text-erro-texto">{erro}</p>
           <Button type="button" variante="suave" larguraAuto className="h-[42px]! rounded-xl! px-4! text-[14px]! font-bold!" onClick={onTentarDeNovo}>
             Tentar novamente
           </Button>

@@ -83,7 +83,7 @@ export default function CartaoSono({ sono }) {
             <span
               key={h}
               className={`absolute right-0 -translate-y-1/2 text-[12px] leading-4 ${
-                h === REFERENCIA ? 'font-bold text-primaria' : 'text-secundaria'
+                h === REFERENCIA ? 'font-bold text-primaria-texto' : 'text-secundaria'
               }`}
               style={{ top: yDe(h) }}
             >
@@ -121,13 +121,13 @@ export default function CartaoSono({ sono }) {
               style={{ left: `${p.porcento}%`, top: p.y }}
             >
               {poucos && (
-                <span className="absolute bottom-full left-1/2 mb-[3px] -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-4 text-primaria">
+                <span className="absolute bottom-full left-1/2 mb-[3px] -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-4 text-primaria-texto">
                   {textoHoras(p.horas)}
                 </span>
               )}
               <span
                 className={`block rounded-full ${poucos ? 'h-2.5 w-2.5' : 'h-1.5 w-1.5'} ${
-                  p.horas < REFERENCIA ? 'bg-erro ring-2 ring-branco' : 'border-2 border-primaria bg-branco'
+                  p.horas < REFERENCIA ? 'bg-erro ring-2 ring-superficie' : 'border-2 border-primaria bg-superficie'
                 }`}
               />
             </span>

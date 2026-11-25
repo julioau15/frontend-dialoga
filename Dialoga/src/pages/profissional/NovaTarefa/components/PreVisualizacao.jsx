@@ -18,7 +18,7 @@ import { EMOCOES, NUMEROS_ESCALA } from './perguntas'
 function CartaoArquivo({ nome, sozinho }) {
   return (
     <Card as="section" aria-label="Arquivo da tarefa" className="flex items-center gap-3 p-5 sm:px-[21px]">
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-fundo-card text-primaria">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-fundo-card text-primaria-texto">
         <IconeArquivo tamanho={18} />
       </span>
       <div className="min-w-0 flex-1">
@@ -41,7 +41,7 @@ function PerguntaPrevia({ numero, pergunta }) {
       <h2 id={idTitulo} className="mb-4 text-[14px] font-semibold text-texto">
         <span className="mr-2 font-normal text-secundaria">{numero}.</span>
         {enunciado.trim() || '(sem enunciado)'}
-        {obrigatoria && <span className="text-erro" aria-hidden="true"> *</span>}
+        {obrigatoria && <span className="text-erro-texto" aria-hidden="true"> *</span>}
         {obrigatoria && <span className="sr-only"> (obrigatória)</span>}
       </h2>
 
@@ -67,7 +67,7 @@ function PerguntaPrevia({ numero, pergunta }) {
               aria-checked={valor === op.valor}
               onClick={() => setValor(op.valor)}
               className={`flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-xl text-[13px] font-bold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
-                valor === op.valor ? 'bg-primaria text-branco' : 'bg-fundo-card text-primaria hover:bg-borda'
+                valor === op.valor ? 'bg-primaria bg-botao text-branco' : 'bg-fundo-card text-primaria-texto hover:bg-borda'
               }`}
             >
               <span aria-hidden="true">{op.emoji}</span>
@@ -108,7 +108,7 @@ function PerguntaPrevia({ numero, pergunta }) {
               aria-checked={valor === n}
               onClick={() => setValor(n)}
               className={`grid h-8 w-8 cursor-pointer place-items-center rounded-lg text-[11px] font-bold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
-                valor === n ? 'bg-primaria text-branco' : 'bg-fundo-card text-primaria hover:bg-borda'
+                valor === n ? 'bg-primaria bg-botao text-branco' : 'bg-fundo-card text-primaria-texto hover:bg-borda'
               }`}
             >
               {n}

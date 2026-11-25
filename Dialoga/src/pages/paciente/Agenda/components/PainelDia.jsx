@@ -21,7 +21,7 @@ export default function PainelDia({ data, consultas }) {
         ) : (
           consultas.map((c) => (
             <div key={c.id} className="flex flex-col gap-0.5 border-b border-borda px-4 py-3 last:border-b-0">
-              {c.titulo && <span className="text-[10px] font-semibold text-primaria">{c.titulo}</span>}
+              {c.titulo && <span className="text-[10px] font-semibold text-primaria-texto">{c.titulo}</span>}
               <span className="text-[11px] font-bold text-texto">{c.profissional}</span>
               <span className="text-[10px] text-secundaria">{c.especialidade}</span>
               <span className="flex items-center gap-1 text-[10px] text-secundaria">

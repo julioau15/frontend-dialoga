@@ -20,7 +20,7 @@ export default function CartaoSolicitacao({ solicitacao, onAbrir, onAprovar, onR
   const detalhe = [especialidade, clinica].filter(Boolean).join(' · ')
 
   return (
-    <li className="flex items-center gap-3 p-4 bg-branco border border-borda rounded-xl shadow-[0_2px_6px_var(--color-sombra)]">
+    <li className="flex items-center gap-3 p-4 bg-superficie border border-borda rounded-xl shadow-[0_2px_6px_var(--color-sombra)]">
       {/* Área clicável: abre os detalhes */}
       <button
         type="button"
@@ -28,7 +28,7 @@ export default function CartaoSolicitacao({ solicitacao, onAbrir, onAprovar, onR
         aria-label={`Ver solicitação de ${nome}`}
         className="flex items-center flex-1 min-w-0 gap-3 text-left bg-transparent border-0 p-0 cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primaria"
       >
-        <span className="grid place-items-center shrink-0 w-10 h-10 rounded-lg bg-borda-forte text-[12px] font-bold text-primaria-escura" aria-hidden="true">
+        <span className="grid place-items-center shrink-0 w-10 h-10 rounded-lg bg-borda-forte text-[12px] font-bold text-primaria-escura-texto" aria-hidden="true">
           {iniciais(nome)}
         </span>
 
@@ -50,7 +50,7 @@ export default function CartaoSolicitacao({ solicitacao, onAbrir, onAprovar, onR
             type="button"
             aria-label={`Aprovar ${nome}`}
             onClick={onAprovar}
-            className={`${BOTAO_ACAO} bg-sucesso-fundo border-sucesso-borda-suave text-sucesso hover:bg-sucesso-borda-suave`}
+            className={`${BOTAO_ACAO} bg-sucesso-fundo border-sucesso-borda-suave text-sucesso-texto hover:bg-sucesso-borda-suave`}
           >
             <IconeCheck tamanho={14} />
           </button>
@@ -58,7 +58,7 @@ export default function CartaoSolicitacao({ solicitacao, onAbrir, onAprovar, onR
             type="button"
             aria-label={`Recusar ${nome}`}
             onClick={onRecusar}
-            className={`${BOTAO_ACAO} bg-erro-fundo border-erro-borda text-erro hover:bg-erro-fundo-2`}
+            className={`${BOTAO_ACAO} bg-erro-fundo border-erro-borda text-erro-texto hover:bg-erro-fundo-2`}
           >
             <IconeX tamanho={14} />
           </button>

@@ -32,7 +32,7 @@ import ilustracao from '../../../../../assets/auth/ilustracaoBoasVindasProfissio
 // Mensagem pequena de status da busca
 function Aviso({ children, tipo = 'status' }) {
   return (
-    <p role={tipo} className={`text-[11px] text-center ${tipo === 'alert' ? 'text-erro' : 'text-secundaria'}`}>
+    <p role={tipo} className={`text-[11px] text-center ${tipo === 'alert' ? 'text-erro-texto' : 'text-secundaria'}`}>
       {children}
     </p>
   )
@@ -47,7 +47,7 @@ function ResultadosBusca({ resultadoBusca, vinculados, vinculandoId, onSeleciona
     return (
       <div className="flex flex-col items-center gap-1">
         <Aviso tipo="alert">{resultadoBusca.erro}</Aviso>
-        <button type="button" className="text-[11px] text-primaria underline cursor-pointer" onClick={resultadoBusca.tentarNovamente}>
+        <button type="button" className="text-[11px] text-primaria-texto underline cursor-pointer" onClick={resultadoBusca.tentarNovamente}>
           Tentar novamente
         </button>
       </div>
@@ -86,7 +86,7 @@ export default function CardBoasVindas({
 
   return (
     <div className="flex flex-col items-center text-center">
-      <img className="h-auto max-w-full" src={ilustracao} width="260" height="165" alt="" />
+      <img className="ilustracao-tema h-auto max-w-full" src={ilustracao} width="260" height="165" alt="" />
 
       <h1 className="mt-4 text-[20px] font-extrabold text-texto">
         Bem-vindo ao Dialoga{nome && `, ${nome}`}! <span aria-hidden="true">👋</span>
@@ -152,7 +152,7 @@ export default function CardBoasVindas({
 
       {/* Erro ao concluir o primeiro acesso */}
       {erroAcesso && (
-        <p role="alert" className="w-full mt-4 text-[11px] text-center text-erro">{erroAcesso}</p>
+        <p role="alert" className="w-full mt-4 text-[11px] text-center text-erro-texto">{erroAcesso}</p>
       )}
 
       <div className={`w-full ${escolha === null ? 'mt-10' : 'mt-6'}`}>

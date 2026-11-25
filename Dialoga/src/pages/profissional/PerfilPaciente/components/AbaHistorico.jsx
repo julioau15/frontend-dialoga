@@ -86,7 +86,7 @@ export default function AbaHistorico({ paciente, onSolicitarAcesso }) {
                     aria-valuemax={100}
                     className="mt-[5px] h-1.5 overflow-hidden rounded-full bg-borda"
                   >
-                    <div className="h-full rounded-full bg-primaria" style={{ width: `${percentual}%` }} />
+                    <div className="h-full rounded-full bg-primaria bg-progresso" style={{ width: `${percentual}%` }} />
                   </div>
                 </div>
               </li>

@@ -138,7 +138,7 @@ function ConteudoDashboardAdmin() {
       {carregando && <p role="status" className="mt-6 text-[12px] text-secundaria">Carregando solicitações...</p>}
       {erro && (
         <div role="alert" className="mt-6 flex flex-col items-start gap-3 rounded-xl border border-erro-borda bg-erro-fundo p-4">
-          <p className="text-[12px] text-erro">{erro}</p>
+          <p className="text-[12px] text-erro-texto">{erro}</p>
           <Button type="button" variante="suave" larguraAuto onClick={recarregar}>
             Tentar novamente
           </Button>

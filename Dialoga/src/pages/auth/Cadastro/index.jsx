@@ -33,7 +33,7 @@ export default function Cadastro() {
   const ehProfissional = f.valores.tipo === 'profissional'
 
   return (
-    <main className="flex justify-center items-center min-h-svh py-8 px-4 bg-fundo-suave">
+    <main className="flex justify-center items-center min-h-svh py-8 px-4 bg-fundo-suave bg-pagina">
       <div className="w-full max-w-[440px] flex flex-col gap-5">
         {/* Indicador de passos */}
         <ol className="flex items-center gap-2" aria-label="Etapas do cadastro">
@@ -50,7 +50,7 @@ export default function Cadastro() {
               >
                 <span
                   className={`grid place-items-center w-6 h-6 rounded-full text-[11px] font-bold ${
-                    ativo || feito ? 'bg-primaria text-branco' : 'bg-borda text-secundaria'
+                    ativo || feito ? 'bg-primaria bg-botao text-branco' : 'bg-borda text-secundaria'
                   }`}
                 >
                   {feito ? '✓' : numero}
@@ -62,7 +62,7 @@ export default function Cadastro() {
           })}
         </ol>
 
-        <section className="p-6 bg-branco border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]">
+        <section className="p-6 bg-superficie border border-borda rounded-2xl shadow-[0_4px_12px_var(--color-sombra)]">
           {f.passo === 1 ? (
             <form onSubmit={f.continuar} noValidate>
               <h1 className="text-[20px] font-extrabold text-texto">Criar conta</h1>
@@ -81,8 +81,8 @@ export default function Cadastro() {
                         aria-checked={f.valores.tipo === valor}
                         className={`h-11 rounded-[10px] text-[12px] font-semibold leading-[normal] cursor-pointer transition-[background,border-color] duration-200 ease-[ease] hover:bg-fundo-suave-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${
                           f.valores.tipo === valor
-                            ? 'bg-fundo-card border-2 border-primaria text-primaria'
-                            : 'bg-branco border border-borda text-secundaria'
+                            ? 'bg-fundo-card border-2 border-primaria text-primaria-texto'
+                            : 'bg-superficie border border-borda text-secundaria'
                         }`}
                         onClick={() => f.alterarCampo('tipo', valor)}
                       >
@@ -143,11 +143,11 @@ export default function Cadastro() {
                       )}
 
                       {f.erroEspecialidades && (
-                        <div className="flex items-center gap-2 text-[12px] text-erro" role="alert">
+                        <div className="flex items-center gap-2 text-[12px] text-erro-texto" role="alert">
                           <span>{f.erroEspecialidades}</span>
                           <button
                             type="button"
-                            className="p-0 border-0 bg-transparent text-primaria font-bold cursor-pointer hover:underline"
+                            className="p-0 border-0 bg-transparent text-primaria-texto font-bold cursor-pointer hover:underline"
                             onClick={f.recarregarEspecialidades}
                           >
                             Tentar de novo
@@ -166,7 +166,7 @@ export default function Cadastro() {
                       />
 
                       {f.errosCampos.especialidades && (
-                        <span className="text-[11px] text-erro" role="alert">{f.errosCampos.especialidades}</span>
+                        <span className="text-[11px] text-erro-texto" role="alert">{f.errosCampos.especialidades}</span>
                       )}
                     </div>
                   </>
@@ -217,13 +217,13 @@ export default function Cadastro() {
         {/* Aviso: ao criar a conta, a pessoa declara ter acesso aos documentos */}
         <p className="text-center text-[11px] text-secundaria">
           Ao criar sua conta, você declara ter lido os{' '}
-          <Link className="text-primaria font-bold no-underline hover:underline" to="/termos-de-uso" target="_blank" rel="noopener noreferrer">Termos de Uso</Link>
+          <Link className="text-primaria-texto font-bold no-underline hover:underline" to="/termos-de-uso" target="_blank" rel="noopener noreferrer">Termos de Uso</Link>
           {' '}e a{' '}
-          <Link className="text-primaria font-bold no-underline hover:underline" to="/politica-de-privacidade" target="_blank" rel="noopener noreferrer">Política de Privacidade</Link>.
+          <Link className="text-primaria-texto font-bold no-underline hover:underline" to="/politica-de-privacidade" target="_blank" rel="noopener noreferrer">Política de Privacidade</Link>.
         </p>
 
         <p className="text-center text-[12px] text-secundaria">
-          Já tem conta? <Link className="text-primaria font-bold no-underline hover:underline" to="/login">Entrar</Link>
+          Já tem conta? <Link className="text-primaria-texto font-bold no-underline hover:underline" to="/login">Entrar</Link>
         </p>
       </div>
     </main>

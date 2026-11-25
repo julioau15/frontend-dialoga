@@ -15,11 +15,11 @@ import { dataPorExtenso } from '../../../../../utils/datas'
 
 // Regra de cor — AJUSTE os limites conforme a regra de negócio
 const NIVEIS = [
-  { minimo: 60, classe: 'bg-sucesso' }, // positivo
-  { minimo: 35, classe: 'bg-primaria' }, // moderado
-  { minimo: 0, classe: 'bg-erro' }, // atenção
+  { minimo: 60, classe: 'bg-barra-positivo' }, // positivo
+  { minimo: 35, classe: 'bg-barra-moderado' }, // moderado
+  { minimo: 0, classe: 'bg-barra-atencao' }, // atenção
 ]
-const corDaBarra = (valor) => NIVEIS.find((n) => valor >= n.minimo)?.classe ?? 'bg-erro'
+const corDaBarra = (valor) => NIVEIS.find((n) => valor >= n.minimo)?.classe ?? 'bg-barra-atencao'
 
 // Teto da escala: deixa espaço livre acima das barras, como no design
 const TETO = 160
@@ -36,7 +36,7 @@ export default function IndicadoresHoje({ indicadores, onRegistrarHumor, semRegi
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="flex items-center gap-2 text-sm font-bold text-texto">
-            <Icone nome="atividade" tamanho={16} className="text-primaria" />
+            <Icone nome="atividade" tamanho={16} className="text-primaria-texto" />
             Indicadores de hoje
           </h2>
           <p className="mt-1 text-xs text-secundaria">{dataPorExtenso()}</p>
@@ -45,7 +45,7 @@ export default function IndicadoresHoje({ indicadores, onRegistrarHumor, semRegi
         <button
           type="button"
           onClick={onRegistrarHumor}
-          className="cursor-pointer rounded-xl bg-primaria px-4 py-2.5 text-sm font-semibold text-branco shadow-md transition-colors hover:bg-primaria-escura focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+          className="cursor-pointer rounded-xl bg-primaria bg-botao px-4 py-2.5 text-sm font-semibold text-branco shadow-md transition-[filter] hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
         >
           <span aria-hidden="true">😊 </span>Registrar humor
         </button>
@@ -61,7 +61,7 @@ export default function IndicadoresHoje({ indicadores, onRegistrarHumor, semRegi
           <button
             type="button"
             onClick={onRegistrarHumor}
-            className="mt-2 cursor-pointer rounded-lg border-0 bg-transparent p-0 text-xs font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
+            className="mt-2 cursor-pointer rounded-lg border-0 bg-transparent p-0 text-xs font-semibold text-primaria-texto hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
           >
             Registrar meu primeiro humor
           </button>
@@ -74,7 +74,7 @@ export default function IndicadoresHoje({ indicadores, onRegistrarHumor, semRegi
           <li key={id} className="flex flex-col">
             <div className="flex h-44 items-end sm:h-52" role="img" aria-label={`${nome}: ${valor}%`}>
               <div
-                className={`w-full rounded-t-[14px] ${corDaBarra(valor)}`}
+                className={`w-full rounded-t-[14px] shadow-[0_-4px_14px_-6px_var(--color-sombra)] ${corDaBarra(valor)}`}
                 style={{ height: `${(valor / TETO) * 100}%` }}
               />
             </div>

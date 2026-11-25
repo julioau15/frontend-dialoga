@@ -14,19 +14,19 @@ import { IconeRelogioPequeno, IconeSino } from '../IconesAgenda'
 // traçado interno roxo (4px à esquerda, 1px no resto) + sombras 0 1px 3px e 0 1px 2px -1px, preto 10%
 const TRACADO = 'border border-l-4 border-primaria shadow-[0_1px_3px_0_rgb(0_0_0/0.1),0_1px_2px_-1px_rgb(0_0_0/0.1)]'
 
-const BASE = 'flex w-full items-center gap-3 px-4 py-3 rounded-xl bg-branco text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
+const BASE = 'flex w-full items-center gap-3 px-4 py-3 rounded-xl bg-superficie text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria'
 
 export default function CartaoConsulta({ consulta, variante = 'dia', onAbrir }) {
   const { titulo, paciente, especialidade, data, hora, anotacoes, lembrete } = consulta
   // título da consulta (só aparece se existir)
-  const linhaTitulo = titulo && <span className="truncate text-[10px] font-semibold text-primaria">{titulo}</span>
+  const linhaTitulo = titulo && <span className="truncate text-[10px] font-semibold text-primaria-texto">{titulo}</span>
 
   if (variante === 'proxima' || variante === 'semana') {
     const { dia, mes } = diaEMesAbreviado(data)
     const estilo = variante === 'semana' ? TRACADO : 'shadow-[0_1px_3px_var(--color-sombra)]'
     return (
       <button type="button" onClick={onAbrir} className={`${BASE} ${estilo}`}>
-        <span className="grid h-10 w-10 shrink-0 place-content-center rounded-lg bg-fundo-suave-2 text-center leading-tight text-primaria">
+        <span className="grid h-10 w-10 shrink-0 place-content-center rounded-lg bg-fundo-suave-2 text-center leading-tight text-primaria-texto">
           <span className="text-[12px] font-extrabold">{dia}</span>
           <span className="text-[9px]">{mes}</span>
         </span>
@@ -38,14 +38,14 @@ export default function CartaoConsulta({ consulta, variante = 'dia', onAbrir }) 
             <span className="truncate">{hora} · {especialidade}</span>
           </span>
         </span>
-        {lembrete && <IconeSino tamanho={12} className="text-primaria" />}
+        {lembrete && <IconeSino tamanho={12} className="text-primaria-texto" />}
       </button>
     )
   }
 
   return (
     <button type="button" onClick={onAbrir} className={`${BASE} items-start ${TRACADO}`}>
-      <span className="grid h-7 min-w-[52px] shrink-0 place-items-center rounded-lg bg-fundo-suave-2 px-2.5 text-[11px] font-extrabold text-primaria">
+      <span className="grid h-7 min-w-[52px] shrink-0 place-items-center rounded-lg bg-fundo-suave-2 px-2.5 text-[11px] font-extrabold text-primaria-texto">
         {hora}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -54,7 +54,7 @@ export default function CartaoConsulta({ consulta, variante = 'dia', onAbrir }) 
         <span className="truncate text-[10px] text-secundaria">{especialidade}</span>
         {anotacoes && <span className="mt-0.5 text-[10px] italic text-secundaria">{anotacoes}</span>}
       </span>
-      {lembrete && <IconeSino tamanho={12} className="mt-1 text-primaria" />}
+      {lembrete && <IconeSino tamanho={12} className="mt-1 text-primaria-texto" />}
     </button>
   )
 }
