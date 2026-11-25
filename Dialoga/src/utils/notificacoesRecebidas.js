@@ -33,6 +33,16 @@ function categoriaDaTela(categoria, perfil) {
   }
 }
 
+// A solicitação de acesso aos indicadores só é aprovada em Relatórios (card "Solicitações de acesso").
+// Detecta pelo texto da mensagem, sem acento e sem diferenciar maiúsculas.
+function ehSolicitacaoAcesso(mensagem) {
+  const texto = String(mensagem ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+  return texto.includes('solicitacao de acesso')
+}
+
 // Índice "categoria|tipo" -> nome do tipo, com o catálogo do próprio perfil por último (tem prioridade)
 function indexarNomes(perfil) {
   const catalogos = perfil === 'paciente'
@@ -65,6 +75,8 @@ export function converterNotificacoes(linhas, categorias, perfil) {
       descricao: nome ? mensagem : '',
       data: formatarDataHora(linha.data_criacao),
       lida: Number(linha.lida) === 1 || linha.lida === true,
+      // destino do "Ver →" quando difere da categoria (paciente: solicitação de acesso -> Relatórios)
+      ...(perfil === 'paciente' && ehSolicitacaoAcesso(mensagem) ? { rota: 'relatorios' } : {}),
     }
   })
 }

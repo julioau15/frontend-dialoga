@@ -5,7 +5,8 @@
 // título escuro e ponto roxo; lida tem borda clara e título acinzentado.
 // O cartão em si não é clicável, só a ação do rodapé.
 // Props:
-//   notificacao   -> { id, categoria, titulo, descricao, data, lida }
+//   notificacao   -> { id, categoria, titulo, descricao, data, lida, rota? }
+//                    (rota opcional: tela do "Ver →" quando difere da categoria)
 //   prefixoRota   -> início da rota do "Ver →" (ex.: '/profissional')
 //   acao          -> 'ver': chip e "Ver →" em todas as larguras
 //                    'ver-ou-marcar': chip e "Ver →" em todas as larguras e,
@@ -24,6 +25,7 @@ const ROTAS_POR_PERFIL = {
     'tarefas',
     'tratamentos',
     'profissionais',
+    'relatorios',
   ]),
   '/profissional': new Set([
     'dashboard',
@@ -97,7 +99,7 @@ export default function CartaoNotificacao({ notificacao, prefixoRota, acao = 've
 
             {/* Leva à tela da categoria */}
             <Link
-              to={resolverDestino(prefixoRota, categoria.rota)}
+              to={resolverDestino(prefixoRota, notificacao.rota ?? categoria.rota)}
               aria-label={`Ver ${notificacao.titulo}`}
               className="rounded text-[11px] font-semibold text-primaria hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria"
             >

@@ -53,6 +53,7 @@ const paraPaciente = (p, proximas) => {
     idVinculo: p.id_vinculo,
     nome: p.nome_completo,
     email: p.email ?? null, // o back só devolve o e-mail depois que o vínculo é aceito
+    fotoUrl: p.foto_avatar ?? null, // foto que o paciente enviou no perfil (sem foto: iniciais)
     origem: 'plataforma', // todo paciente vindo da API tem conta no Dialoga
     pedidoPor: pacienteQuemPediu(p.origem_cadastro) ? 'paciente' : 'profissional',
     desde: soAnoMes(p.desde),

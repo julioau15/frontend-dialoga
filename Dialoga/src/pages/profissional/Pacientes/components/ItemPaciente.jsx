@@ -1,7 +1,7 @@
 // ============================================================
 // ItemPaciente
 // Cartão da lista de pacientes do profissional (RF306), como no Figma:
-// avatar com iniciais, nome, selo "Plataforma" (só para quem tem conta no Dialoga),
+// avatar com a foto do paciente (ou as iniciais, se não tiver foto), nome, selo "Plataforma" (só para quem tem conta no Dialoga),
 // "Desde [mês. de ano]", próxima consulta, selo de status e o ícone de anotação.
 // Desktop: "Próxima consulta" aparece à esquerda do status.
 // Mobile e Tablet (abaixo de 1024px): sem a próxima consulta (frame mobile do Figma)
@@ -34,7 +34,8 @@ const BOTAO_RESPOSTA = 'relative z-10 h-11! rounded-xl! text-[14px]! font-bold! 
 // O AvatarIniciais e o Selo compartilhados não mudam; o contêiner só ajusta as
 // medidas do Figma (mesmo recurso do AvatarPaciente do Acompanhamento):
 // avatar de 44px com iniciais de 14px em negrito
-const AJUSTE_AVATAR = 'shrink-0 [&>div]:h-11 [&>div]:w-11 [&>div]:text-[14px] [&>div]:font-bold'
+const AJUSTE_AVATAR =
+  'shrink-0 [&>div]:h-11 [&>div]:w-11 [&>div]:text-[14px] [&>div]:font-bold [&>img]:h-11 [&>img]:w-11'
 // selo com 20px de altura, texto de 12px e 8px de espaço nas laterais
 const AJUSTE_SELO = 'inline-flex shrink-0 [&>span]:h-5 [&>span]:gap-0.5 [&>span]:px-2 [&>span]:py-0 [&>span]:text-[12px]'
 
@@ -56,7 +57,7 @@ export default function ItemPaciente({ paciente, onAnotacao, onResponder, ocupad
     >
       {/* iniciais dos dois primeiros nomes, como no Figma ("João Pedro Alves" -> "JP") */}
       <div className={`mr-2 ${AJUSTE_AVATAR}`}>
-        <AvatarIniciais nome={doisPrimeirosNomes(paciente.nome).join(' ')} />
+        <AvatarIniciais nome={doisPrimeirosNomes(paciente.nome).join(' ')} foto={paciente.fotoUrl} />
       </div>
 
       <div className="min-w-0 flex-1">

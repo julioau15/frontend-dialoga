@@ -1,7 +1,7 @@
 // ============================================================
 // CabecalhoPaciente
 // Cartão do topo do perfil (RF214–RF217, RF220, RF223, RF226, RF315), como no Figma:
-// avatar, nome, selo de status, selo "Na plataforma" (só quem tem conta no Dialoga),
+// avatar (foto do paciente ou iniciais), nome, selo de status, selo "Na plataforma" (só quem tem conta no Dialoga),
 // e-mail, telefone, "Desde [mês] de [ano]" e "Próx. [data]".
 // À direita: "Solicitar acesso" (sem acesso) ou o selo "Solicitação enviada".
 // "Remover paciente" não está no Figma (pedido da equipe): fica no mesmo lugar,
@@ -23,7 +23,8 @@ import { formatarMesAnoExtenso } from './datasPerfil'
 import { AJUSTE_SELO } from './estilosPerfil'
 
 // avatar de 56px com iniciais de 18px em negrito (o AvatarIniciais compartilhado não muda)
-const AJUSTE_AVATAR = 'shrink-0 [&>div]:h-14 [&>div]:w-14 [&>div]:text-[18px] [&>div]:font-bold'
+const AJUSTE_AVATAR =
+  'shrink-0 [&>div]:h-14 [&>div]:w-14 [&>div]:text-[18px] [&>div]:font-bold [&>img]:h-14 [&>img]:w-14'
 
 // "Remover paciente": botão de texto vermelho discreto
 const BOTAO_REMOVER =
@@ -66,7 +67,7 @@ export default function CabecalhoPaciente({ paciente, onSolicitarAcesso, onRemov
       <div className="flex items-start gap-3">
         <div className="flex min-w-0 flex-1 gap-4">
           <div className={AJUSTE_AVATAR}>
-            <AvatarIniciais nome={doisPrimeirosNomes(paciente.nome).join(' ')} />
+            <AvatarIniciais nome={doisPrimeirosNomes(paciente.nome).join(' ')} foto={paciente.fotoUrl} />
           </div>
 
           <div className="min-w-0 flex-1">

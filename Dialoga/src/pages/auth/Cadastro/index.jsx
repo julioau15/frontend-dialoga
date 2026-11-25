@@ -33,7 +33,7 @@ export default function Cadastro() {
   const ehProfissional = f.valores.tipo === 'profissional'
 
   return (
-    <main className="flex justify-center min-h-svh py-8 px-4 bg-fundo-suave">
+    <main className="flex justify-center items-center min-h-svh py-8 px-4 bg-fundo-suave">
       <div className="w-full max-w-[440px] flex flex-col gap-5">
         {/* Indicador de passos */}
         <ol className="flex items-center gap-2" aria-label="Etapas do cadastro">

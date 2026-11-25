@@ -7,16 +7,23 @@
 //   tom          -> 'paciente' (degradê lavanda→rosa) | 'profissional' (degradê roxo) | 'admin' (degradê âmbar)
 //   nome         -> nome completo (as iniciais são calculadas aqui)
 //   selo         -> conteúdo da etiqueta embaixo do nome (texto ou elementos)
-//   fotoUrl      -> foto (opcional); sem ela aparecem as iniciais
+//   fotoUrl      -> foto (opcional); sem ela, ou se não carregar, aparecem as iniciais
 //   onEscolherFoto -> recebe o arquivo (File) escolhido ao clicar no avatar. Sem ela, o clique não faz nada.
 //   onSubmit     -> envio do formulário
 // ============================================================
-import { useRef } from 'react'
-import { doisPrimeirosNomes } from '../../utils/formatadores'
+import { useRef, useState } from 'react'
 import { IconeLapis } from '../IconesPerfil'
 
-// No Figma as iniciais são as dos dois primeiros nomes ("Carlos Eduardo Mendes" -> "CE")
-const iniciaisPerfil = (nome) => doisPrimeirosNomes(nome).map((parte) => parte[0]).join('').toUpperCase()
+// Mesmas iniciais da Sidebar: primeira e última palavra do nome ("Dra. Ana Beatriz Souza" -> "DS")
+function iniciaisPerfil(nome = '') {
+  const partes = nome.trim().split(/\s+/).filter(Boolean)
+  if (partes.length === 0) return ''
+  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase()
+  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
+}
+
+// Avatar sem foto: lilás com a inicial roxa, igual ao da Sidebar
+const AVATAR_INICIAIS = 'bg-borda-forte text-primaria'
 
 // Classes escritas por extenso para o Tailwind encontrá-las.
 // Todas as cores vêm de variebles.css. Os textos pequenos (selo e dica) foram
@@ -24,7 +31,6 @@ const iniciaisPerfil = (nome) => doisPrimeirosNomes(nome).map((parte) => parte[0
 const TONS = {
   paciente: {
     faixa: 'bg-principal',
-    avatar: 'bg-branco text-primaria',
     lapis: 'bg-primaria text-branco',
     nome: 'text-texto', // no Figma o nome sobre o degradê claro é escuro
     selo: 'bg-branco-alfa-80 text-primaria',
@@ -32,7 +38,6 @@ const TONS = {
   },
   profissional: {
     faixa: 'bg-linear-to-br from-primaria to-primaria-escura',
-    avatar: 'bg-branco-alfa-20 border-2 border-branco-alfa-40 text-branco',
     lapis: 'bg-branco text-primaria',
     nome: 'text-branco',
     selo: 'bg-preto/15 text-branco',
@@ -42,7 +47,6 @@ const TONS = {
     // Figma: degradê diagonal âmbar (alerta -> alerta-escura). Começa no alerta-escura
     // porque, sobre o alerta (#D97706), o texto branco pequeno não passa no contraste.
     faixa: 'bg-linear-to-br from-alerta-escura to-alerta-mais-escura',
-    avatar: 'bg-branco-alfa-20 border-2 border-branco-alfa-40 text-branco',
     lapis: 'bg-branco text-primaria',
     nome: 'text-branco',
     selo: 'bg-preto/15 text-branco',
@@ -53,6 +57,8 @@ const TONS = {
 export default function CartaoPerfil({ tom = 'paciente', nome, selo, fotoUrl, onEscolherFoto, onSubmit, children }) {
   const t = TONS[tom]
   const campoArquivo = useRef(null)
+  // guarda QUAL foto falhou: se a foto mudar, a nova URL é tentada de novo (igual à Sidebar)
+  const [fotoComErro, setFotoComErro] = useState(null)
 
   function aoEscolherArquivo(e) {
     const arquivo = e.target.files?.[0]
@@ -72,11 +78,16 @@ export default function CartaoPerfil({ tom = 'paciente', nome, selo, fotoUrl, on
           {/* nome do botão para leitores de tela (texto oculto em vez de aria-label,
               para não conflitar com as iniciais visíveis) */}
           <span className="sr-only">Alterar foto de perfil</span>
-          {fotoUrl ? (
-            <img src={fotoUrl} alt="" className="h-20 w-20 rounded-full object-cover" />
+          {fotoUrl && fotoUrl !== fotoComErro ? (
+            <img
+              src={fotoUrl}
+              alt=""
+              onError={() => setFotoComErro(fotoUrl)}
+              className="h-20 w-20 rounded-full object-cover"
+            />
           ) : (
             // aria-hidden: as iniciais são decorativas (o nome completo aparece logo abaixo)
-            <span aria-hidden="true" className={`grid h-20 w-20 place-items-center rounded-full text-[22px] font-extrabold ${t.avatar}`}>
+            <span aria-hidden="true" className={`grid h-20 w-20 place-items-center rounded-full text-[22px] font-extrabold ${AVATAR_INICIAIS}`}>
               {iniciaisPerfil(nome)}
             </span>
           )}
