@@ -41,6 +41,7 @@ export async function listarPacientesVinculados(token, signal) {
         nome: p.nome_completo,
         email: p.email ?? '',
         telefone: p.celular ?? '',
+        fotoUrl: p.foto_avatar ?? null, // foto do perfil do paciente (sem foto: iniciais)
         origem: 'plataforma',
         ativo: String(p.status_atividade ?? '').toLowerCase() !== 'inativo',
       }))

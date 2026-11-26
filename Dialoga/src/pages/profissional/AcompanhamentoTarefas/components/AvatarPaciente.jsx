@@ -20,8 +20,9 @@ const CORES = [
 ]
 
 const TAMANHOS = {
-  medio: '[&>div]:h-10 [&>div]:w-10 [&>div]:text-[14px]',
-  grande: '[&>div]:h-14 [&>div]:w-14 [&>div]:text-[20px] [&>div]:ring-2 [&>div]:ring-borda-forte [&>div]:ring-offset-2',
+  medio: '[&>div]:h-10 [&>div]:w-10 [&>div]:text-[14px] [&>img]:h-10 [&>img]:w-10',
+  grande:
+    '[&>div]:h-14 [&>div]:w-14 [&>div]:text-[20px] [&>div]:ring-2 [&>div]:ring-borda-forte [&>div]:ring-offset-2 [&>img]:h-14 [&>img]:w-14 [&>img]:ring-2 [&>img]:ring-borda-forte [&>img]:ring-offset-2',
 }
 
 export default function AvatarPaciente({ paciente, tamanho = 'medio' }) {
@@ -30,7 +31,7 @@ export default function AvatarPaciente({ paciente, tamanho = 'medio' }) {
   const doisPrimeiros = paciente.nome.trim().split(/\s+/).slice(0, 2).join(' ')
   return (
     <div className={`shrink-0 [&>div]:font-bold [&>div]:text-branco ${cor} ${TAMANHOS[tamanho]}`}>
-      <AvatarIniciais nome={doisPrimeiros} />
+      <AvatarIniciais nome={doisPrimeiros} foto={paciente.fotoUrl} />
     </div>
   )
 }

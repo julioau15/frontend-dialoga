@@ -4,11 +4,11 @@
 //   - a lista suspensa oferece cada paciente da plataforma e "Todos os pacientes"
 //     (pacientes externos, sem conta no app, não podem receber tarefas e ficam de fora);
 //   - ao escolher, abre o pop-up "Adicionar prazo?" (Sem prazo / Adicionar prazo);
-//   - cada paciente escolhido vira um cartão lilás com as iniciais, o nome,
+//   - cada paciente escolhido vira um cartão lilás com a foto (ou as iniciais, sem foto), o nome,
 //     o prazo (quando tiver) e a lixeira para remover
 //     (frame "Nova tarefa paciente selecionado - Profissional").
 // Props:
-//   pacientes    -> pacientes que podem receber tarefa (vínculo aceito e ativos): [{ id, nome }]
+//   pacientes    -> pacientes que podem receber tarefa (vínculo aceito e ativos): [{ id, nome, fotoUrl }]
 //   carregando   -> true enquanto a lista de pacientes é buscada na API
 //   erroLista    -> mensagem se a lista de pacientes não carregou
 //   selecionados -> [{ id, nome, comPrazo, prazo: 'AAAA-MM-DD' | '' }]
@@ -16,6 +16,7 @@
 //   erro         -> mensagem de erro do campo (ex.: nenhum paciente no envio)
 // ============================================================
 import { useId, useState } from 'react'
+import AvatarIniciais from '../../../../components/AvatarIniciais'
 import { IconeLixeira } from '../../../../components/Icones'
 import { formatarDataBR } from '../../../../utils/formatadores'
 import BotaoIcone from './BotaoIcone'
@@ -24,15 +25,12 @@ import { CAIXA } from './estilos'
 import { IconeChevronBaixo } from './iconesNovaTarefa'
 import ModalPrazo from './ModalPrazo'
 
-// "Ana Beatriz Ferreira" -> "AB"
-function iniciais(nome) {
-  return nome
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((parte) => parte[0].toUpperCase())
-    .join('')
-}
+// "Ana Beatriz Ferreira" -> "Ana Beatriz" (o AvatarIniciais usa o primeiro e o último nome do que recebe: sai "AB")
+const doisPrimeirosNomes = (nome) => nome.split(' ').filter(Boolean).slice(0, 2).join(' ')
+
+// contêiner que dá ao AvatarIniciais compartilhado o visual deste cartão (32px, roxo, iniciais brancas)
+const AJUSTE_AVATAR =
+  'shrink-0 [&>div]:h-8 [&>div]:w-8 [&>div]:bg-primaria [&>div]:text-[11px] [&>div]:font-bold [&>div]:text-branco [&>img]:h-8 [&>img]:w-8'
 
 export default function SeletorPacientes({ pacientes = [], carregando = false, erroLista = '', selecionados, onMudar, erro }) {
   const idCampo = useId()
@@ -88,9 +86,13 @@ export default function SeletorPacientes({ pacientes = [], carregando = false, e
         <ul aria-label="Pacientes selecionados" className="mt-0.5 flex flex-col gap-2">
           {selecionados.map((p) => (
             <li key={p.id} className="flex items-center gap-3 rounded-xl border border-borda-forte bg-fundo-card py-3 pr-3 pl-3">
-              <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primaria text-[11px] font-bold text-branco">
-                {iniciais(p.nome)}
-              </span>
+              {/* ao editar, os selecionados vêm dos destinatários da tarefa (sem foto): busca a foto na lista de pacientes */}
+              <div className={AJUSTE_AVATAR}>
+                <AvatarIniciais
+                  nome={doisPrimeirosNomes(p.nome)}
+                  foto={p.fotoUrl ?? pacientes.find((x) => x.id === p.id)?.fotoUrl ?? null}
+                />
+              </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-bold text-texto">{p.nome}</p>
                 {p.comPrazo && p.prazo && <p className="text-[11px] text-secundaria">Prazo: {formatarDataBR(p.prazo)}</p>}

@@ -143,6 +143,7 @@ export function pacienteParaAcompanhamento(paciente, nomeFallback = 'Paciente') 
     nome: paciente?.nome ?? nomeFallback,
     email: paciente?.email ?? '',
     telefone: paciente?.telefone ?? '',
+    fotoUrl: paciente?.fotoUrl ?? null,
   }
 }
 
